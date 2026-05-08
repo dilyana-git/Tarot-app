@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Arcana — The Tarot Oracle{% endblock %}
+
+{% block content %}
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-content">
+    <p class="hero-eyebrow">The Ancient Art of Tarot</p>
+    <h1 class="hero-title">Arcana</h1>
+    <p class="hero-subtitle">Peer beyond the veil. Discover the wisdom of 78 sacred cards, explore ancient spreads, and receive the guidance the universe holds for you.</p>
+    <div class="hero-cta">
+      <a href="{{ url_for('reading') }}" class="btn btn-primary">Begin Your Reading</a>
+      <a href="{{ url_for('cards') }}" class="btn btn-outline">Explore the Cards</a>
+    </div>
+  </div>
+  <div class="hero-cards-display">
+    {% for card in featured_cards %}
+    <a href="{{ url_for('card_detail', card_id=card.id) }}" class="hero-card" style="--card-color: {{ card.card_color }}; --accent-color: {{ card.accent_color }}; --delay: {{ loop.index0 * 0.2 }}s">
+      <div class="hero-card-inner">
+        <div class="hero-card-back">
+          <span class="card-back-symbol">✦</span>
+        </div>
+        <div class="hero-card-face">
+          <div class="card-number">{{ card.number }}</div>
+          <div class="card-symbol">{{ card.symbol }}</div>
+          <div class="card-name">{{ card.name }}</div>
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- Divider -->
+<div class="section-divider">
+  <span class="divider-ornament">✦ ☽ ✦</span>
+</div>
+
+<!-- Features -->
+<section class="features-section">
+  <h2 class="section-title">The Path of the Seeker</h2>
+  <div class="features-grid">
+    <a href="{{ url_for('cards') }}?filter=major" class="feature-card">
+      <div class="feature-icon">☽</div>
+      <h3 class="feature-title">Major Arcana</h3>
+      <p class="feature-desc">The 22 archetypal forces that shape the soul's great journey through life, death, and rebirth.</p>
+    </a>
+    <a href="{{ url_for('cards') }}?filter=minor" class="feature-card">
+      <div class="feature-icon">✦</div>
+      <h3 class="feature-title">Minor Arcana</h3>
+      <p class="feature-desc">56 cards across four sacred suits reveal the everyday dramas, challenges, and joys of human experience.</p>
+    </a>
+    <a href="{{ url_for('reading') }}" class="feature-card">
+      <div class="feature-icon">☸</div>
+      <h3 class="feature-title">Spreads & Readings</h3>
+      <p class="feature-desc">From a single card to the Celtic Cross — let the cards illuminate past, present, and future.</p>
+    </a>
+  </div>
+</section>
+
+<!-- Divider -->
+<div class="section-divider">
+  <span class="divider-ornament">✦ ☽ ✦</span>
+</div>
+
+<!-- Suits showcase -->
+<section class="suits-section">
+  <h2 class="section-title">The Four Suits</h2>
+  <p class="section-subtitle">Each suit governs a realm of human experience</p>
+  <div class="suits-grid">
+    <a href="{{ url_for('cards') }}?filter=minor&suit=Wands" class="suit-card suit-wands">
+      <div class="suit-symbol">Ψ</div>
+      <h3 class="suit-name">Wands</h3>
+      <p class="suit-element">Fire · Passion · Will</p>
+      <p class="suit-desc">Creativity, ambition, and the spark of inspiration that drives all action.</p>
+    </a>
+    <a href="{{ url_for('cards') }}?filter=minor&suit=Cups" class="suit-card suit-cups">
+      <div class="suit-symbol">Ω</div>
+      <h3 class="suit-name">Cups</h3>
+      <p class="suit-element">Water · Emotion · Dream</p>
+      <p class="suit-desc">Love, intuition, the inner life, and the deep currents of feeling.</p>
+    </a>
+    <a href="{{ url_for('cards') }}?filter=minor&suit=Swords" class="suit-card suit-swords">
+      <div class="suit-symbol">✚</div>
+      <h3 class="suit-name">Swords</h3>
+      <p class="suit-element">Air · Mind · Truth</p>
+      <p class="suit-desc">Intellect, conflict, clarity, and the power of thought and communication.</p>
+    </a>
+    <a href="{{ url_for('cards') }}?filter=minor&suit=Pentacles" class="suit-card suit-pentacles">
+      <div class="suit-symbol">✶</div>
+      <h3 class="suit-name">Pentacles</h3>
+      <p class="suit-element">Earth · Matter · Craft</p>
+      <p class="suit-desc">Material wealth, the body, the natural world, and practical skill.</p>
+    </a>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-inner">
+    <h2 class="cta-title">The cards await</h2>
+    <p class="cta-text">Shuffle the deck, focus your question, and let the wisdom of the tarot speak to you.</p>
+    <a href="{{ url_for('reading') }}" class="btn btn-primary btn-large">Start Your Reading</a>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}{{ card.name }} — Arcana{% endblock %}
+
+{% block content %}
+<div class="card-detail-page">
+
+  <!-- Back link -->
+  <div class="breadcrumb">
+    <a href="{{ url_for('cards') }}" class="breadcrumb-link">← The Cards</a>
+    {% if card.suit %}
+    <span class="breadcrumb-sep">/</span>
+    <a href="{{ url_for('cards') }}?filter=minor&suit={{ card.suit }}" class="breadcrumb-link">{{ card.suit }}</a>
+    {% else %}
+    <span class="breadcrumb-sep">/</span>
+    <a href="{{ url_for('cards') }}?filter=major" class="breadcrumb-link">Major Arcana</a>
+    {% endif %}
+  </div>
+
+  <div class="card-detail-layout">
+
+    <!-- Card visual -->
+    <div class="card-detail-visual">
+      <div class="card-large" style="--card-color: {{ card.card_color }}; --accent-color: {{ card.accent_color }}">
+        <div class="card-large-corner top-left">
+          <span class="cl-number">{{ card.number }}</span>
+          <span class="cl-symbol-small">{{ card.symbol }}</span>
+        </div>
+        <div class="card-large-center">
+          <div class="card-large-symbol">{{ card.symbol }}</div>
+          <div class="card-large-name">{{ card.name }}</div>
+          {% if card.suit %}
+          <div class="card-large-suit">
+            {% if card.suit == 'Wands' %}Ψ{% elif card.suit == 'Cups' %}Ω{% elif card.suit == 'Swords' %}✚{% else %}✶{% endif %}
+            {{ card.suit }}
+          </div>
+          {% else %}
+          <div class="card-large-suit">Major Arcana</div>
+          {% endif %}
+        </div>
+        <div class="card-large-corner bottom-right">
+          <span class="cl-symbol-small">{{ card.symbol }}</span>
+          <span class="cl-number">{{ card.number }}</span>
+        </div>
+        <div class="card-large-border-glow"></div>
+      </div>
+
+      <!-- Meta badges -->
+      <div class="card-meta-badges">
+        <span class="meta-badge">{{ card.element }}</span>
+        {% if card.arcana == 'major' %}
+        <span class="meta-badge">Major Arcana</span>
+        {% else %}
+        <span class="meta-badge">{{ card.suit }}</span>
+        {% endif %}
+      </div>
+
+      <!-- Navigation -->
+      <div class="card-nav">
+        {% if prev_card %}
+        <a href="{{ url_for('card_detail', card_id=prev_card.id) }}" class="card-nav-btn">
+          ← {{ prev_card.name }}
+        </a>
+        {% else %}
+        <span></span>
+        {% endif %}
+        {% if next_card %}
+        <a href="{{ url_for('card_detail', card_id=next_card.id) }}" class="card-nav-btn">
+          {{ next_card.name }} →
+        </a>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Card info -->
+    <div class="card-detail-info">
+      <div class="detail-header">
+        <p class="detail-number">{{ card.number }}</p>
+        <h1 class="detail-name">{{ card.name }}</h1>
+        <p class="detail-desc">{{ card.description }}</p>
+      </div>
+
+      <!-- Keywords -->
+      <div class="detail-section">
+        <h2 class="detail-section-title">Keywords</h2>
+        <div class="keywords-row">
+          <div class="keywords-group">
+            <p class="keywords-label">Upright</p>
+            <div class="keywords-list">
+              {% for kw in card.keywords_upright %}
+              <span class="keyword-tag keyword-upright">{{ kw }}</span>
+              {% endfor %}
+            </div>
+          </div>
+          <div class="keywords-group">
+            <p class="keywords-label">Reversed</p>
+            <div class="keywords-list">
+              {% for kw in card.keywords_reversed %}
+              <span class="keyword-tag keyword-reversed">{{ kw }}</span>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Meanings -->
+      <div class="meanings-tabs">
+        <button class="tab-btn active" data-tab="upright">☝ Upright Meaning</button>
+        <button class="tab-btn" data-tab="reversed">↩ Reversed Meaning</button>
+      </div>
+      <div class="tab-content active" id="tab-upright">
+        <div class="meaning-box meaning-upright">
+          <p>{{ card.upright_meaning }}</p>
+        </div>
+      </div>
+      <div class="tab-content" id="tab-reversed">
+        <div class="meaning-box meaning-reversed">
+          <p>{{ card.reversed_meaning }}</p>
+        </div>
+      </div>
+
+      <!-- CTA -->
+      <div class="detail-cta">
+        <a href="{{ url_for('reading') }}" class="btn btn-primary">Get a Reading</a>
+        <a href="{{ url_for('cards') }}" class="btn btn-outline">View All Cards</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    });
+  });
+</script>
+{% endblock %}

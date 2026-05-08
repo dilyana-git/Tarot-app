@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} — Arcana{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+  <h1 class="page-title">{{ title }}</h1>
+  <p class="page-subtitle">{{ total }} cards</p>
+</section>
+
+<!-- Filters -->
+<div class="filters-bar">
+  <div class="filters-inner">
+    <a href="{{ url_for('cards') }}" class="filter-btn {% if filter_type == 'all' %}active{% endif %}">All Cards</a>
+    <a href="{{ url_for('cards') }}?filter=major" class="filter-btn {% if filter_type == 'major' %}active{% endif %}">Major Arcana</a>
+    <div class="filter-dropdown">
+      <button class="filter-btn {% if filter_type == 'minor' %}active{% endif %}">Minor Arcana ▾</button>
+      <div class="filter-dropdown-menu">
+        <a href="{{ url_for('cards') }}?filter=minor" class="filter-dropdown-item">All Minor</a>
+        <a href="{{ url_for('cards') }}?filter=minor&suit=Wands" class="filter-dropdown-item">Ψ Wands</a>
+        <a href="{{ url_for('cards') }}?filter=minor&suit=Cups" class="filter-dropdown-item">Ω Cups</a>
+        <a href="{{ url_for('cards') }}?filter=minor&suit=Swords" class="filter-dropdown-item">✚ Swords</a>
+        <a href="{{ url_for('cards') }}?filter=minor&suit=Pentacles" class="filter-dropdown-item">✶ Pentacles</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Card Grid -->
+<section class="cards-grid-section">
+  <div class="cards-grid">
+    {% for card in cards %}
+    <a href="{{ url_for('card_detail', card_id=card.id) }}" class="card-tile" style="--card-color: {{ card.card_color }}; --accent-color: {{ card.accent_color }}">
+      <div class="card-tile-inner">
+        <div class="card-tile-header">
+          <span class="card-tile-number">{{ card.number }}</span>
+          {% if card.suit %}
+          <span class="card-tile-suit">
+            {% if card.suit == 'Wands' %}Ψ{% elif card.suit == 'Cups' %}Ω{% elif card.suit == 'Swords' %}✚{% else %}✶{% endif %}
+          </span>
+          {% else %}
+          <span class="card-tile-arcana">✦</span>
+          {% endif %}
+        </div>
+        <div class="card-tile-symbol">{{ card.symbol }}</div>
+        <div class="card-tile-footer">
+          <p class="card-tile-name">{{ card.name }}</p>
+          <p class="card-tile-arcana-label">{{ card.arcana | capitalize }} {% if card.suit %}· {{ card.suit }}{% endif %}</p>
+        </div>
+        <div class="card-tile-hover-info">
+          <p class="card-tile-keywords">{{ card.keywords_upright[:3] | join(' · ') }}</p>
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

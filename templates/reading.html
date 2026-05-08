@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+
+{% block title %}Tarot Reading — Arcana{% endblock %}
+
+{% block content %}
+<section class="reading-page">
+
+  <div class="reading-hero">
+    <h1 class="reading-title">Your Reading</h1>
+    <p class="reading-subtitle">Still your mind, hold your question, and let the cards speak.</p>
+  </div>
+
+  <!-- Spread selector -->
+  <div class="spread-selector" id="spreadSelector">
+    <h2 class="spread-selector-title">Choose Your Spread</h2>
+    <div class="spread-options">
+      {% for key, spread in spreads.items() %}
+      <button class="spread-option {% if key == 'three_card' %}selected{% endif %}" data-spread="{{ key }}">
+        <span class="spread-option-count">{{ spread.positions | length }}</span>
+        <span class="spread-option-name">{{ spread.name }}</span>
+        <span class="spread-option-desc">{{ spread.description }}</span>
+      </button>
+      {% endfor %}
+    </div>
+    <button class="btn btn-primary btn-large shuffle-btn" id="shuffleBtn">
+      <span class="shuffle-icon">✦</span>
+      Shuffle &amp; Draw
+    </button>
+  </div>
+
+  <!-- Loading animation -->
+  <div class="reading-loading" id="readingLoading" style="display:none">
+    <div class="loading-cards">
+      <div class="loading-card lc1"></div>
+      <div class="loading-card lc2"></div>
+      <div class="loading-card lc3"></div>
+    </div>
+    <p class="loading-text">The cards are being drawn...</p>
+  </div>
+
+  <!-- Reading result -->
+  <div class="reading-result" id="readingResult" style="display:none">
+    <div class="result-header">
+      <h2 class="result-spread-name" id="resultSpreadName"></h2>
+      <p class="result-spread-desc" id="resultSpreadDesc"></p>
+    </div>
+
+    <!-- Spread layout container -->
+    <div class="spread-layout" id="spreadLayout"></div>
+
+    <!-- Card detail panel -->
+    <div class="card-panel" id="cardPanel" style="display:none">
+      <button class="panel-close" id="panelClose">✕</button>
+      <div class="panel-inner">
+        <div class="panel-card-visual" id="panelCardVisual"></div>
+        <div class="panel-card-info" id="panelCardInfo"></div>
+      </div>
+    </div>
+
+    <!-- New reading button -->
+    <div class="new-reading-wrap">
+      <button class="btn btn-outline" id="newReadingBtn">✦ New Reading</button>
+    </div>
+  </div>
+
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const spreads = {{ spreads | tojson }};
+let currentSpread = 'three_card';
+let drawnCards = [];
+
+/* ---- Spread selection ---- */
+document.querySelectorAll('.spread-option').forEach(opt => {
+  opt.addEventListener('click', () => {
+    document.querySelectorAll('.spread-option').forEach(o => o.classList.remove('selected'));
+    opt.classList.add('selected');
+    currentSpread = opt.dataset.spread;
+  });
+});
+
+/* ---- Shuffle & Draw ---- */
+document.getElementById('shuffleBtn').addEventListener('click', async () => {
+  const spreadSelector = document.getElementById('spreadSelector');
+  const loading = document.getElementById('readingLoading');
+  const result = document.getElementById('readingResult');
+
+  spreadSelector.style.display = 'none';
+  result.style.display = 'none';
+  loading.style.display = 'flex';
+
+  try {
+    const res = await fetch('/api/reading', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ spread: currentSpread }),
+    });
+    const data = await res.json();
+    drawnCards = data.cards;
+    renderReading(data);
+  } catch (e) {
+    console.error(e);
+    loading.style.display = 'none';
+    spreadSelector.style.display = 'block';
+  }
+});
+
+/* ---- New Reading ---- */
+document.getElementById('newReadingBtn').addEventListener('click', () => {
+  document.getElementById('readingResult').style.display = 'none';
+  document.getElementById('spreadSelector').style.display = 'block';
+  document.getElementById('cardPanel').style.display = 'none';
+});
+
+document.getElementById('panelClose').addEventListener('click', () => {
+  document.getElementById('cardPanel').style.display = 'none';
+});
+
+/* ---- Render reading ---- */
+function renderReading(data) {
+  const loading = document.getElementById('readingLoading');
+  const result = document.getElementById('readingResult');
+  const layout = document.getElementById('spreadLayout');
+
+  document.getElementById('resultSpreadName').textContent = data.spread.name;
+  document.getElementById('resultSpreadDesc').textContent = data.spread.description;
+
+  layout.innerHTML = '';
+  layout.className = 'spread-layout spread-' + currentSpread.replace('_', '-');
+
+  data.cards.forEach((card, i) => {
+    const cardEl = document.createElement('div');
+    cardEl.className = 'spread-card-wrap';
+    cardEl.style.setProperty('--delay', (i * 0.15) + 's');
+    cardEl.innerHTML = `
+      <div class="spread-position-label">${card.position}</div>
+      <div class="spread-card ${card.reversed ? 'reversed' : ''}"
+           style="--card-color: ${card.card_color}; --accent-color: ${card.accent_color}"
+           data-index="${i}">
+        <div class="spread-card-back">
+          <span class="card-back-symbol">✦</span>
+        </div>
+        <div class="spread-card-face">
+          <div class="sc-number">${card.number}</div>
+          <div class="sc-symbol">${card.symbol}</div>
+          <div class="sc-name">${card.name}</div>
+          ${card.reversed ? '<div class="sc-reversed-badge">Reversed</div>' : ''}
+        </div>
+      </div>
+    `;
+    cardEl.querySelector('.spread-card').addEventListener('click', () => openCardPanel(i));
+    layout.appendChild(cardEl);
+  });
+
+  /* Animate cards in */
+  loading.style.display = 'none';
+  result.style.display = 'block';
+
+  setTimeout(() => {
+    document.querySelectorAll('.spread-card').forEach((c, i) => {
+      setTimeout(() => c.classList.add('revealed'), i * 150);
+    });
+  }, 100);
+}
+
+/* ---- Card panel ---- */
+function openCardPanel(index) {
+  const card = drawnCards[index];
+  const panel = document.getElementById('cardPanel');
+  const visual = document.getElementById('panelCardVisual');
+  const info = document.getElementById('panelCardInfo');
+
+  const suitSymbol = { Wands: 'Ψ', Cups: 'Ω', Swords: '✚', Pentacles: '✶' };
+  const suitDisplay = card.suit ? (suitSymbol[card.suit] + ' ' + card.suit) : 'Major Arcana';
+  const meaning = card.reversed ? card.reversed_meaning : card.upright_meaning;
+  const keywords = card.reversed ? card.keywords_reversed : card.keywords_upright;
+
+  visual.innerHTML = `
+    <div class="panel-card ${card.reversed ? 'reversed' : ''}"
+         style="--card-color: ${card.card_color}; --accent-color: ${card.accent_color}">
+      <div class="panel-card-inner">
+        <div class="panel-card-number">${card.number}</div>
+        <div class="panel-card-symbol">${card.symbol}</div>
+        <div class="panel-card-name">${card.name}</div>
+        <div class="panel-card-suit">${suitDisplay}</div>
+      </div>
+    </div>
+    <p class="panel-position">Position: <strong>${card.position}</strong></p>
+    ${card.reversed ? '<p class="panel-reversed-label">↩ Reversed</p>' : ''}
+  `;
+
+  info.innerHTML = `
+    <h3 class="panel-card-title">${card.name}</h3>
+    <p class="panel-element">✦ ${card.element} · ${card.arcana === 'major' ? 'Major Arcana' : card.suit}</p>
+    <div class="panel-keywords">
+      ${keywords.map(k => `<span class="keyword-tag ${card.reversed ? 'keyword-reversed' : 'keyword-upright'}">${k}</span>`).join('')}
+    </div>
+    <div class="panel-meaning">
+      <h4>${card.reversed ? '↩ Reversed' : '☝ Upright'} Meaning</h4>
+      <p>${meaning}</p>
+    </div>
+    <div class="panel-description">
+      <p><em>${card.description}</em></p>
+    </div>
+    <a href="/card/${card.id}" class="btn btn-outline btn-sm" target="_blank">View Full Card →</a>
+  `;
+
+  panel.style.display = 'flex';
+}
+</script>
+{% endblock %}
