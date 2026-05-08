@@ -130,6 +130,84 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
   });
 });
 
+/* ---- Hero card theater carousel --------------------------- */
+(function initShowcase() {
+  const stage = document.getElementById('heroStage');
+  if (!stage) return;
+
+  const cards     = Array.from(stage.querySelectorAll('.showcase-card'));
+  const nameEl    = document.getElementById('hciName');
+  const kwEl      = document.getElementById('hciKw');
+  const barEl     = document.getElementById('stageProgressBar');
+  const prevBtn   = document.getElementById('stagePrev');
+  const nextBtn   = document.getElementById('stageNext');
+
+  if (!cards.length) return;
+
+  let current     = 0;
+  let autoTimer   = null;
+  let barTimer    = null;
+  const INTERVAL  = 6000;   /* ms between auto-advances */
+  const BAR_STEP  = 50;     /* progress bar tick interval ms */
+  let barValue    = 0;
+
+  function goTo(index) {
+    cards[current].classList.remove('active');
+    current = ((index % cards.length) + cards.length) % cards.length;
+    cards[current].classList.add('active');
+
+    const c = cards[current];
+    if (nameEl) nameEl.textContent = c.dataset.name   || '';
+    if (kwEl)   kwEl.textContent   = c.dataset.keywords || '';
+
+    barValue = 0;
+    if (barEl) barEl.style.width = '0%';
+  }
+
+  function startBar() {
+    clearInterval(barTimer);
+    barValue = 0;
+    if (barEl) barEl.style.width = '0%';
+    barTimer = setInterval(() => {
+      barValue += (BAR_STEP / INTERVAL) * 100;
+      if (barEl) barEl.style.width = Math.min(barValue, 100) + '%';
+    }, BAR_STEP);
+  }
+
+  function startAuto() {
+    clearInterval(autoTimer);
+    startBar();
+    autoTimer = setInterval(() => { goTo(current + 1); startBar(); }, INTERVAL);
+  }
+
+  function stopAuto() {
+    clearInterval(autoTimer);
+    clearInterval(barTimer);
+  }
+
+  /* Initialise */
+  goTo(0);
+  startAuto();
+
+  /* Pause on hover */
+  stage.addEventListener('mouseenter', stopAuto);
+  stage.addEventListener('mouseleave', startAuto);
+
+  /* Navigation */
+  if (prevBtn) prevBtn.addEventListener('click', e => {
+    e.preventDefault(); goTo(current - 1); startAuto();
+  });
+  if (nextBtn) nextBtn.addEventListener('click', e => {
+    e.preventDefault(); goTo(current + 1); startAuto();
+  });
+
+  /* Keyboard navigation when stage is focused area */
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowLeft')  { goTo(current - 1); startAuto(); }
+    if (e.key === 'ArrowRight') { goTo(current + 1); startAuto(); }
+  });
+})();
+
 /* ---- Card tile entrance animation (Intersection Observer) -- */
 if (typeof IntersectionObserver !== 'undefined') {
   const obs = new IntersectionObserver((entries) => {

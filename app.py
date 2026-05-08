@@ -21,8 +21,7 @@ def draw_cards(n):
 
 @app.route('/')
 def index():
-    featured = random.sample(MAJOR_ARCANA, 3)
-    return render_template('index.html', featured_cards=featured)
+    return render_template('index.html', major_arcana=MAJOR_ARCANA)
 
 
 @app.route('/cards')
