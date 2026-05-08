@@ -22,6 +22,19 @@
     <!-- Card visual -->
     <div class="card-detail-visual">
       <div class="card-large" style="--card-color: {{ card.card_color }}; --accent-color: {{ card.accent_color }}">
+        <!-- Art Nouveau corner ornaments -->
+        <svg class="card-corner card-corner-tl" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg" fill="none" aria-hidden="true">
+          <path d="M1 1 C1 12 11 21 21 21" stroke="currentColor" stroke-width="0.9"/>
+          <path d="M4 1 C4 11 13 19 21 19" stroke="currentColor" stroke-width="0.45" opacity="0.5"/>
+          <circle cx="1.5" cy="1.5" r="1.5" fill="currentColor" opacity="0.7"/>
+          <path d="M21 21 C18 17 19 19 21 21Z" fill="currentColor" opacity="0.4"/>
+        </svg>
+        <svg class="card-corner card-corner-br" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg" fill="none" aria-hidden="true">
+          <path d="M1 1 C1 12 11 21 21 21" stroke="currentColor" stroke-width="0.9"/>
+          <path d="M4 1 C4 11 13 19 21 19" stroke="currentColor" stroke-width="0.45" opacity="0.5"/>
+          <circle cx="1.5" cy="1.5" r="1.5" fill="currentColor" opacity="0.7"/>
+          <path d="M21 21 C18 17 19 19 21 21Z" fill="currentColor" opacity="0.4"/>
+        </svg>
         <div class="card-large-corner top-left">
           <span class="cl-number">{{ card.number }}</span>
           <span class="cl-symbol-small">{{ card.symbol }}</span>

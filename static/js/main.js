@@ -2,7 +2,7 @@
    ARCANA TAROT — Main JS
    ============================================================ */
 
-/* ---- Star field canvas ------------------------------------ */
+/* ---- Star field ------------------------------------------- */
 (function initStars() {
   const canvas = document.getElementById('stars-canvas');
   if (!canvas) return;
@@ -19,8 +19,8 @@
     stars = Array.from({ length: n }, () => ({
       x: Math.random() * W,
       y: Math.random() * H,
-      r: Math.random() * 0.8 + 0.15,
-      speed: Math.random() * 0.0008 + 0.0003,
+      r: Math.random() * 0.75 + 0.12,
+      speed: Math.random() * 0.0007 + 0.0002,
       phase: Math.random() * Math.PI * 2,
     }));
   }
@@ -28,19 +28,87 @@
   function draw(ts) {
     ctx.clearRect(0, 0, W, H);
     stars.forEach(s => {
-      const a = 0.12 + 0.22 * (0.5 + 0.5 * Math.sin(ts * s.speed + s.phase));
+      const a = 0.08 + 0.18 * (0.5 + 0.5 * Math.sin(ts * s.speed + s.phase));
       ctx.beginPath();
       ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(220,210,185,${a})`;
+      /* Warm ivory colour matching the Art Nouveau palette */
+      ctx.fillStyle = `rgba(220,205,172,${a})`;
       ctx.fill();
     });
     requestAnimationFrame(draw);
   }
 
-  window.addEventListener('resize', () => { resize(); makeStars(120); });
+  window.addEventListener('resize', () => { resize(); makeStars(110); });
   resize();
-  makeStars(120);
+  makeStars(110);
   requestAnimationFrame(draw);
+})();
+
+/* ---- Floating golden motes (hero only) -------------------- */
+(function initMotes() {
+  const canvas = document.querySelector('.motes-canvas');
+  if (!canvas) return;
+
+  const hero = canvas.closest('.hero');
+  Object.assign(canvas.style, {
+    position: 'absolute', inset: '0',
+    width: '100%', height: '100%',
+    pointerEvents: 'none', zIndex: '2',
+  });
+
+  const ctx = canvas.getContext('2d');
+  let motes = [];
+  let W, H;
+
+  function resize() {
+    W = canvas.width  = hero.offsetWidth;
+    H = canvas.height = hero.offsetHeight;
+  }
+
+  function makeMotes(n) {
+    motes = Array.from({ length: n }, () => resetMote({}, true));
+  }
+
+  function resetMote(m, scatter) {
+    m.x     = Math.random() * W;
+    m.y     = scatter ? Math.random() * H : H + 4;
+    m.r     = Math.random() * 0.9 + 0.25;
+    m.vy    = -(Math.random() * 0.18 + 0.06);   /* upward drift */
+    m.vx    = (Math.random() - 0.5) * 0.08;     /* gentle sideways */
+    m.a     = 0;
+    m.maxA  = Math.random() * 0.14 + 0.04;
+    m.life  = 0;
+    m.maxLife = Math.random() * 400 + 300;
+    return m;
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    motes.forEach(m => {
+      m.y += m.vy;
+      m.x += m.vx;
+      m.life++;
+
+      /* Fade in for first 15% of life, fade out for last 20% */
+      const t = m.life / m.maxLife;
+      if (t < 0.15)      m.a = m.maxA * (t / 0.15);
+      else if (t > 0.80) m.a = m.maxA * ((1 - t) / 0.20);
+      else               m.a = m.maxA;
+
+      if (m.life > m.maxLife || m.y < -4) resetMote(m, false);
+
+      ctx.beginPath();
+      ctx.arc(m.x, m.y, m.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(212,168,80,${m.a})`;
+      ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+
+  window.addEventListener('resize', () => { resize(); });
+  resize();
+  makeMotes(38);
+  draw();
 })();
 
 /* ---- Mobile nav toggle ------------------------------------ */
@@ -48,20 +116,21 @@ const navToggle = document.getElementById('navToggle');
 const navLinks  = document.querySelector('.nav-links');
 if (navToggle && navLinks) {
   navToggle.addEventListener('click', () => navLinks.classList.toggle('open'));
+  /* Close on outside click */
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.navbar')) navLinks.classList.remove('open');
+  });
 }
 
-/* ---- Smooth scroll for in-page links ---------------------- */
+/* ---- Smooth scroll for in-page anchors -------------------- */
 document.querySelectorAll('a[href^="#"]').forEach(a => {
   a.addEventListener('click', e => {
     const target = document.querySelector(a.getAttribute('href'));
-    if (target) {
-      e.preventDefault();
-      target.scrollIntoView({ behavior: 'smooth' });
-    }
+    if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth' }); }
   });
 });
 
-/* ---- Card tile entrance animation ------------------------- */
+/* ---- Card tile entrance animation (Intersection Observer) -- */
 if (typeof IntersectionObserver !== 'undefined') {
   const obs = new IntersectionObserver((entries) => {
     entries.forEach(e => {
@@ -71,19 +140,19 @@ if (typeof IntersectionObserver !== 'undefined') {
         obs.unobserve(e.target);
       }
     });
-  }, { threshold: 0.05 });
+  }, { threshold: 0.04 });
 
   document.querySelectorAll('.card-tile').forEach((tile, i) => {
     tile.style.opacity = '0';
-    tile.style.transform = 'translateY(20px)';
-    tile.style.transition = `opacity .4s ease ${(i % 20) * 0.04}s, transform .4s ease ${(i % 20) * 0.04}s`;
+    tile.style.transform = 'translateY(14px)';
+    tile.style.transition = `opacity .4s ease ${(i % 24) * 0.033}s, transform .4s ease ${(i % 24) * 0.033}s`;
     obs.observe(tile);
   });
 
   document.querySelectorAll('.feature-card, .suit-card').forEach((el, i) => {
     el.style.opacity = '0';
-    el.style.transform = 'translateY(20px)';
-    el.style.transition = `opacity .5s ease ${i * 0.1}s, transform .5s ease ${i * 0.1}s`;
+    el.style.transform = 'translateY(14px)';
+    el.style.transition = `opacity .5s ease ${i * 0.09}s, transform .5s ease ${i * 0.09}s`;
     obs.observe(el);
   });
 }

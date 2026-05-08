@@ -5,7 +5,6 @@
 {% block content %}
 <!-- Hero -->
 <section class="hero">
-  <div class="hero-glow"></div>
   <div class="hero-content">
     <p class="hero-eyebrow">The Ancient Art of Tarot</p>
     <h1 class="hero-title">Arcana</h1>
@@ -17,11 +16,8 @@
   </div>
   <div class="hero-cards-display">
     {% for card in featured_cards %}
-    <a href="{{ url_for('card_detail', card_id=card.id) }}" class="hero-card" style="--card-color: {{ card.card_color }}; --accent-color: {{ card.accent_color }}; --delay: {{ loop.index0 * 0.2 }}s">
+    <a href="{{ url_for('card_detail', card_id=card.id) }}" class="hero-card" style="--card-color: {{ card.card_color }}; --delay: {{ loop.index0 * 0.2 }}s">
       <div class="hero-card-inner">
-        <div class="hero-card-back">
-          <span class="card-back-symbol">✦</span>
-        </div>
         <div class="hero-card-face">
           <div class="card-number">{{ card.number }}</div>
           <div class="card-symbol">{{ card.symbol }}</div>
@@ -31,11 +27,48 @@
     </a>
     {% endfor %}
   </div>
+  <!-- Canvas for floating golden motes -->
+  <canvas class="motes-canvas" aria-hidden="true"></canvas>
 </section>
 
-<!-- Divider -->
-<div class="section-divider">
-  <span class="divider-ornament">✦ ☽ ✦</span>
+<!-- Art Nouveau botanical divider -->
+<div class="botanical-divider" aria-hidden="true">
+  <svg viewBox="0 0 560 36" xmlns="http://www.w3.org/2000/svg" fill="none">
+    <!-- Horizontal stems -->
+    <line x1="0" y1="18" x2="198" y2="18" stroke="currentColor" stroke-width="0.5" opacity="0.35"/>
+    <line x1="362" y1="18" x2="560" y2="18" stroke="currentColor" stroke-width="0.5" opacity="0.35"/>
+    <!-- Left botanical cluster -->
+    <path d="M120 18 Q132 7 142 13 Q136 18 120 18Z" fill="currentColor" opacity="0.22"/>
+    <path d="M120 18 Q132 29 142 23 Q136 18 120 18Z" fill="currentColor" opacity="0.13"/>
+    <circle cx="120" cy="18" r="1.8" fill="currentColor" opacity="0.38"/>
+    <path d="M54 18 Q62 10 70 15 Q65 18 54 18Z" fill="currentColor" opacity="0.18"/>
+    <path d="M54 18 Q62 26 70 21 Q65 18 54 18Z" fill="currentColor" opacity="0.1"/>
+    <circle cx="54" cy="18" r="1.3" fill="currentColor" opacity="0.28"/>
+    <!-- Small stem nodes -->
+    <circle cx="175" cy="18" r="1.4" fill="currentColor" opacity="0.28"/>
+    <circle cx="88" cy="18" r="1" fill="currentColor" opacity="0.2"/>
+    <!-- Central medallion -->
+    <circle cx="280" cy="18" r="10" fill="none" stroke="currentColor" stroke-width="0.7" opacity="0.45"/>
+    <circle cx="280" cy="18" r="5"  fill="none" stroke="currentColor" stroke-width="0.5" opacity="0.3"/>
+    <circle cx="280" cy="18" r="1.6" fill="currentColor" opacity="0.5"/>
+    <!-- Medallion petals -->
+    <path d="M280 8  Q282.5 13 280 18 Q277.5 13 280 8Z"  fill="currentColor" opacity="0.18"/>
+    <path d="M280 28 Q282.5 23 280 18 Q277.5 23 280 28Z" fill="currentColor" opacity="0.18"/>
+    <path d="M270 18 Q275 20.5 280 18 Q275 15.5 270 18Z" fill="currentColor" opacity="0.18"/>
+    <path d="M290 18 Q285 20.5 280 18 Q285 15.5 290 18Z" fill="currentColor" opacity="0.18"/>
+    <!-- Curved stems into medallion -->
+    <path d="M198 18 Q230 18 268 18" stroke="currentColor" stroke-width="0.75" opacity="0.55"/>
+    <path d="M292 18 Q330 18 362 18" stroke="currentColor" stroke-width="0.75" opacity="0.55"/>
+    <!-- Right botanical cluster (mirror) -->
+    <path d="M440 18 Q428 7 418 13 Q424 18 440 18Z" fill="currentColor" opacity="0.22"/>
+    <path d="M440 18 Q428 29 418 23 Q424 18 440 18Z" fill="currentColor" opacity="0.13"/>
+    <circle cx="440" cy="18" r="1.8" fill="currentColor" opacity="0.38"/>
+    <path d="M506 18 Q498 10 490 15 Q495 18 506 18Z" fill="currentColor" opacity="0.18"/>
+    <path d="M506 18 Q498 26 490 21 Q495 18 506 18Z" fill="currentColor" opacity="0.1"/>
+    <circle cx="506" cy="18" r="1.3" fill="currentColor" opacity="0.28"/>
+    <circle cx="385" cy="18" r="1.4" fill="currentColor" opacity="0.28"/>
+    <circle cx="472" cy="18" r="1" fill="currentColor" opacity="0.2"/>
+  </svg>
 </div>
 
 <!-- Features -->
@@ -43,26 +76,44 @@
   <h2 class="section-title">The Path of the Seeker</h2>
   <div class="features-grid">
     <a href="{{ url_for('cards') }}?filter=major" class="feature-card">
-      <div class="feature-icon">☽</div>
-      <h3 class="feature-title">Major Arcana</h3>
+      <div class="feature-icon">Major Arcana</div>
+      <h3 class="feature-title">The Great Mysteries</h3>
       <p class="feature-desc">The 22 archetypal forces that shape the soul's great journey through life, death, and rebirth.</p>
     </a>
     <a href="{{ url_for('cards') }}?filter=minor" class="feature-card">
-      <div class="feature-icon">✦</div>
-      <h3 class="feature-title">Minor Arcana</h3>
+      <div class="feature-icon">Minor Arcana</div>
+      <h3 class="feature-title">The Living World</h3>
       <p class="feature-desc">56 cards across four sacred suits reveal the everyday dramas, challenges, and joys of human experience.</p>
     </a>
     <a href="{{ url_for('reading') }}" class="feature-card">
-      <div class="feature-icon">☸</div>
-      <h3 class="feature-title">Spreads & Readings</h3>
+      <div class="feature-icon">Spreads &amp; Readings</div>
+      <h3 class="feature-title">Illumination</h3>
       <p class="feature-desc">From a single card to the Celtic Cross — let the cards illuminate past, present, and future.</p>
     </a>
   </div>
 </section>
 
-<!-- Divider -->
-<div class="section-divider">
-  <span class="divider-ornament">✦ ☽ ✦</span>
+<!-- Art Nouveau botanical divider -->
+<div class="botanical-divider" aria-hidden="true">
+  <svg viewBox="0 0 560 36" xmlns="http://www.w3.org/2000/svg" fill="none">
+    <line x1="0" y1="18" x2="198" y2="18" stroke="currentColor" stroke-width="0.5" opacity="0.3"/>
+    <line x1="362" y1="18" x2="560" y2="18" stroke="currentColor" stroke-width="0.5" opacity="0.3"/>
+    <path d="M110 18 Q124 8 134 14 Q128 18 110 18Z" fill="currentColor" opacity="0.2"/>
+    <path d="M110 18 Q124 28 134 22 Q128 18 110 18Z" fill="currentColor" opacity="0.11"/>
+    <circle cx="110" cy="18" r="1.6" fill="currentColor" opacity="0.32"/>
+    <circle cx="165" cy="18" r="1.2" fill="currentColor" opacity="0.22"/>
+    <circle cx="48" cy="18" r="1" fill="currentColor" opacity="0.18"/>
+    <!-- Elegant central diamond -->
+    <path d="M280 10 L285 18 L280 26 L275 18 Z" fill="none" stroke="currentColor" stroke-width="0.65" opacity="0.42"/>
+    <circle cx="280" cy="18" r="1.5" fill="currentColor" opacity="0.45"/>
+    <line x1="198" y1="18" x2="272" y2="18" stroke="currentColor" stroke-width="0.7" opacity="0.5"/>
+    <line x1="288" y1="18" x2="362" y2="18" stroke="currentColor" stroke-width="0.7" opacity="0.5"/>
+    <path d="M450 18 Q436 8 426 14 Q432 18 450 18Z" fill="currentColor" opacity="0.2"/>
+    <path d="M450 18 Q436 28 426 22 Q432 18 450 18Z" fill="currentColor" opacity="0.11"/>
+    <circle cx="450" cy="18" r="1.6" fill="currentColor" opacity="0.32"/>
+    <circle cx="395" cy="18" r="1.2" fill="currentColor" opacity="0.22"/>
+    <circle cx="512" cy="18" r="1" fill="currentColor" opacity="0.18"/>
+  </svg>
 </div>
 
 <!-- Suits showcase -->
@@ -101,8 +152,8 @@
 <section class="cta-section">
   <div class="cta-inner">
     <h2 class="cta-title">The cards await</h2>
-    <p class="cta-text">Shuffle the deck, focus your question, and let the wisdom of the tarot speak to you.</p>
-    <a href="{{ url_for('reading') }}" class="btn btn-primary btn-large">Start Your Reading</a>
+    <p class="cta-text">Shuffle the deck, hold your question in mind, and let the wisdom of the tarot speak.</p>
+    <a href="{{ url_for('reading') }}" class="btn btn-primary btn-large">Begin Your Reading</a>
   </div>
 </section>
 {% endblock %}
