@@ -19,9 +19,8 @@
     stars = Array.from({ length: n }, () => ({
       x: Math.random() * W,
       y: Math.random() * H,
-      r: Math.random() * 1.4 + 0.2,
-      a: Math.random(),
-      speed: Math.random() * 0.004 + 0.001,
+      r: Math.random() * 0.8 + 0.15,
+      speed: Math.random() * 0.0008 + 0.0003,
       phase: Math.random() * Math.PI * 2,
     }));
   }
@@ -29,18 +28,18 @@
   function draw(ts) {
     ctx.clearRect(0, 0, W, H);
     stars.forEach(s => {
-      s.a = 0.3 + 0.7 * (0.5 + 0.5 * Math.sin(ts * s.speed + s.phase));
+      const a = 0.12 + 0.22 * (0.5 + 0.5 * Math.sin(ts * s.speed + s.phase));
       ctx.beginPath();
       ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(255,240,180,${s.a})`;
+      ctx.fillStyle = `rgba(220,210,185,${a})`;
       ctx.fill();
     });
     requestAnimationFrame(draw);
   }
 
-  window.addEventListener('resize', () => { resize(); makeStars(280); });
+  window.addEventListener('resize', () => { resize(); makeStars(120); });
   resize();
-  makeStars(280);
+  makeStars(120);
   requestAnimationFrame(draw);
 })();
 
