@@ -6,14 +6,31 @@
 <!-- ── Card Theater Hero ───────────────────────────────── -->
 <section class="hero">
 
-  <!-- Crown: eyebrow + title -->
-  <div class="hero-crown">
-    <p class="hero-eyebrow">The Ancient Art of Tarot</p>
-    <h1 class="hero-title">Arcana</h1>
-    <p class="hero-subtitle">Peer beyond the veil. Let the cards speak.</p>
+  <!-- Left panel: title + dynamic card info + CTAs -->
+  <div class="hero-left">
+    <div class="hero-crown">
+      <p class="hero-eyebrow">The Ancient Art of Tarot</p>
+      <h1 class="hero-title">Arcana</h1>
+      <p class="hero-subtitle">Peer beyond the veil. Discover the wisdom held within 78 sacred cards.</p>
+    </div>
+
+    <div class="hero-divider-line" aria-hidden="true"></div>
+
+    <div class="hero-card-label">
+      <p class="hero-info-name" id="hciName">The Fool</p>
+      <p class="hero-info-kw"   id="hciKw">Beginnings · Innocence · Spontaneity</p>
+      <div class="stage-progress-wrap">
+        <div class="stage-progress-bar" id="stageProgressBar"></div>
+      </div>
+    </div>
+
+    <div class="hero-cta">
+      <a href="{{ url_for('reading') }}" class="btn btn-primary">Begin Your Reading</a>
+      <a href="{{ url_for('cards') }}"   class="btn btn-outline">Explore the Cards</a>
+    </div>
   </div>
 
-  <!-- Stage: all 22 Major Arcana stacked, one visible at a time -->
+  <!-- Right panel: full-height card theater -->
   <div class="hero-stage" id="heroStage">
 
     {% for card in major_arcana %}
@@ -86,21 +103,6 @@
     <!-- Stage navigation -->
     <button class="stage-btn stage-prev" id="stagePrev" aria-label="Previous card">❮</button>
     <button class="stage-btn stage-next" id="stageNext" aria-label="Next card">❯</button>
-  </div>
-
-  <!-- Dynamic card info + CTAs -->
-  <div class="hero-info">
-    <div class="hero-info-text">
-      <p class="hero-info-name" id="hciName">The Fool</p>
-      <p class="hero-info-kw"   id="hciKw">Beginnings · Innocence · Spontaneity</p>
-    </div>
-    <div class="stage-progress-wrap">
-      <div class="stage-progress-bar" id="stageProgressBar"></div>
-    </div>
-    <div class="hero-cta">
-      <a href="{{ url_for('reading') }}" class="btn btn-primary">Begin Your Reading</a>
-      <a href="{{ url_for('cards') }}"   class="btn btn-outline">Explore the Cards</a>
-    </div>
   </div>
 
   <canvas class="motes-canvas" aria-hidden="true"></canvas>
