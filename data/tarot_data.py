@@ -34,6 +34,7 @@ MAJOR_ARCANA = [
         'description': 'A robed figure stands before a table bearing a cup, wand, sword, and pentacle, one arm raised to the heavens and the other pointing to the earth, an infinity symbol hovering above his head.',
         'card_color': '#2d1b69',
         'accent_color': '#8c6fd4',
+        'image': 'major/magician.jpg',
     },
     {
         'id': 2,
@@ -50,6 +51,7 @@ MAJOR_ARCANA = [
         'description': 'A serene woman seated between two pillars — one black, one white — wears a crown of three moons and holds a half-concealed scroll, the blue veil behind her embroidered with pomegranates.',
         'card_color': '#003d4d',
         'accent_color': '#4db8cc',
+        'image': 'major/high_priestess.jpg',
     },
     {
         'id': 3,
@@ -83,6 +85,7 @@ MAJOR_ARCANA = [
         'description': 'An armored sovereign sits rigidly on a ram-headed throne atop barren mountains, holding an orb and scepter, his stern gaze projecting unyielding authority over a rocky, ordered landscape.',
         'card_color': '#4a0000',
         'accent_color': '#c04040',
+        'image': 'major/emperor.jpg',
     },
     {
         'id': 5,
@@ -99,6 +102,7 @@ MAJOR_ARCANA = [
         'description': 'A papal figure seated between twin pillars raises two fingers in blessing while two supplicants kneel before him, crossed keys lying at the foot of his ornate throne.',
         'card_color': '#3b1a00',
         'accent_color': '#c08030',
+        'image': 'major/hierophant.jpg',
     },
     {
         'id': 6,
@@ -115,6 +119,7 @@ MAJOR_ARCANA = [
         'description': 'A man and woman stand naked in a garden below an angelic figure, the tree of knowledge behind the woman and the tree of flames behind the man, representing the sacred tension of choice.',
         'card_color': '#1a2a4a',
         'accent_color': '#5580c4',
+        'image': 'major/lovers.jpg',
     },
     {
         'id': 7,
@@ -148,6 +153,7 @@ MAJOR_ARCANA = [
         'description': 'A serene woman in a white robe and floral crown tenderly closes the jaws of a lion, an infinity symbol floating above her head, the landscape behind them radiantly calm.',
         'card_color': '#4a2600',
         'accent_color': '#d4820a',
+        'image': 'major/strength.jpg',
     },
     {
         'id': 9,
@@ -199,6 +205,7 @@ MAJOR_ARCANA = [
         'description': 'A crowned figure seated between two pillars holds a double-edged sword upright in one hand and perfectly balanced scales in the other, her red robes flowing across a grey stone throne.',
         'card_color': '#0d2b0d',
         'accent_color': '#3d9e3d',
+        'image': 'major/justice.jpg',
     },
     {
         'id': 12,
@@ -232,6 +239,7 @@ MAJOR_ARCANA = [
         'description': 'A skeleton in black armor rides a white horse bearing a black flag with a white rose, as figures of all stations kneel or fall before him and a sun rises between two towers on the horizon.',
         'card_color': '#1a0000',
         'accent_color': '#cc2200',
+        'image': 'major/death.jpg',
     },
     {
         'id': 14,
@@ -248,6 +256,7 @@ MAJOR_ARCANA = [
         'description': 'A winged angelic figure with a triangle-inscribed square on its chest pours water between two golden cups, standing half in a river and half on land before a glowing sunrise path.',
         'card_color': '#003d1a',
         'accent_color': '#33cc77',
+        'image': 'major/temperance.jpg',
     },
     {
         'id': 15,
@@ -300,6 +309,7 @@ MAJOR_ARCANA = [
         'description': 'A nude woman kneels at the edge of a pool under a large eight-pointed star surrounded by seven smaller stars, pouring water from two vessels onto land and into the water in perfect balance.',
         'card_color': '#00204d',
         'accent_color': '#4d99ff',
+        'image': 'major/star.jpg',
     },
     {
         'id': 18,
@@ -350,6 +360,7 @@ MAJOR_ARCANA = [
         'description': 'The Archangel Gabriel blows a great trumpet above grey clouds as naked human figures rise from coffins in a grey sea, arms outstretched in joyful answer to the celestial call.',
         'card_color': '#1a1a00',
         'accent_color': '#cccc00',
+        'image': 'major/judgement.jpg',
     },
     {
         'id': 21,

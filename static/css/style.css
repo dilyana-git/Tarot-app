@@ -603,8 +603,8 @@ a:hover { color: var(--gold-pale); }
   transition: opacity .7s ease;
   pointer-events: none;
 }
-.jc-img.loaded { opacity: .48; }
-.journey-lg .jc-img.loaded { opacity: .55; }
+.jc-img.loaded { opacity: .82; }
+.journey-lg .jc-img.loaded { opacity: .88; }
 
 /* ── Card video inside central circle ────────────────────── */
 .jc-video {

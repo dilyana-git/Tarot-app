@@ -167,12 +167,11 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
     if (!imgEl) return;
     imgEl.classList.remove('loaded');
     if (!url) { imgEl.src = ''; return; }
+    imgEl.onload  = () => imgEl.classList.add('loaded');
+    imgEl.onerror = () => imgEl.classList.remove('loaded');
     imgEl.src = url;
     if (imgEl.complete && imgEl.naturalWidth > 0) {
-      // Double-rAF ensures the browser renders opacity:0 before transitioning back in
       requestAnimationFrame(() => requestAnimationFrame(() => imgEl.classList.add('loaded')));
-    } else {
-      imgEl.onload = () => imgEl.classList.add('loaded');
     }
   }
 
