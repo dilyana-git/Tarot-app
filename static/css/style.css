@@ -343,9 +343,18 @@ a:hover { color: var(--gold-pale); }
   font-family: 'IM Fell English', serif;
   font-size: .9rem;
   font-style: italic;
-  transition: opacity .5s ease;
   color: var(--gold-dim);
   letter-spacing: .03em;
+  transition: opacity .5s ease;
+}
+.hero-info-desc {
+  font-family: 'IM Fell English', serif;
+  font-size: .82rem;
+  font-style: italic;
+  color: var(--text-dim);
+  line-height: 1.72;
+  max-width: 32rem;
+  transition: opacity .35s ease;
 }
 
 /* Progress bar */

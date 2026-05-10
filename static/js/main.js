@@ -152,6 +152,7 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
   const linkCurr  = document.getElementById('jLinkCurrent');
   const nameEl    = document.getElementById('hciName');
   const kwEl      = document.getElementById('hciKw');
+  const descEl    = document.getElementById('hciDesc');
   const barEl     = document.getElementById('stageProgressBar');
   const journey   = document.getElementById('heroJourney');
 
@@ -220,12 +221,15 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
     /* Left panel live info — fade in sync with the symbol */
     const _name = ARCANA[current].name;
     const _kw   = ARCANA[current].keywords_upright.slice(0, 3).join(' · ');
+    const _desc = ARCANA[current].description || '';
     if (nameEl) nameEl.style.opacity = '0';
     if (kwEl)   kwEl.style.opacity   = '0';
+    if (descEl) descEl.style.opacity = '0';
     clearTimeout(fadeTimer);
     fadeTimer = setTimeout(() => {
       if (nameEl) { nameEl.textContent = _name; nameEl.style.opacity = '1'; }
       if (kwEl)   { kwEl.textContent   = _kw;   kwEl.style.opacity   = '1'; }
+      if (descEl) { descEl.textContent = _desc; descEl.style.opacity = '1'; }
     }, 220);
 
     /* Reset progress bar */
