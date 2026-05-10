@@ -379,14 +379,8 @@ a:hover { color: var(--gold-pale); }
 .hero-journey {
   position: relative;
   z-index: 2;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
   min-height: 100vh;
-  padding: 60px 3vw 3rem;
   overflow: hidden;
-  gap: 0;
 }
 /* Warm atmospheric glow */
 .hero-journey::before {
@@ -405,26 +399,23 @@ a:hover { color: var(--gold-pale); }
   pointer-events: none; z-index: 0;
 }
 
-/* Journey node: circle + label stacked */
+/* Journey node: circle + label stacked, absolutely placed */
 .journey-node {
+  position: absolute;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1.2rem;
-  position: relative;
+  gap: 1rem;
   z-index: 2;
   transition: opacity .5s ease;
 }
 
-/* Dashed connector line between circles */
-.journey-connector {
-  flex: 1;
-  max-width: 88px;
-  min-width: 28px;
-  z-index: 1;
-  position: relative;
-}
-.journey-connector svg { width: 100%; height: 20px; display: block; }
+#jNodePrev           { top: 8%;   left: 6%; }
+.journey-node-current { top: 50%;  left: 50%; transform: translate(-50%, -50%); }
+#jNodeNext           { bottom: 10%; right: 6%; }
+
+/* Connectors hidden — diagonal layout makes them obsolete */
+.journey-connector { display: none; }
 
 /* ── Base circle ─────────────────────────────────────────── */
 .journey-circle {
@@ -443,9 +434,9 @@ a:hover { color: var(--gold-pale); }
       var(--bg) 100%);
 }
 
-/* ── Small side circles (static "images") ────────────────── */
+/* ── Small side circles (portrait ellipses) ─────────────── */
 .journey-sm {
-  width: 148px; height: 148px;
+  width: 200px; height: 290px;
   border: 1px solid rgba(196,147,58,.24);
   box-shadow: 0 0 0 1px rgba(196,147,58,.05), 0 14px 44px rgba(0,0,0,.68);
   transition: transform .4s ease, box-shadow .4s ease,
@@ -465,10 +456,10 @@ a:hover { color: var(--gold-pale); }
   pointer-events: none; z-index: 2;
 }
 
-/* ── Large central circle ("video") ─────────────────────── */
+/* ── Large central ellipse ("video") ────────────────────── */
 .journey-lg {
-  width: clamp(240px, 28vw, 310px);
-  height: clamp(240px, 28vw, 310px);
+  width: clamp(290px, 32vw, 390px);
+  height: clamp(420px, 47vw, 570px);
   border: 1px solid rgba(196,147,58,.44);
   box-shadow:
     0 0 0 1px rgba(196,147,58,.1),
@@ -594,10 +585,11 @@ a:hover { color: var(--gold-pale); }
 
 /* ── Card image inside circles ───────────────────────────── */
 .jc-img {
-  position: absolute; inset: 0;
-  width: 100%; height: 100%;
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 102%; height: 102%;
+  transform: translate(-50%, -50%);
   object-fit: cover;
-  border-radius: 50%;
   z-index: 0;
   opacity: 0;
   transition: opacity .7s ease;
@@ -1434,12 +1426,11 @@ a:hover { color: var(--gold-pale); }
   .hero-cta { justify-content: center; }
   .hero-journey {
     min-height: 55vh;
-    padding: 2rem 1.5rem 3rem;
   }
-  .journey-sm { width: 110px; height: 110px; }
+  .journey-sm { width: 140px; height: 202px; }
   .journey-lg {
-    width: clamp(180px, 42vw, 240px);
-    height: clamp(180px, 42vw, 240px);
+    width: clamp(210px, 44vw, 280px);
+    height: clamp(305px, 64vw, 410px);
   }
   .jc-sym { font-size: 2rem; }
   .jc-sym-lg { font-size: clamp(2.8rem, 9vw, 4rem); }
