@@ -1,3 +1,4 @@
+import os
 import random
 from flask import Flask, render_template, jsonify, request, abort
 from data.tarot_data import (
@@ -7,19 +8,45 @@ from data.tarot_data import (
 
 app = Flask(__name__)
 
+# Mapping for minor card numbers to filename ranks
+MINOR_RANK_MAP = {
+    'Ace': 'ace',
+    '2': 'two',
+    '3': 'three',
+    '4': 'four',
+    '5': 'five',
+    '6': 'six',
+    '7': 'seven',
+    '8': 'eight',
+    '9': 'nine',
+    '10': 'ten',
+    'Page': 'page',
+    'Knight': 'knight',
+    'Queen': 'queen',
+    'King': 'king'
+}
+
+
+def get_card_image_path(filename):
+    full_path = os.path.join(app.static_folder, filename)
+    return filename if os.path.exists(full_path) else 'images/card-placeholder.svg'
+
 
 def get_card_image_filename(card):
     if card.get('image'):
-        return card['image']
+        path = card['image']
+        if not path.startswith('images/'):
+            path = f'images/{path}'
+        return get_card_image_path(path)
 
     if card['arcana'] == 'minor' and card.get('suit'):
-        rank = str(card['number']).lower().replace(' ', '_')
-        return f"minor/{card['suit'].lower()}/{rank}.jpg"
+        rank = MINOR_RANK_MAP.get(card['number'], str(card['number']).lower().replace(' ', '_'))
+        return get_card_image_path(f"images/minor/{card['suit'].lower()}/{rank}.jpg")
 
     slug = card['name'].lower().replace("'", '').replace(' ', '_')
     if slug.startswith('the_'):
         slug = slug[4:]
-    return f"major/{slug}.jpg"
+    return get_card_image_path(f"images/major/{slug}.jpg")
 
 app.jinja_env.globals['get_card_image_filename'] = get_card_image_filename
 
@@ -37,7 +64,28 @@ def draw_cards(n):
 
 @app.route('/')
 def index():
-    return render_template('index.html', major_arcana=MAJOR_ARCANA)
+    arcana = []
+    for card in MAJOR_ARCANA:
+        c = dict(card)
+        raw_img = card.get('image', '')
+        if raw_img:
+            img_path = raw_img if raw_img.startswith('images/') else f'images/{raw_img}'
+        else:
+            slug = card['name'].lower().replace("'", '').replace(' ', '_')
+            if slug.startswith('the_'):
+                slug = slug[4:]
+            img_path = f'images/major/{slug}.jpg'
+        c['image_url'] = f'/static/{img_path}' if os.path.exists(os.path.join(app.static_folder, img_path)) else ''
+
+        raw_vid = card.get('video', '')
+        if raw_vid:
+            vid_path = f'media/{raw_vid}'
+            c['video_url'] = f'/static/{vid_path}' if os.path.exists(os.path.join(app.static_folder, vid_path)) else ''
+        else:
+            c['video_url'] = ''
+
+        arcana.append(c)
+    return render_template('index.html', major_arcana=arcana)
 
 
 @app.route('/cards')

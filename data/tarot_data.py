@@ -164,6 +164,7 @@ MAJOR_ARCANA = [
         'description': 'An aged, cloaked figure stands alone on a snowcapped peak holding a staff and a six-pointed lantern, its light a beacon in the surrounding darkness.',
         'card_color': '#1a1a2e',
         'accent_color': '#9090d4',
+        'image': 'major/hermit.jpg',
     },
     {
         'id': 10,
@@ -180,6 +181,7 @@ MAJOR_ARCANA = [
         'description': 'A great wheel inscribed with mystical symbols revolves in the clouds, attended by a sphinx at its summit, a serpent descending one side, and Anubis ascending the other, four winged figures reading in the corners.',
         'card_color': '#2a0040',
         'accent_color': '#9933cc',
+        'image': 'major/wheel_of_fortune.jpg',
         'video': 'wheel_of_fortune.mp4',
     },
     {
@@ -213,6 +215,7 @@ MAJOR_ARCANA = [
         'description': 'A young man hangs peacefully upside-down by one ankle from a living T-shaped tree, his free leg crossed behind the other, a golden nimbus surrounding his calm, illuminated face.',
         'card_color': '#003333',
         'accent_color': '#33cccc',
+        'image': 'major/hanged_man.jpg',
     },
     {
         'id': 13,
@@ -313,6 +316,7 @@ MAJOR_ARCANA = [
         'description': 'A full moon with a crescent face gazes down upon a howling wolf and dog flanking a crayfish emerging from a pool, a winding path leading between two ominous towers into murky distance.',
         'card_color': '#0d0d2e',
         'accent_color': '#6666cc',
+        'image': 'major/moon.jpg',
     },
     {
         'id': 19,
@@ -329,6 +333,7 @@ MAJOR_ARCANA = [
         'description': 'A radiant sun with a human face shines over a garden wall where four sunflowers bloom, as a joyful naked child waves a red banner from the back of a white horse.',
         'card_color': '#4a2e00',
         'accent_color': '#ffcc00',
+        'image': 'major/sun.jpg',
     },
     {
         'id': 20,
@@ -361,6 +366,7 @@ MAJOR_ARCANA = [
         'description': 'A dancing woman wrapped only in a purple sash holds two wands within a great laurel wreath, as a bull, lion, eagle, and angel peer from the four corners of the card.',
         'card_color': '#002233',
         'accent_color': '#0099aa',
+        'image': 'major/world.jpg',
     },
 ]
 

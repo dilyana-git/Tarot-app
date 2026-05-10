@@ -145,6 +145,10 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
   const lblPrev   = document.getElementById('jLblPrev');
   const lblCurr   = document.getElementById('jLblCurrent');
   const lblNext   = document.getElementById('jLblNext');
+  const imgPrev   = document.getElementById('jImgPrev');
+  const imgCurr   = document.getElementById('jImgCurrent');
+  const imgNext   = document.getElementById('jImgNext');
+  const videoEl   = document.getElementById('jVideo');
   const linkCurr  = document.getElementById('jLinkCurrent');
   const nameEl    = document.getElementById('hciName');
   const kwEl      = document.getElementById('hciKw');
@@ -152,17 +156,35 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
   const journey   = document.getElementById('heroJourney');
 
   let current  = 0;
-  let autoTimer = null, barTimer = null;
-  const INTERVAL = 6000, BAR_STEP = 50;
+  let autoTimer = null, barTimer = null, fadeTimer = null;
+  const INTERVAL = 5000, BAR_STEP = 50;
   let barValue = 0;
 
   function idx(i) { return ((i % N) + N) % N; }
 
-  function applyCard(circEl, symEl, lblEl, card) {
+  function setImg(imgEl, url) {
+    if (!imgEl) return;
+    imgEl.classList.remove('loaded');
+    if (!url) { imgEl.src = ''; return; }
+    imgEl.src = url;
+    if (imgEl.complete && imgEl.naturalWidth > 0) {
+      // Double-rAF ensures the browser renders opacity:0 before transitioning back in
+      requestAnimationFrame(() => requestAnimationFrame(() => imgEl.classList.add('loaded')));
+    } else {
+      imgEl.onload = () => imgEl.classList.add('loaded');
+    }
+  }
+
+  function applyCard(circEl, symEl, lblEl, imgEl, card) {
     if (!card) return;
     if (circEl) circEl.style.setProperty('--card-color', card.card_color);
-    if (symEl)  symEl.textContent = card.symbol;
-    if (lblEl)  lblEl.textContent = card.name;
+    if (symEl) {
+      symEl.classList.add('fading');
+      const sym = card.symbol;
+      setTimeout(() => { symEl.textContent = sym; symEl.classList.remove('fading'); }, 220);
+    }
+    if (lblEl) lblEl.textContent = card.name;
+    setImg(imgEl, card.image_url || '');
   }
 
   function goTo(i) {
@@ -170,16 +192,41 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
     const p = idx(current - 1);
     const n = idx(current + 1);
 
-    applyCard(circPrev, symPrev, lblPrev, ARCANA[p]);
-    applyCard(circCurr, symCurr, lblCurr, ARCANA[current]);
-    applyCard(circNext, symNext, lblNext, ARCANA[n]);
+    applyCard(circPrev, symPrev, lblPrev, imgPrev, ARCANA[p]);
+    applyCard(circCurr, symCurr, lblCurr, imgCurr, ARCANA[current]);
+    applyCard(circNext, symNext, lblNext, imgNext, ARCANA[n]);
+
+    /* Video for current card */
+    if (videoEl) {
+      const vid = ARCANA[current].video_url || '';
+      if (vid) {
+        if (videoEl.dataset.activeSrc !== vid) {
+          videoEl.dataset.activeSrc = vid;
+          videoEl.src = vid;
+          videoEl.load();
+        }
+        videoEl.classList.add('active');
+        videoEl.play().catch(() => {});
+      } else {
+        videoEl.classList.remove('active');
+        videoEl.dataset.activeSrc = '';
+        videoEl.src = '';
+      }
+    }
 
     /* Central circle links to its card detail page */
     if (linkCurr) linkCurr.href = '/card/' + ARCANA[current].id;
 
-    /* Left panel live info */
-    if (nameEl) nameEl.textContent = ARCANA[current].name;
-    if (kwEl)   kwEl.textContent   = ARCANA[current].keywords_upright.slice(0, 3).join(' · ');
+    /* Left panel live info — fade in sync with the symbol */
+    const _name = ARCANA[current].name;
+    const _kw   = ARCANA[current].keywords_upright.slice(0, 3).join(' · ');
+    if (nameEl) nameEl.style.opacity = '0';
+    if (kwEl)   kwEl.style.opacity   = '0';
+    clearTimeout(fadeTimer);
+    fadeTimer = setTimeout(() => {
+      if (nameEl) { nameEl.textContent = _name; nameEl.style.opacity = '1'; }
+      if (kwEl)   { kwEl.textContent   = _kw;   kwEl.style.opacity   = '1'; }
+    }, 220);
 
     /* Reset progress bar */
     barValue = 0;
