@@ -51,6 +51,9 @@
           <div class="card-large-suit">Major Arcana</div>
           {% endif %}
         </div>
+        <div class="card-detail-art">
+          <img class="card-detail-img" src="{{ url_for('static', filename='images/' ~ get_card_image_filename(card)) }}" alt="{{ card.name }}" onerror="this.parentElement.style.display='none'">
+        </div>
         <div class="card-large-corner bottom-right">
           <span class="cl-symbol-small">{{ card.symbol }}</span>
           <span class="cl-number">{{ card.number }}</span>

@@ -17,6 +17,7 @@ MAJOR_ARCANA = [
         'description': 'A young wanderer stands at the edge of a cliff, face raised to the sun, a small dog nipping at his heels, about to step into open air with carefree abandon.',
         'card_color': '#1a0533',
         'accent_color': '#7b4fa6',
+        'image': 'major/fool.jpg',
     },
     {
         'id': 1,
@@ -65,6 +66,7 @@ MAJOR_ARCANA = [
         'description': 'A crowned woman reclines on a throne of cushions amid a lush forest, wearing a robe patterned with pomegranates, a field of golden wheat ripening at her feet.',
         'card_color': '#2d4a00',
         'accent_color': '#7abf2e',
+        'image': 'major/empress.jpg',
     },
     {
         'id': 4,
@@ -129,6 +131,7 @@ MAJOR_ARCANA = [
         'description': 'An armored warrior stands in a star-canopied chariot drawn by two sphinxes — one black, one white — holding no reins, commanding them by will alone through a city gate.',
         'card_color': '#0a0d3b',
         'accent_color': '#4455cc',
+        'image': 'major/chariot.jpg',
     },
     {
         'id': 8,
@@ -177,6 +180,7 @@ MAJOR_ARCANA = [
         'description': 'A great wheel inscribed with mystical symbols revolves in the clouds, attended by a sphinx at its summit, a serpent descending one side, and Anubis ascending the other, four winged figures reading in the corners.',
         'card_color': '#2a0040',
         'accent_color': '#9933cc',
+        'video': 'wheel_of_fortune.mp4',
     },
     {
         'id': 11,
@@ -257,6 +261,8 @@ MAJOR_ARCANA = [
         'description': 'A goat-headed Baphomet figure squats on a black pedestal to which two naked human figures are chained by the neck, though the chains hang loosely enough for escape.',
         'card_color': '#1f0a00',
         'accent_color': '#cc5500',
+        'image': 'major/devil.jpg',
+        'video': 'devil.mp4',
     },
     {
         'id': 16,
@@ -273,6 +279,8 @@ MAJOR_ARCANA = [
         'description': 'A bolt of lightning tears the crown from a grey tower as two figures plunge headlong from the flaming battlements into darkness below, the sky lit by 22 falling flames.',
         'card_color': '#2a0a00',
         'accent_color': '#ff6600',
+        'image': 'major/tower.jpg',
+        'video': 'tower.mp4',
     },
     {
         'id': 17,

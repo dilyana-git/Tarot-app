@@ -8,6 +8,22 @@ from data.tarot_data import (
 app = Flask(__name__)
 
 
+def get_card_image_filename(card):
+    if card.get('image'):
+        return card['image']
+
+    if card['arcana'] == 'minor' and card.get('suit'):
+        rank = str(card['number']).lower().replace(' ', '_')
+        return f"minor/{card['suit'].lower()}/{rank}.jpg"
+
+    slug = card['name'].lower().replace("'", '').replace(' ', '_')
+    if slug.startswith('the_'):
+        slug = slug[4:]
+    return f"major/{slug}.jpg"
+
+app.jinja_env.globals['get_card_image_filename'] = get_card_image_filename
+
+
 def draw_cards(n):
     drawn = random.sample(ALL_CARDS, n)
     for card in drawn:

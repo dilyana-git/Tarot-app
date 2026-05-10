@@ -141,6 +141,9 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
   const barEl     = document.getElementById('stageProgressBar');
   const prevBtn   = document.getElementById('stagePrev');
   const nextBtn   = document.getElementById('stageNext');
+  const heroVideo = document.getElementById('heroVideo');
+  const heroVideoSource = heroVideo ? heroVideo.querySelector('source') : null;
+  const heroVideoWrap = document.querySelector('.hero-video-wrap');
 
   if (!cards.length) return;
 
@@ -151,6 +154,26 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
   const BAR_STEP  = 50;     /* progress bar tick interval ms */
   let barValue    = 0;
 
+  function updateHeroVideo(cardEl) {
+    if (!heroVideo || !heroVideoSource || !heroVideoWrap) return;
+
+    const videoFile = cardEl.dataset.video;
+    const posterFile = cardEl.dataset.poster;
+    const base = heroVideo.dataset.mediaBase || '';
+
+    if (videoFile) {
+      heroVideoWrap.style.display = 'grid';
+      heroVideo.style.opacity = '0';
+      heroVideoSource.src = base + videoFile;
+      heroVideo.poster = posterFile || '';
+      heroVideo.load();
+      heroVideo.play().catch(() => {});
+      setTimeout(() => { heroVideo.style.opacity = '1'; }, 180);
+    } else {
+      heroVideoWrap.style.display = 'none';
+    }
+  }
+
   function goTo(index) {
     cards[current].classList.remove('active');
     current = ((index % cards.length) + cards.length) % cards.length;
@@ -159,6 +182,9 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
     const c = cards[current];
     if (nameEl) nameEl.textContent = c.dataset.name   || '';
     if (kwEl)   kwEl.textContent   = c.dataset.keywords || '';
+    const descEl = document.getElementById('hciDesc');
+    if (descEl) descEl.textContent = c.dataset.description || '';
+    updateHeroVideo(c);
 
     barValue = 0;
     if (barEl) barEl.style.width = '0%';

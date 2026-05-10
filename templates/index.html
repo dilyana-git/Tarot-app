@@ -3,10 +3,10 @@
 {% block title %}Arcana — The Tarot Oracle{% endblock %}
 
 {% block content %}
-<!-- ── Card Theater Hero ───────────────────────────────── -->
+<!-- ── Hero: text left, video right ─────────────────────── -->
 <section class="hero">
 
-  <!-- Left panel: title + dynamic card info + CTAs -->
+  <!-- Left panel: title + card info + CTAs -->
   <div class="hero-left">
     <div class="hero-crown">
       <p class="hero-eyebrow">The Ancient Art of Tarot</p>
@@ -17,8 +17,9 @@
     <div class="hero-divider-line" aria-hidden="true"></div>
 
     <div class="hero-card-label">
-      <p class="hero-info-name" id="hciName">The Fool</p>
-      <p class="hero-info-kw"   id="hciKw">Beginnings · Innocence · Spontaneity</p>
+      <p class="hero-info-kw"   id="hciKw">Bondage · Temptation · Shadow</p>
+      <p class="hero-info-name" id="hciName">The Devil</p>
+      <p class="hero-info-desc" id="hciDesc">A goat-headed Baphomet figure squats on a black pedestal while two chained figures flinch under the weight of their own attachments.</p>
       <div class="stage-progress-wrap">
         <div class="stage-progress-bar" id="stageProgressBar"></div>
       </div>
@@ -30,79 +31,43 @@
     </div>
   </div>
 
-  <!-- Right panel: full-height card theater -->
+  <!-- Right panel: portrait video frame -->
   <div class="hero-stage" id="heroStage">
+    <div class="hero-video-wrap">
+      <video id="heroVideo" class="hero-video" autoplay muted loop playsinline
+             preload="metadata"
+             poster="{{ url_for('static', filename='images/major/devil.jpg') }}"
+             data-media-base="{{ url_for('static', filename='media') }}/">
+        <source src="{{ url_for('static', filename='media/devil.mp4') }}" type="video/mp4">
+      </video>
+    </div>
 
-    {% for card in major_arcana %}
-    <a href="{{ url_for('card_detail', card_id=card.id) }}"
-       class="showcase-card{% if loop.first %} active{% endif %}"
-       data-index="{{ loop.index0 }}"
-       data-name="{{ card.name }}"
-       data-keywords="{{ card.keywords_upright[:3]|join(' · ') }}"
-       style="--card-color: {{ card.card_color }}; --accent-color: {{ card.accent_color }}">
+    <button class="stage-btn stage-prev" id="stagePrev" aria-label="Previous card">‹</button>
+    <button class="stage-btn stage-next" id="stageNext" aria-label="Next card">›</button>
 
-      <div class="sc-wrap">
-        <!-- Art Nouveau corner ornaments ── 4 corners -->
-        <svg class="sc-corner sc-tl" viewBox="0 0 30 30" fill="none" aria-hidden="true">
-          <path d="M2 2 C2 17 13 28 28 28" stroke="currentColor" stroke-width="0.9"/>
-          <path d="M5.5 2 C5.5 15 15 25 28 25" stroke="currentColor" stroke-width="0.42" opacity="0.5"/>
-          <circle cx="2.5" cy="2.5" r="1.9" fill="currentColor" opacity="0.65"/>
-          <circle cx="2.5" cy="7.5" r="0.85" fill="currentColor" opacity="0.32"/>
-          <circle cx="7.5" cy="2.5" r="0.85" fill="currentColor" opacity="0.32"/>
-        </svg>
-        <svg class="sc-corner sc-tr" viewBox="0 0 30 30" fill="none" aria-hidden="true">
-          <path d="M28 2 C28 17 17 28 2 28" stroke="currentColor" stroke-width="0.9"/>
-          <path d="M24.5 2 C24.5 15 15 25 2 25" stroke="currentColor" stroke-width="0.42" opacity="0.5"/>
-          <circle cx="27.5" cy="2.5" r="1.9" fill="currentColor" opacity="0.65"/>
-          <circle cx="27.5" cy="7.5" r="0.85" fill="currentColor" opacity="0.32"/>
-          <circle cx="22.5" cy="2.5" r="0.85" fill="currentColor" opacity="0.32"/>
-        </svg>
-        <svg class="sc-corner sc-bl" viewBox="0 0 30 30" fill="none" aria-hidden="true">
-          <path d="M2 28 C2 13 13 2 28 2" stroke="currentColor" stroke-width="0.9"/>
-          <path d="M5.5 28 C5.5 15 15 5 28 5" stroke="currentColor" stroke-width="0.42" opacity="0.5"/>
-          <circle cx="2.5" cy="27.5" r="1.9" fill="currentColor" opacity="0.65"/>
-          <circle cx="2.5" cy="22.5" r="0.85" fill="currentColor" opacity="0.32"/>
-          <circle cx="7.5" cy="27.5" r="0.85" fill="currentColor" opacity="0.32"/>
-        </svg>
-        <svg class="sc-corner sc-br" viewBox="0 0 30 30" fill="none" aria-hidden="true">
-          <path d="M28 28 C28 13 17 2 2 2" stroke="currentColor" stroke-width="0.9"/>
-          <path d="M24.5 28 C24.5 15 15 5 2 5" stroke="currentColor" stroke-width="0.42" opacity="0.5"/>
-          <circle cx="27.5" cy="27.5" r="1.9" fill="currentColor" opacity="0.65"/>
-          <circle cx="27.5" cy="22.5" r="0.85" fill="currentColor" opacity="0.32"/>
-          <circle cx="22.5" cy="27.5" r="0.85" fill="currentColor" opacity="0.32"/>
-        </svg>
-
-        <!-- Number ── top left -->
-        <div class="sc-num-top">
-          <span class="sc-number">{{ card.number }}</span>
-          <span class="sc-sym-sm">{{ card.symbol }}</span>
-        </div>
-
-        <!-- Central medallion: halo + symbol -->
-        <div class="sc-center">
-          <div class="sc-halo"></div>
-          <div class="sc-sym">{{ card.symbol }}</div>
-        </div>
-
-        <!-- Name block ── bottom -->
-        <div class="sc-name-block">
-          <div class="sc-name-rule"></div>
-          <div class="sc-name">{{ card.name }}</div>
-          <div class="sc-arcana-lbl">Major Arcana</div>
-        </div>
-
-        <!-- Number ── bottom right (inverted) -->
-        <div class="sc-num-bottom">
-          <span class="sc-sym-sm">{{ card.symbol }}</span>
-          <span class="sc-number">{{ card.number }}</span>
-        </div>
-      </div>
-    </a>
-    {% endfor %}
-
-    <!-- Stage navigation -->
-    <button class="stage-btn stage-prev" id="stagePrev" aria-label="Previous card">❮</button>
-    <button class="stage-btn stage-next" id="stageNext" aria-label="Next card">❯</button>
+    <div class="hero-data" hidden>
+      <div class="showcase-card active"
+           data-index="0"
+           data-name="The Devil"
+           data-keywords="Bondage · Temptation · Shadow"
+           data-description="A goat-headed Baphomet figure squats on a black pedestal while two chained figures are bound by habit and fear."
+           data-video="devil.mp4"
+           data-poster="{{ url_for('static', filename='images/major/devil.jpg') }}"></div>
+      <div class="showcase-card"
+           data-index="1"
+           data-name="The Tower"
+           data-keywords="Upheaval · Chaos · Revelation"
+           data-description="A lightning-struck tower collapses as two figures fall into the void, clearing the way for sudden truth and renewal."
+           data-video="tower.mp4"
+           data-poster="{{ url_for('static', filename='images/major/tower.jpg') }}"></div>
+      <div class="showcase-card"
+           data-index="2"
+           data-name="Wheel of Fortune"
+           data-keywords="Fate · Cycles · Karma"
+           data-description="A great wheel turns beneath a sphinx and a serpent, reminding you that change is inevitable and fortune always shifts."
+           data-video="wheel_of_fortune.mp4"
+           data-poster="{{ url_for('static', filename='images/major/wheel_of_fortune.jpg') }}"></div>
+    </div>
   </div>
 
   <canvas class="motes-canvas" aria-hidden="true"></canvas>
