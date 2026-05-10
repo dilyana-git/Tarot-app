@@ -230,17 +230,18 @@ a:hover { color: var(--gold-pale); }
 }
 
 /* ============================================================
-   HOME — HERO: SPLIT — TEXT LEFT, VIDEO RIGHT
+   HOME — HERO: HORIZONTAL SPLIT THEATER
    ============================================================ */
 .hero {
   position: relative;
-  height: 55vh;
+  min-height: 100vh;
   display: grid;
-  grid-template-columns: minmax(300px, 40%) 1fr;
+  grid-template-columns: minmax(280px, 38%) 1fr;
   align-items: stretch;
   overflow: hidden;
+  padding: 0;
 }
-
+/* Motes canvas floats over the full hero */
 .motes-canvas {
   position: absolute;
   inset: 0;
@@ -250,106 +251,102 @@ a:hover { color: var(--gold-pale); }
   z-index: 3;
 }
 
-/* ── Left panel ──────────────────────────────────────────── */
+/* ── Left panel ─────────────────────────────────────────── */
 .hero-left {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 1.5rem;
-  padding: 2rem 3.5rem 2rem 5vw;
+  gap: 2.2rem;
+  padding: 8rem 3rem 4rem 5vw;
   z-index: 4;
   position: relative;
+  /* Subtle right border */
   border-right: 1px solid var(--rule);
 }
+/* Faint warm wash behind the left panel */
 .hero-left::before {
   content: '';
-  position: absolute; inset: 0;
-  background: linear-gradient(to right, rgba(6,12,10,.5), transparent);
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to right, rgba(6,12,10,.4), transparent);
   pointer-events: none;
 }
 
+.hero-crown { position: relative; }
+
 .hero-eyebrow {
   font-family: 'Cormorant SC', serif;
-  font-size: .6rem;
-  letter-spacing: .46em;
+  font-size: .62rem;
+  letter-spacing: .44em;
   color: var(--gold-dim);
   text-transform: uppercase;
-  margin-bottom: 1.1rem;
+  margin-bottom: 1.2rem;
   display: flex;
   align-items: center;
-  gap: .9rem;
+  gap: .85rem;
 }
 .hero-eyebrow::before {
   content: '';
   display: block;
-  width: 22px;
+  width: 20px;
   height: 1px;
   background: var(--gold-dim);
   flex-shrink: 0;
 }
-
 .hero-title {
   font-family: 'Almendra Display', 'Cormorant Garamond', serif;
-  font-size: clamp(2.5rem, 5vw, 4.5rem);
+  font-size: clamp(3.2rem, 7vw, 6.5rem);
   font-weight: 400;
   color: var(--gold-pale);
   line-height: .88;
-  letter-spacing: .06em;
+  letter-spacing: .05em;
   margin-bottom: .8rem;
   text-shadow:
-    0 0 60px rgba(196,147,58,.18),
-    0 0 120px rgba(196,147,58,.07);
+    0 0 60px rgba(196,147,58,.16),
+    0 0 120px rgba(196,147,58,.06);
 }
-
 .hero-subtitle {
   font-family: 'IM Fell English', serif;
-  font-size: 0.85rem;
-  font-style: italic;
-  color: var(--text-dim);
-  line-height: 1.72;
-  max-width: 340px;
-}
-
-.hero-divider-line {
-  width: 55%;
-  height: 1px;
-  background: linear-gradient(to right, var(--gold-dim), transparent);
-  opacity: .45;
-}
-
-.hero-card-label { display: flex; flex-direction: column; gap: .55rem; }
-
-.hero-info-kw {
-  font-family: 'Cormorant SC', serif;
-  font-size: .58rem;
-  letter-spacing: .34em;
-  color: var(--gold-dim);
-  text-transform: uppercase;
-  opacity: .85;
-}
-.hero-info-name {
-  font-family: 'Almendra Display', 'Cormorant Garamond', serif;
-  font-size: clamp(1.3rem, 2.8vw, 2rem);
-  color: var(--gold-pale);
-  letter-spacing: .04em;
-  line-height: 1;
-}
-.hero-info-desc {
-  font-family: 'IM Fell English', serif;
-  font-size: 0.8rem;
+  font-size: .95rem;
   font-style: italic;
   color: var(--text-dim);
   line-height: 1.7;
-  max-width: 32rem;
+  max-width: 340px;
 }
 
+/* Horizontal rule divider */
+.hero-divider-line {
+  width: 50%;
+  height: 1px;
+  background: linear-gradient(to right, var(--gold-dim), transparent);
+  opacity: .5;
+}
+
+/* Dynamic card label */
+.hero-card-label { display: flex; flex-direction: column; gap: .5rem; }
+.hero-info-name {
+  font-family: 'Almendra Display', 'Cormorant Garamond', serif;
+  font-size: clamp(1.3rem, 2.8vw, 1.9rem);
+  color: var(--gold-pale);
+  letter-spacing: .05em;
+  line-height: 1;
+}
+.hero-info-kw {
+  font-family: 'IM Fell English', serif;
+  font-size: .9rem;
+  font-style: italic;
+  color: var(--gold-dim);
+  letter-spacing: .03em;
+}
+
+/* Progress bar */
 .stage-progress-wrap {
-  width: min(200px, 100%);
+  width: 100%;
   height: 1px;
   background: rgba(196,147,58,.1);
   border-radius: 1px;
   overflow: hidden;
-  margin-top: .2rem;
+  margin-top: .4rem;
 }
 .stage-progress-bar {
   height: 100%;
@@ -358,117 +355,262 @@ a:hover { color: var(--gold-pale); }
   transition: width 50ms linear;
 }
 
-.hero-cta { display: flex; gap: .9rem; flex-wrap: wrap; }
+.hero-cta { display: flex; gap: .85rem; flex-wrap: wrap; }
 
-/* ── Right panel: video stage ────────────────────────────── */
-.hero-stage {
+/* ── Right panel: three-circle journey ──────────────────────── */
+.hero-journey {
   position: relative;
+  z-index: 2;
   display: flex;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
+  min-height: 100vh;
+  padding: 60px 3vw 3rem;
   overflow: hidden;
+  gap: 0;
 }
 /* Warm atmospheric glow */
-.hero-stage::before {
+.hero-journey::before {
   content: '';
   position: absolute; inset: 0;
-  background: radial-gradient(ellipse 80% 70% at 50% 50%,
-    rgba(196,147,58,.07) 0%,
-    rgba(130,75,10,.03) 55%,
-    transparent 75%);
-  pointer-events: none;
-  z-index: 0;
+  background: radial-gradient(ellipse 85% 70% at 50% 50%,
+    rgba(196,147,58,.07) 0%, transparent 68%);
+  pointer-events: none; z-index: 0;
 }
-/* Edge vignette */
-.hero-stage::after {
+/* Dark vignette at edges */
+.hero-journey::after {
   content: '';
   position: absolute; inset: 0;
-  background: radial-gradient(ellipse 110% 100% at 50% 50%,
-    transparent 42%, rgba(0,0,0,.52) 100%);
-  pointer-events: none;
-  z-index: 0;
+  background: radial-gradient(ellipse 120% 100% at 50% 50%,
+    transparent 38%, rgba(0,0,0,.5) 100%);
+  pointer-events: none; z-index: 0;
 }
 
-/* Portrait frame — tarot-card proportions */
-.hero-video-wrap {
-  position: relative;
-  height: min(50vh, 480px);
-  width: calc(min(50vh, 480px) * 2 / 3);
-  border-radius: 7px;
-  overflow: hidden;
-  border: 1px solid rgba(196,147,58,.32);
-  box-shadow:
-    0 0 0 1px rgba(196,147,58,.06),
-    0 40px 100px rgba(0,0,0,.85),
-    0  0   80px rgba(196,147,58,.1),
-    inset 0 1px 0 rgba(196,147,58,.12);
-  z-index: 1;
-  display: block;
-}
-/* Art Nouveau double inner frame */
-.hero-video-wrap::before {
-  content: '';
-  position: absolute; inset: 9px;
-  border: 1px solid rgba(196,147,58,.16);
-  border-radius: 3px;
-  pointer-events: none;
-  z-index: 2;
-}
-.hero-video-wrap::after {
-  content: '';
-  position: absolute; inset: 18px;
-  border: 1px solid rgba(196,147,58,.07);
-  border-radius: 1px;
-  pointer-events: none;
-  z-index: 2;
-}
-
-.hero-video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  background: var(--bg);
-  transition: opacity .45s ease;
-}
-
-/* Stage navigation */
-.stage-btn {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 6;
-  width: 40px;
-  height: 40px;
-  background: rgba(6,12,10,.62);
-  border: 1px solid rgba(196,147,58,.2);
-  color: rgba(196,147,58,.5);
-  border-radius: 50%;
-  cursor: pointer;
-  font-size: .95rem;
+/* Journey node: circle + label stacked */
+.journey-node {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  transition: all var(--transition);
-  backdrop-filter: blur(12px);
-  line-height: 1;
-}
-.stage-prev { left: 1.25rem; }
-.stage-next { right: 1.25rem; }
-.stage-btn:hover {
-  border-color: var(--gold);
-  color: var(--gold);
-  background: rgba(196,147,58,.1);
-  box-shadow: 0 0 18px rgba(196,147,58,.2);
+  gap: 1.2rem;
+  position: relative;
+  z-index: 2;
+  transition: opacity .5s ease;
 }
 
-/* Mobile */
-@media (max-width: 768px) {
-  .hero { grid-template-columns: 1fr; height: auto; }
-  .hero-left { padding: 7rem 2rem 2rem; border-right: none; border-bottom: 1px solid var(--rule); }
-  .hero-stage { height: 80vw; }
-  .hero-video-wrap { height: min(62vw, 440px); width: calc(min(62vw, 440px) * 2 / 3); }
+/* Dashed connector line between circles */
+.journey-connector {
+  flex: 1;
+  max-width: 88px;
+  min-width: 28px;
+  z-index: 1;
+  position: relative;
 }
+.journey-connector svg { width: 100%; height: 20px; display: block; }
+
+/* ── Base circle ─────────────────────────────────────────── */
+.journey-circle {
+  border-radius: 50%;
+  display: block;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  text-decoration: none;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 36 36'%3E%3Ccircle cx='18' cy='18' r='8' fill='none' stroke='rgba(196%2C147%2C58%2C0.09)' stroke-width='0.6'/%3E%3Ccircle cx='18' cy='18' r='3' fill='none' stroke='rgba(196%2C147%2C58%2C0.07)' stroke-width='0.5'/%3E%3Cpath d='M18 10 Q20 14 18 18 Q16 14 18 10Z' fill='rgba(196%2C147%2C58%2C0.06)'/%3E%3Cpath d='M18 26 Q20 22 18 18 Q16 22 18 26Z' fill='rgba(196%2C147%2C58%2C0.06)'/%3E%3Cpath d='M10 18 Q14 20 18 18 Q14 16 10 18Z' fill='rgba(196%2C147%2C58%2C0.06)'/%3E%3Cpath d='M26 18 Q22 20 18 18 Q22 16 26 18Z' fill='rgba(196%2C147%2C58%2C0.06)'/%3E%3Ccircle cx='18' cy='18' r='1.2' fill='rgba(196%2C147%2C58%2C0.1)'/%3E%3C/svg%3E"),
+    radial-gradient(ellipse at center,
+      color-mix(in srgb, var(--card-color, #162420) 80%, #060c0a) 0%,
+      color-mix(in srgb, var(--card-color, #162420) 22%, #060c0a) 65%,
+      var(--bg) 100%);
+}
+
+/* ── Small side circles (static "images") ────────────────── */
+.journey-sm {
+  width: 148px; height: 148px;
+  border: 1px solid rgba(196,147,58,.24);
+  box-shadow: 0 0 0 1px rgba(196,147,58,.05), 0 14px 44px rgba(0,0,0,.68);
+  transition: transform .4s ease, box-shadow .4s ease,
+              border-color .4s ease, opacity .5s ease;
+}
+.journey-sm:hover {
+  transform: scale(1.07);
+  border-color: rgba(196,147,58,.5);
+  box-shadow: 0 0 0 1px rgba(196,147,58,.12), 0 20px 54px rgba(0,0,0,.78);
+}
+/* Inner border ring */
+.journey-sm::before {
+  content: '';
+  position: absolute; inset: 8px;
+  border-radius: 50%;
+  border: 1px solid rgba(196,147,58,.13);
+  pointer-events: none; z-index: 2;
+}
+
+/* ── Large central circle ("video") ─────────────────────── */
+.journey-lg {
+  width: clamp(240px, 28vw, 310px);
+  height: clamp(240px, 28vw, 310px);
+  border: 1px solid rgba(196,147,58,.44);
+  box-shadow:
+    0 0 0 1px rgba(196,147,58,.1),
+    0 0 70px rgba(196,147,58,.15),
+    0 28px 80px rgba(0,0,0,.82);
+  transition: opacity .5s ease;
+}
+/* Double inner rings */
+.journey-lg::before {
+  content: '';
+  position: absolute; inset: 10px;
+  border-radius: 50%;
+  border: 1px solid rgba(196,147,58,.22);
+  pointer-events: none; z-index: 2;
+}
+.journey-lg::after {
+  content: '';
+  position: absolute; inset: 22px;
+  border-radius: 50%;
+  border: 1px solid rgba(196,147,58,.09);
+  pointer-events: none; z-index: 2;
+}
+
+/* ── Content wrapper inside small circles ────────────────── */
+.jc-wrap {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: .35rem;
+  z-index: 3;
+}
+
+/* ── Symbols ─────────────────────────────────────────────── */
+.jc-sym {
+  font-size: 2.6rem;
+  color: var(--gold);
+  opacity: .72;
+  line-height: 1;
+  z-index: 3;
+  transition: opacity .5s ease;
+}
+/* Large animated symbol for the central circle */
+.jc-sym-lg {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: clamp(3.8rem, 7vw, 5.5rem);
+  opacity: .92;
+  z-index: 3;
+  text-shadow:
+    0 0 22px rgba(196,147,58,.65),
+    0 0 46px rgba(196,147,58,.28),
+    0 0 86px rgba(196,147,58,.1);
+  animation: sym-breathe 3.2s ease-in-out infinite;
+}
+@keyframes sym-breathe {
+  0%, 100% {
+    opacity: .88;
+    text-shadow: 0 0 22px rgba(196,147,58,.6), 0 0 46px rgba(196,147,58,.22);
+  }
+  50% {
+    opacity: 1;
+    text-shadow: 0 0 30px rgba(196,147,58,.88), 0 0 62px rgba(196,147,58,.38),
+                 0 0 105px rgba(196,147,58,.14);
+  }
+}
+
+/* ── Halo medallion (central circle) ────────────────────── */
+.jc-halo {
+  position: absolute;
+  width: 56%; height: 56%;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(ellipse,
+    rgba(196,147,58,.2) 0%, rgba(196,147,58,.06) 46%, transparent 72%);
+  pointer-events: none; z-index: 1;
+  animation: halo-pulse 3.5s ease-in-out infinite;
+}
+.jc-halo::before {
+  content: '';
+  position: absolute; inset: -28%;
+  border-radius: 50%;
+  border: 1px solid rgba(196,147,58,.14);
+  animation: ring-spin 9s linear infinite;
+}
+.jc-halo::after {
+  content: '';
+  position: absolute; inset: -52%;
+  border-radius: 50%;
+  border: 1px solid rgba(196,147,58,.06);
+  animation: ring-spin 15s linear infinite reverse;
+}
+@keyframes halo-pulse {
+  0%, 100% { transform: translate(-50%,-50%) scale(1);    opacity: .7; }
+  50%       { transform: translate(-50%,-50%) scale(1.14); opacity: 1;  }
+}
+@keyframes ring-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ── Rotating dashed ring overlay (central circle) ───────── */
+.jc-ring {
+  position: absolute; inset: 14px;
+  border-radius: 50%;
+  border: 1px dashed rgba(196,147,58,.18);
+  pointer-events: none; z-index: 1;
+  animation: slow-rotate 30s linear infinite;
+}
+.jc-ring::before {
+  content: '';
+  position: absolute; inset: 11px;
+  border-radius: 50%;
+  border: 1px dashed rgba(196,147,58,.09);
+  animation: slow-rotate 20s linear infinite reverse;
+}
+@keyframes slow-rotate {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ── Floating particle canvas (central circle only) ──────── */
+.jc-canvas {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  pointer-events: none; z-index: 2;
+}
+
+/* ── Transparent link overlay (central circle) ────────────── */
+.jc-link-overlay {
+  position: absolute; inset: 0;
+  border-radius: 50%;
+  z-index: 4;
+}
+
+/* ── Labels below circles ────────────────────────────────── */
+.journey-lbl {
+  font-family: 'Cormorant SC', serif;
+  font-size: .58rem;
+  letter-spacing: .22em;
+  color: var(--gold-dim);
+  text-transform: uppercase;
+  text-align: center;
+  white-space: nowrap;
+  transition: color .4s ease, opacity .5s ease;
+}
+.journey-lbl-current {
+  font-size: .64rem;
+  color: var(--gold);
+  letter-spacing: .26em;
+}
+
+/* ── Hidden legacy classes ─────────────────────────────────── */
+.hero-content   { display: none; }
+.hero-glow      { display: none; }
+.hero-info      { display: none; }
+.hero-stage     { display: none; }
+.hero-cards-display { display: none; }
+
+
 
 /* ============================================================
    HOME — FEATURES
@@ -852,22 +994,6 @@ a:hover { color: var(--gold-pale); }
 }
 .card-large-border-glow { display: none; }
 
-/* Card image — fills the card frame when present */
-.card-detail-art {
-  position: absolute;
-  inset: 0;
-  z-index: 3;
-  overflow: hidden;
-  border-radius: var(--radius-md);
-}
-.card-detail-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center top;
-  display: block;
-}
-
 .card-meta-badges {
   display: flex; gap: .5rem;
   justify-content: center; flex-wrap: wrap; margin-top: 1.25rem;
@@ -1243,13 +1369,17 @@ a:hover { color: var(--gold-pale); }
   .hero-subtitle { max-width: 100%; }
   .hero-divider-line { width: 30%; }
   .hero-cta { justify-content: center; }
-  .hero-stage {
-    min-height: 70vh;
+  .hero-journey {
+    min-height: 55vh;
+    padding: 2rem 1.5rem 3rem;
   }
-  .showcase-card {
-    height: clamp(300px, 60vh, 520px);
-    width: calc(clamp(300px, 60vh, 520px) * 2 / 3);
+  .journey-sm { width: 110px; height: 110px; }
+  .journey-lg {
+    width: clamp(180px, 42vw, 240px);
+    height: clamp(180px, 42vw, 240px);
   }
+  .jc-sym { font-size: 2rem; }
+  .jc-sym-lg { font-size: clamp(2.8rem, 9vw, 4rem); }
 }
 @media (max-width: 768px) {
   .navbar { padding: 0 1.5rem; }

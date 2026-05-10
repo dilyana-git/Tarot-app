@@ -130,62 +130,58 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
   });
 });
 
-/* ---- Hero card theater carousel --------------------------- */
-(function initShowcase() {
-  const stage = document.getElementById('heroStage');
-  if (!stage) return;
+/* ---- Major Arcana journey carousel ------------------------ */
+(function initJourney() {
+  if (typeof ARCANA === 'undefined' || !ARCANA.length) return;
 
-  const cards     = Array.from(stage.querySelectorAll('.showcase-card'));
+  const N = ARCANA.length;   /* 22 */
+
+  const circPrev  = document.getElementById('jCirclePrev');
+  const circCurr  = document.getElementById('jCircleCurrent');
+  const circNext  = document.getElementById('jCircleNext');
+  const symPrev   = document.getElementById('jSymPrev');
+  const symCurr   = document.getElementById('jSymCurrent');
+  const symNext   = document.getElementById('jSymNext');
+  const lblPrev   = document.getElementById('jLblPrev');
+  const lblCurr   = document.getElementById('jLblCurrent');
+  const lblNext   = document.getElementById('jLblNext');
+  const linkCurr  = document.getElementById('jLinkCurrent');
   const nameEl    = document.getElementById('hciName');
   const kwEl      = document.getElementById('hciKw');
   const barEl     = document.getElementById('stageProgressBar');
-  const prevBtn   = document.getElementById('stagePrev');
-  const nextBtn   = document.getElementById('stageNext');
-  const heroVideo = document.getElementById('heroVideo');
-  const heroVideoSource = heroVideo ? heroVideo.querySelector('source') : null;
-  const heroVideoWrap = document.querySelector('.hero-video-wrap');
+  const journey   = document.getElementById('heroJourney');
 
-  if (!cards.length) return;
+  let current  = 0;
+  let autoTimer = null, barTimer = null;
+  const INTERVAL = 6000, BAR_STEP = 50;
+  let barValue = 0;
 
-  let current     = 0;
-  let autoTimer   = null;
-  let barTimer    = null;
-  const INTERVAL  = 6000;   /* ms between auto-advances */
-  const BAR_STEP  = 50;     /* progress bar tick interval ms */
-  let barValue    = 0;
+  function idx(i) { return ((i % N) + N) % N; }
 
-  function updateHeroVideo(cardEl) {
-    if (!heroVideo || !heroVideoSource || !heroVideoWrap) return;
-
-    const videoFile = cardEl.dataset.video;
-    const posterFile = cardEl.dataset.poster;
-    const base = heroVideo.dataset.mediaBase || '';
-
-    if (videoFile) {
-      heroVideoWrap.style.display = 'grid';
-      heroVideo.style.opacity = '0';
-      heroVideoSource.src = base + videoFile;
-      heroVideo.poster = posterFile || '';
-      heroVideo.load();
-      heroVideo.play().catch(() => {});
-      setTimeout(() => { heroVideo.style.opacity = '1'; }, 180);
-    } else {
-      heroVideoWrap.style.display = 'none';
-    }
+  function applyCard(circEl, symEl, lblEl, card) {
+    if (!card) return;
+    if (circEl) circEl.style.setProperty('--card-color', card.card_color);
+    if (symEl)  symEl.textContent = card.symbol;
+    if (lblEl)  lblEl.textContent = card.name;
   }
 
-  function goTo(index) {
-    cards[current].classList.remove('active');
-    current = ((index % cards.length) + cards.length) % cards.length;
-    cards[current].classList.add('active');
+  function goTo(i) {
+    current = idx(i);
+    const p = idx(current - 1);
+    const n = idx(current + 1);
 
-    const c = cards[current];
-    if (nameEl) nameEl.textContent = c.dataset.name   || '';
-    if (kwEl)   kwEl.textContent   = c.dataset.keywords || '';
-    const descEl = document.getElementById('hciDesc');
-    if (descEl) descEl.textContent = c.dataset.description || '';
-    updateHeroVideo(c);
+    applyCard(circPrev, symPrev, lblPrev, ARCANA[p]);
+    applyCard(circCurr, symCurr, lblCurr, ARCANA[current]);
+    applyCard(circNext, symNext, lblNext, ARCANA[n]);
 
+    /* Central circle links to its card detail page */
+    if (linkCurr) linkCurr.href = '/card/' + ARCANA[current].id;
+
+    /* Left panel live info */
+    if (nameEl) nameEl.textContent = ARCANA[current].name;
+    if (kwEl)   kwEl.textContent   = ARCANA[current].keywords_upright.slice(0, 3).join(' · ');
+
+    /* Reset progress bar */
     barValue = 0;
     if (barEl) barEl.style.width = '0%';
   }
@@ -206,32 +202,106 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
     autoTimer = setInterval(() => { goTo(current + 1); startBar(); }, INTERVAL);
   }
 
-  function stopAuto() {
-    clearInterval(autoTimer);
-    clearInterval(barTimer);
-  }
+  function stopAuto() { clearInterval(autoTimer); clearInterval(barTimer); }
 
-  /* Initialise */
-  goTo(0);
-  startAuto();
-
-  /* Pause on hover */
-  stage.addEventListener('mouseenter', stopAuto);
-  stage.addEventListener('mouseleave', startAuto);
-
-  /* Navigation */
-  if (prevBtn) prevBtn.addEventListener('click', e => {
+  /* Side circles navigate the journey (click = make that card current) */
+  if (circPrev) circPrev.addEventListener('click', e => {
     e.preventDefault(); goTo(current - 1); startAuto();
   });
-  if (nextBtn) nextBtn.addEventListener('click', e => {
+  if (circNext) circNext.addEventListener('click', e => {
     e.preventDefault(); goTo(current + 1); startAuto();
   });
 
-  /* Keyboard navigation when stage is focused area */
+  /* Hover on the whole journey panel pauses rotation */
+  if (journey) {
+    journey.addEventListener('mouseenter', stopAuto);
+    journey.addEventListener('mouseleave', startAuto);
+  }
+
+  /* Arrow keys */
   document.addEventListener('keydown', e => {
     if (e.key === 'ArrowLeft')  { goTo(current - 1); startAuto(); }
     if (e.key === 'ArrowRight') { goTo(current + 1); startAuto(); }
   });
+
+  goTo(0);
+  startAuto();
+})();
+
+/* ---- Floating particles inside the central journey circle - */
+(function initJourneyParticles() {
+  const canvas = document.getElementById('jCanvas');
+  if (!canvas) return;
+
+  const ctx = canvas.getContext('2d');
+  let particles = [];
+  let W, H, R;
+
+  function resize() {
+    W = canvas.width  = canvas.offsetWidth;
+    H = canvas.height = canvas.offsetHeight;
+    R = Math.min(W, H) / 2 - 4;
+  }
+
+  function resetParticle(p) {
+    /* Start from a random point on the circle's edge */
+    const angle = Math.random() * Math.PI * 2;
+    const r     = R * (0.3 + Math.random() * 0.7);
+    p.x     = W / 2 + r * Math.cos(angle);
+    p.y     = H / 2 + r * Math.sin(angle);
+    p.r     = Math.random() * 1.0 + 0.25;
+    p.vy    = -(Math.random() * 0.22 + 0.06);
+    p.vx    = (Math.random() - 0.5) * 0.1;
+    p.life  = 0;
+    p.maxLife = Math.random() * 280 + 160;
+    p.maxA  = Math.random() * 0.16 + 0.05;
+    p.a     = 0;
+    return p;
+  }
+
+  function makeParticles(n) {
+    particles = Array.from({ length: n }, () => resetParticle({}));
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    /* Clip all drawing to the circle */
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(W / 2, H / 2, R, 0, Math.PI * 2);
+    ctx.clip();
+
+    particles.forEach(p => {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.life++;
+
+      const t = p.life / p.maxLife;
+      if      (t < 0.15) p.a = p.maxA * (t / 0.15);
+      else if (t > 0.80) p.a = p.maxA * ((1 - t) / 0.20);
+      else               p.a = p.maxA;
+
+      /* Recycle particle when expired or drifted out */
+      const dx = p.x - W / 2, dy = p.y - H / 2;
+      if (p.life > p.maxLife || dx * dx + dy * dy > R * R * 1.1) {
+        resetParticle(p);
+      }
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(212,168,80,${p.a})`;
+      ctx.fill();
+    });
+
+    ctx.restore();
+    requestAnimationFrame(draw);
+  }
+
+  window.addEventListener('resize', () => { resize(); });
+  resize();
+  makeParticles(30);
+  draw();
 })();
 
 /* ---- Card tile entrance animation (Intersection Observer) -- */

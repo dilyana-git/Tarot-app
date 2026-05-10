@@ -3,10 +3,10 @@
 {% block title %}Arcana — The Tarot Oracle{% endblock %}
 
 {% block content %}
-<!-- ── Hero: text left, video right ─────────────────────── -->
+<!-- ── Major Arcana Journey Hero ─────────────────────────── -->
 <section class="hero">
 
-  <!-- Left panel: title + card info + CTAs -->
+  <!-- Left panel: title + live card info + CTAs -->
   <div class="hero-left">
     <div class="hero-crown">
       <p class="hero-eyebrow">The Ancient Art of Tarot</p>
@@ -17,9 +17,8 @@
     <div class="hero-divider-line" aria-hidden="true"></div>
 
     <div class="hero-card-label">
-      <p class="hero-info-kw"   id="hciKw">Bondage · Temptation · Shadow</p>
-      <p class="hero-info-name" id="hciName">The Devil</p>
-      <p class="hero-info-desc" id="hciDesc">A goat-headed Baphomet figure squats on a black pedestal while two chained figures flinch under the weight of their own attachments.</p>
+      <p class="hero-info-name" id="hciName">The Fool</p>
+      <p class="hero-info-kw"   id="hciKw">Beginnings · Innocence · Spontaneity</p>
       <div class="stage-progress-wrap">
         <div class="stage-progress-bar" id="stageProgressBar"></div>
       </div>
@@ -31,44 +30,62 @@
     </div>
   </div>
 
-  <!-- Right panel: portrait video frame -->
-  <div class="hero-stage" id="heroStage">
-    <div class="hero-video-wrap">
-      <video id="heroVideo" class="hero-video" autoplay muted loop playsinline
-             preload="metadata"
-             poster="{{ url_for('static', filename='images/major/devil.jpg') }}"
-             data-media-base="{{ url_for('static', filename='media') }}/">
-        <source src="{{ url_for('static', filename='media/devil.mp4') }}" type="video/mp4">
-      </video>
+  <!-- Right panel: three-circle journey display -->
+  <div class="hero-journey" id="heroJourney">
+
+    <!-- Previous card — small static circle -->
+    <div class="journey-node" id="jNodePrev">
+      <div class="journey-circle journey-sm" id="jCirclePrev">
+        <div class="jc-wrap">
+          <div class="jc-sym" id="jSymPrev"></div>
+        </div>
+      </div>
+      <p class="journey-lbl" id="jLblPrev"></p>
     </div>
 
-    <button class="stage-btn stage-prev" id="stagePrev" aria-label="Previous card">‹</button>
-    <button class="stage-btn stage-next" id="stageNext" aria-label="Next card">›</button>
-
-    <div class="hero-data" hidden>
-      <div class="showcase-card active"
-           data-index="0"
-           data-name="The Devil"
-           data-keywords="Bondage · Temptation · Shadow"
-           data-description="A goat-headed Baphomet figure squats on a black pedestal while two chained figures are bound by habit and fear."
-           data-video="devil.mp4"
-           data-poster="{{ url_for('static', filename='images/major/devil.jpg') }}"></div>
-      <div class="showcase-card"
-           data-index="1"
-           data-name="The Tower"
-           data-keywords="Upheaval · Chaos · Revelation"
-           data-description="A lightning-struck tower collapses as two figures fall into the void, clearing the way for sudden truth and renewal."
-           data-video="tower.mp4"
-           data-poster="{{ url_for('static', filename='images/major/tower.jpg') }}"></div>
-      <div class="showcase-card"
-           data-index="2"
-           data-name="Wheel of Fortune"
-           data-keywords="Fate · Cycles · Karma"
-           data-description="A great wheel turns beneath a sphinx and a serpent, reminding you that change is inevitable and fortune always shifts."
-           data-video="wheel_of_fortune.mp4"
-           data-poster="{{ url_for('static', filename='images/major/wheel_of_fortune.jpg') }}"></div>
+    <!-- Left dashed connector -->
+    <div class="journey-connector" aria-hidden="true">
+      <svg viewBox="0 0 100 20" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+        <line x1="4" y1="10" x2="96" y2="10"
+              stroke="rgba(196,147,58,.28)" stroke-dasharray="3.5 8" stroke-width="0.85"/>
+        <circle cx="4"  cy="10" r="2.2" fill="rgba(196,147,58,.38)"/>
+        <circle cx="96" cy="10" r="2.2" fill="rgba(196,147,58,.38)"/>
+      </svg>
     </div>
-  </div>
+
+    <!-- Current card — large animated "video" circle -->
+    <div class="journey-node journey-node-current">
+      <div class="journey-circle journey-lg" id="jCircleCurrent">
+        <div class="jc-ring"></div>
+        <div class="jc-halo"></div>
+        <div class="jc-sym jc-sym-lg" id="jSymCurrent"></div>
+        <canvas class="jc-canvas" id="jCanvas"></canvas>
+        <a class="jc-link-overlay" id="jLinkCurrent" href="#" aria-label="View card detail"></a>
+      </div>
+      <p class="journey-lbl journey-lbl-current" id="jLblCurrent"></p>
+    </div>
+
+    <!-- Right dashed connector -->
+    <div class="journey-connector" aria-hidden="true">
+      <svg viewBox="0 0 100 20" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+        <line x1="4" y1="10" x2="96" y2="10"
+              stroke="rgba(196,147,58,.28)" stroke-dasharray="3.5 8" stroke-width="0.85"/>
+        <circle cx="4"  cy="10" r="2.2" fill="rgba(196,147,58,.38)"/>
+        <circle cx="96" cy="10" r="2.2" fill="rgba(196,147,58,.38)"/>
+      </svg>
+    </div>
+
+    <!-- Next card — small static circle -->
+    <div class="journey-node" id="jNodeNext">
+      <div class="journey-circle journey-sm" id="jCircleNext">
+        <div class="jc-wrap">
+          <div class="jc-sym" id="jSymNext"></div>
+        </div>
+      </div>
+      <p class="journey-lbl" id="jLblNext"></p>
+    </div>
+
+  </div><!-- /.hero-journey -->
 
   <canvas class="motes-canvas" aria-hidden="true"></canvas>
 </section>
@@ -190,4 +207,11 @@
     <a href="{{ url_for('reading') }}" class="btn btn-primary btn-large">Begin Your Reading</a>
   </div>
 </section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+/* Card data injected from Flask — used by the journey carousel in main.js */
+const ARCANA = {{ major_arcana | tojson }};
+</script>
 {% endblock %}
