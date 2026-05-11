@@ -35,10 +35,16 @@
 
     <!-- Previous card — small static circle -->
     <div class="journey-node" id="jNodePrev">
-      <div class="journey-circle journey-sm" id="jCirclePrev">
-        <img class="jc-img" id="jImgPrev" alt="" aria-hidden="true">
-        <div class="jc-wrap">
-          <div class="jc-sym" id="jSymPrev"></div>
+      <div class="orbit-shell">
+        <div class="orbit-ring or-1"><span class="orbit-dot"></span></div>
+        <div class="orbit-ring or-2"><span class="orbit-dot"></span></div>
+        <div class="journey-circle journey-sm" id="jCirclePrev">
+          <img class="jc-img" id="jImgPrev" alt="" aria-hidden="true">
+          <div class="orbit-ring or-inner-1"><span class="orbit-dot"></span></div>
+          <div class="orbit-ring or-inner-2"><span class="orbit-dot"></span></div>
+          <div class="jc-wrap">
+            <div class="jc-sym" id="jSymPrev"></div>
+          </div>
         </div>
       </div>
       <p class="journey-lbl" id="jLblPrev"></p>
@@ -56,14 +62,22 @@
 
     <!-- Current card — large animated "video" circle -->
     <div class="journey-node journey-node-current">
-      <div class="journey-circle journey-lg" id="jCircleCurrent">
-        <img class="jc-img" id="jImgCurrent" alt="" aria-hidden="true">
-        <video class="jc-video" id="jVideo" muted loop playsinline></video>
-        <div class="jc-ring"></div>
-        <div class="jc-halo"></div>
-        <div class="jc-sym jc-sym-lg" id="jSymCurrent"></div>
-        <canvas class="jc-canvas" id="jCanvas"></canvas>
-        <a class="jc-link-overlay" id="jLinkCurrent" href="#" aria-label="View card detail"></a>
+      <div class="orbit-shell">
+        <div class="orbit-ring or-1"><span class="orbit-dot"></span></div>
+        <div class="orbit-ring or-2"><span class="orbit-dot"></span></div>
+        <div class="orbit-ring or-3"><span class="orbit-dot"></span></div>
+        <div class="journey-circle journey-lg" id="jCircleCurrent">
+          <img class="jc-img" id="jImgCurrent" alt="" aria-hidden="true">
+          <video class="jc-video" id="jVideo" muted loop playsinline></video>
+          <div class="orbit-ring or-inner-1"><span class="orbit-dot"></span></div>
+          <div class="orbit-ring or-inner-2"><span class="orbit-dot"></span></div>
+          <div class="orbit-ring or-inner-3"><span class="orbit-dot"></span></div>
+          <div class="jc-ring"></div>
+          <div class="jc-halo"></div>
+          <div class="jc-sym jc-sym-lg" id="jSymCurrent"></div>
+          <canvas class="jc-canvas" id="jCanvas"></canvas>
+          <a class="jc-link-overlay" id="jLinkCurrent" href="#" aria-label="View card detail"></a>
+        </div>
       </div>
       <p class="journey-lbl journey-lbl-current" id="jLblCurrent"></p>
     </div>
@@ -80,10 +94,16 @@
 
     <!-- Next card — small static circle -->
     <div class="journey-node" id="jNodeNext">
-      <div class="journey-circle journey-sm" id="jCircleNext">
-        <img class="jc-img" id="jImgNext" alt="" aria-hidden="true">
-        <div class="jc-wrap">
-          <div class="jc-sym" id="jSymNext"></div>
+      <div class="orbit-shell">
+        <div class="orbit-ring or-1"><span class="orbit-dot"></span></div>
+        <div class="orbit-ring or-2"><span class="orbit-dot"></span></div>
+        <div class="journey-circle journey-sm" id="jCircleNext">
+          <img class="jc-img" id="jImgNext" alt="" aria-hidden="true">
+          <div class="orbit-ring or-inner-1"><span class="orbit-dot"></span></div>
+          <div class="orbit-ring or-inner-2"><span class="orbit-dot"></span></div>
+          <div class="jc-wrap">
+            <div class="jc-sym" id="jSymNext"></div>
+          </div>
         </div>
       </div>
       <p class="journey-lbl" id="jLblNext"></p>

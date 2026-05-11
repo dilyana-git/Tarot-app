@@ -626,6 +626,103 @@ a:hover { color: var(--gold-pale); }
   z-index: 4;
 }
 
+/* ── Orbital ring system ─────────────────────────────────── */
+.orbit-shell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Static orbital path ring */
+.orbit-ring {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.or-1 {
+  width: calc(100% + 52px);  height: calc(100% + 52px);
+  border: 1px solid rgba(196,147,58,.28);
+  box-shadow: 0 0 12px rgba(196,147,58,.06) inset;
+}
+.or-2 {
+  width: calc(100% + 110px); height: calc(100% + 110px);
+  border: 1px solid rgba(196,147,58,.16);
+}
+.or-3 {
+  width: calc(100% + 178px); height: calc(100% + 178px);
+  border: 1px solid rgba(196,147,58,.08);
+}
+
+/* Rotating container that carries the orb around the ring */
+.orbit-dot {
+  display: block;
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  animation: orbit-spin linear infinite;
+}
+.or-1 .orbit-dot { animation-duration: 9s; }
+.or-2 .orbit-dot { animation-duration: 16s; animation-direction: reverse; }
+.or-3 .orbit-dot { animation-duration: 26s; }
+
+/* Delicate orb at the top of the rotating container */
+.orbit-dot::before {
+  content: '';
+  position: absolute;
+  top: -2.5px;
+  left: calc(50% - 2.5px);
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: rgba(196,147,58,.72);
+  box-shadow: 0 0 7px 2px rgba(196,147,58,.28);
+}
+
+/* Staggered start positions so no two orbs are in sync */
+#jNodePrev .or-1 .orbit-dot            { animation-delay: -2s; }
+#jNodePrev .or-2 .orbit-dot            { animation-delay: -9s; }
+.journey-node-current .or-1 .orbit-dot { animation-delay: -4s; }
+.journey-node-current .or-2 .orbit-dot { animation-delay: -11s; }
+.journey-node-current .or-3 .orbit-dot { animation-delay: -7s; }
+#jNodeNext .or-1 .orbit-dot            { animation-delay: -6s; }
+#jNodeNext .or-2 .orbit-dot            { animation-delay: -13s; }
+
+/* Inner orbit rings — live inside journey-circle, clipped to ellipse shape */
+.or-inner-1 {
+  width: 84%; height: 84%;
+  border: 1px solid rgba(196,147,58,.20);
+  z-index: 1; /* above jc-img (z-0) */
+}
+.or-inner-2 {
+  width: 60%; height: 60%;
+  border: 1px solid rgba(196,147,58,.13);
+  z-index: 1;
+}
+.or-inner-3 {
+  width: 38%; height: 38%;
+  border: 1px solid rgba(196,147,58,.08);
+  z-index: 1;
+}
+
+/* Unique durations and offsets for every inner dot */
+#jCirclePrev .or-inner-1 .orbit-dot    { animation-duration: 11s; animation-delay: -4s; }
+#jCirclePrev .or-inner-2 .orbit-dot    { animation-duration: 7s;  animation-delay: -1s; animation-direction: reverse; }
+#jCircleCurrent .or-inner-1 .orbit-dot { animation-duration: 14s; animation-delay: -8s; }
+#jCircleCurrent .or-inner-2 .orbit-dot { animation-duration: 9s;  animation-delay: -3s; animation-direction: reverse; }
+#jCircleCurrent .or-inner-3 .orbit-dot { animation-duration: 6s;  animation-delay: -5s; }
+#jCircleNext .or-inner-1 .orbit-dot    { animation-duration: 12s; animation-delay: -10s; }
+#jCircleNext .or-inner-2 .orbit-dot    { animation-duration: 8s;  animation-delay: -2s; animation-direction: reverse; }
+
+@keyframes orbit-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
 /* ── Labels below circles ────────────────────────────────── */
 .journey-lbl {
   font-family: 'Cormorant SC', serif;
