@@ -692,31 +692,6 @@ a:hover { color: var(--gold-pale); }
 #jNodeNext .or-1 .orbit-dot            { animation-delay: -6s; }
 #jNodeNext .or-2 .orbit-dot            { animation-delay: -13s; }
 
-/* Inner orbit rings — live inside journey-circle, clipped to ellipse shape */
-.or-inner-1 {
-  width: 84%; height: 84%;
-  border: 1px solid rgba(196,147,58,.20);
-  z-index: 1; /* above jc-img (z-0) */
-}
-.or-inner-2 {
-  width: 60%; height: 60%;
-  border: 1px solid rgba(196,147,58,.13);
-  z-index: 1;
-}
-.or-inner-3 {
-  width: 38%; height: 38%;
-  border: 1px solid rgba(196,147,58,.08);
-  z-index: 1;
-}
-
-/* Unique durations and offsets for every inner dot */
-#jCirclePrev .or-inner-1 .orbit-dot    { animation-duration: 11s; animation-delay: -4s; }
-#jCirclePrev .or-inner-2 .orbit-dot    { animation-duration: 7s;  animation-delay: -1s; animation-direction: reverse; }
-#jCircleCurrent .or-inner-1 .orbit-dot { animation-duration: 14s; animation-delay: -8s; }
-#jCircleCurrent .or-inner-2 .orbit-dot { animation-duration: 9s;  animation-delay: -3s; animation-direction: reverse; }
-#jCircleCurrent .or-inner-3 .orbit-dot { animation-duration: 6s;  animation-delay: -5s; }
-#jCircleNext .or-inner-1 .orbit-dot    { animation-duration: 12s; animation-delay: -10s; }
-#jCircleNext .or-inner-2 .orbit-dot    { animation-duration: 8s;  animation-delay: -2s; animation-direction: reverse; }
 
 @keyframes orbit-spin {
   from { transform: rotate(0deg); }
