@@ -27,9 +27,17 @@ MINOR_RANK_MAP = {
 }
 
 
+_IMG_EXTS = ('.jpg', '.jpeg', '.png', '.webp')
+
+
 def get_card_image_path(filename):
-    full_path = os.path.join(app.static_folder, filename)
-    return filename if os.path.exists(full_path) else 'images/card-placeholder.svg'
+    """Return filename if it exists on disk, trying alternate extensions, else placeholder."""
+    base, ext = os.path.splitext(filename)
+    candidates = [filename] + [base + alt for alt in _IMG_EXTS if alt != ext.lower()]
+    for candidate in candidates:
+        if os.path.exists(os.path.join(app.static_folder, candidate)):
+            return candidate
+    return 'images/card-placeholder.svg'
 
 
 def get_card_image_filename(card):
@@ -75,7 +83,8 @@ def index():
             if slug.startswith('the_'):
                 slug = slug[4:]
             img_path = f'images/major/{slug}.jpg'
-        c['image_url'] = f'/static/{img_path}' if os.path.exists(os.path.join(app.static_folder, img_path)) else ''
+        resolved = get_card_image_path(img_path)
+        c['image_url'] = '' if resolved == 'images/card-placeholder.svg' else f'/static/{resolved}'
 
         raw_vid = card.get('video', '')
         if raw_vid:
