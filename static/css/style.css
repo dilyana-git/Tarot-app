@@ -449,9 +449,9 @@ a:hover { color: var(--gold-pale); }
       var(--bg) 100%);
 }
 
-/* ── Small side circles (portrait ellipses) ─────────────── */
+/* ── Small side circles ──────────────────────────────────── */
 .journey-sm {
-  width: 200px; height: 290px;
+  width: 160px; height: 160px;
   border: 1px solid rgba(196,147,58,.24);
   box-shadow: 0 0 0 1px rgba(196,147,58,.05), 0 14px 44px rgba(0,0,0,.68);
   transition: transform .4s ease, box-shadow .4s ease,
@@ -640,15 +640,33 @@ a:hover { color: var(--gold-pale); }
   position: absolute;
   top: 50%; left: 50%;
   width: 102%; height: 102%;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%) scale(1.07);
   object-fit: cover;
   z-index: 0;
   opacity: 0;
-  transition: opacity .7s ease;
+  transition: opacity .95s ease, transform .95s ease;
   pointer-events: none;
 }
-.jc-img.loaded { opacity: 1; }
-.journey-lg .jc-img.loaded { opacity: 1; }
+.jc-img.loaded {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+#jNodePrev .jc-img.loaded { opacity: 0.42; }
+#jNodeNext .jc-img.loaded { opacity: 0.42; }
+
+/* Overlays fade when media is present */
+.journey-circle.has-media .jc-sym,
+.journey-circle.has-media .jc-sym-lg,
+.journey-circle.has-media .jc-halo,
+.journey-circle.has-media .jc-ring,
+.journey-circle.has-media .jc-mandala { opacity: 0; transition: opacity .8s ease; }
+
+/* Video active: suppress image, fade overlays */
+.journey-circle.has-video .jc-img { opacity: 0 !important; }
+.journey-circle.has-video .jc-sym-lg,
+.journey-circle.has-video .jc-halo,
+.journey-circle.has-video .jc-ring,
+.journey-circle.has-video .jc-mandala { opacity: 0; transition: opacity .8s ease; }
 
 /* ── Card video inside central circle ────────────────────── */
 .jc-video {
@@ -662,7 +680,7 @@ a:hover { color: var(--gold-pale); }
   pointer-events: none;
   display: none;
 }
-.jc-video.active { display: block; opacity: .6; }
+.jc-video.active { display: block; opacity: 1; }
 
 /* ── Floating particle canvas (central circle only) ──────── */
 .jc-canvas {
@@ -699,16 +717,19 @@ a:hover { color: var(--gold-pale); }
 
 .or-1 {
   width: calc(100% + 52px);  height: calc(100% + 52px);
-  border: 1px solid rgba(196,147,58,.28);
-  box-shadow: 0 0 12px rgba(196,147,58,.06) inset;
+  border: 1px solid rgba(196,147,58,.42);
+  box-shadow: 0 0 14px rgba(196,147,58,.09) inset, 0 0 8px rgba(196,147,58,.07);
+  animation: orbit-ring-rotate 80s linear infinite;
 }
 .or-2 {
   width: calc(100% + 110px); height: calc(100% + 110px);
-  border: 1px solid rgba(196,147,58,.16);
+  border: 1px solid rgba(196,147,58,.26);
+  animation: orbit-ring-rotate 130s linear infinite reverse;
 }
 .or-3 {
   width: calc(100% + 178px); height: calc(100% + 178px);
-  border: 1px solid rgba(196,147,58,.08);
+  border: 1px solid rgba(196,147,58,.14);
+  animation: orbit-ring-rotate 200s linear infinite;
 }
 
 /* Rotating container that carries the orb around the ring */
@@ -748,6 +769,11 @@ a:hover { color: var(--gold-pale); }
 @keyframes orbit-spin {
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }
+}
+
+@keyframes orbit-ring-rotate {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to   { transform: translate(-50%, -50%) rotate(360deg); }
 }
 
 /* ── Labels below circles ────────────────────────────────── */

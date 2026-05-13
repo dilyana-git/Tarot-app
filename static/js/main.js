@@ -166,12 +166,20 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
   function setImg(imgEl, url) {
     if (!imgEl) return;
     imgEl.classList.remove('loaded');
+    const circle = imgEl.closest('.journey-circle');
+    if (circle) circle.classList.remove('has-media');
     if (!url) { imgEl.src = ''; return; }
-    imgEl.onload  = () => imgEl.classList.add('loaded');
+    imgEl.onload = () => {
+      imgEl.classList.add('loaded');
+      if (circle) circle.classList.add('has-media');
+    };
     imgEl.onerror = () => imgEl.classList.remove('loaded');
     imgEl.src = url;
     if (imgEl.complete && imgEl.naturalWidth > 0) {
-      requestAnimationFrame(() => requestAnimationFrame(() => imgEl.classList.add('loaded')));
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        imgEl.classList.add('loaded');
+        if (circle) circle.classList.add('has-media');
+      }));
     }
   }
 
@@ -196,7 +204,7 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
     applyCard(circCurr, symCurr, lblCurr, imgCurr, ARCANA[current]);
     applyCard(circNext, symNext, lblNext, imgNext, ARCANA[n]);
 
-    /* Video for current card */
+    /* Video for current card — takes priority over static image */
     if (videoEl) {
       const vid = ARCANA[current].video_url || '';
       if (vid) {
@@ -207,10 +215,12 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
         }
         videoEl.classList.add('active');
         videoEl.play().catch(() => {});
+        if (circCurr) circCurr.classList.add('has-video', 'has-media');
       } else {
         videoEl.classList.remove('active');
         videoEl.dataset.activeSrc = '';
         videoEl.src = '';
+        if (circCurr) circCurr.classList.remove('has-video');
       }
     }
 
