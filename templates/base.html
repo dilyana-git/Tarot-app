@@ -6,13 +6,30 @@
   <title>{% block title %}Arcana — The Tarot Oracle{% endblock %}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Almendra+Display&family=IM+Fell+English:ital@0;1&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Cormorant+SC:wght@300;400;500&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Almendra+Display&family=Cinzel+Decorative:wght@400;700&family=IM+Fell+English:ital@0;1&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Cormorant+SC:wght@300;400;500&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
   {% block head %}{% endblock %}
 </head>
 <body>
   <div class="grain" aria-hidden="true"></div>
   <canvas id="stars-canvas"></canvas>
+  <svg class="bg-sparkles" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice">
+    <text fill="rgba(201,168,76,0.35)" font-size="14" font-family="serif" x="108" y="95">✦</text>
+    <text fill="rgba(201,168,76,0.22)" font-size="10" font-family="serif" x="340" y="42">✦</text>
+    <text fill="rgba(201,168,76,0.38)" font-size="9"  font-family="serif" x="685" y="128">✦</text>
+    <text fill="rgba(201,168,76,0.18)" font-size="13" font-family="serif" x="920" y="68">✦</text>
+    <text fill="rgba(201,168,76,0.28)" font-size="11" font-family="serif" x="1180" y="112">✦</text>
+    <text fill="rgba(201,168,76,0.40)" font-size="8"  font-family="serif" x="1385" y="58">✦</text>
+    <text fill="rgba(201,168,76,0.20)" font-size="15" font-family="serif" x="52" y="425">✦</text>
+    <text fill="rgba(201,168,76,0.30)" font-size="12" font-family="serif" x="1412" y="320">✦</text>
+    <text fill="rgba(201,168,76,0.25)" font-size="10" font-family="serif" x="242" y="755">✦</text>
+    <text fill="rgba(201,168,76,0.18)" font-size="9"  font-family="serif" x="485" y="682">✦</text>
+    <text fill="rgba(201,168,76,0.32)" font-size="13" font-family="serif" x="850" y="825">✦</text>
+    <text fill="rgba(201,168,76,0.22)" font-size="11" font-family="serif" x="1105" y="778">✦</text>
+    <text fill="rgba(201,168,76,0.28)" font-size="9"  font-family="serif" x="1338" y="660">✦</text>
+    <text fill="rgba(201,168,76,0.38)" font-size="8"  font-family="serif" x="618" y="315">✦</text>
+    <text fill="rgba(201,168,76,0.25)" font-size="12" font-family="serif" x="1052" y="182">✦</text>
+  </svg>
 
   <nav class="navbar">
     <a href="{{ url_for('index') }}" class="nav-brand">
