@@ -647,8 +647,8 @@ a:hover { color: var(--gold-pale); }
   transition: opacity .7s ease;
   pointer-events: none;
 }
-.jc-img.loaded { opacity: .82; }
-.journey-lg .jc-img.loaded { opacity: .88; }
+.jc-img.loaded { opacity: 1; }
+.journey-lg .jc-img.loaded { opacity: 1; }
 
 /* ── Card video inside central circle ────────────────────── */
 .jc-video {
@@ -1171,7 +1171,7 @@ a:hover { color: var(--gold-pale); }
   width: 100%; height: 100%;
   object-fit: cover;
   object-position: center top;
-  opacity: .52;
+  opacity: 1;
   display: block;
 }
 
