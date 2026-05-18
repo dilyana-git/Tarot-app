@@ -3,67 +3,86 @@
 {% block title %}Tarot Reading — Arcana{% endblock %}
 
 {% block content %}
-<section class="reading-page">
+<div class="reading-layout">
 
-  <div class="reading-hero">
-    <h1 class="reading-title">Your Reading</h1>
-    <p class="reading-subtitle">Still your mind, hold your question, and let the cards speak.</p>
-  </div>
+  <!-- ── LEFT: context, always visible ────────────────────── -->
+  <aside class="reading-left">
 
-  <!-- Spread selector -->
-  <div class="spread-selector" id="spreadSelector">
-    <h2 class="spread-selector-title">Choose Your Spread</h2>
-    <div class="spread-options">
-      {% for key, spread in spreads.items() %}
-      <button class="spread-option {% if key == 'three_card' %}selected{% endif %}" data-spread="{{ key }}">
-        <span class="spread-option-count">{{ spread.positions | length }}</span>
-        <span class="spread-option-name">{{ spread.name }}</span>
-        <span class="spread-option-desc">{{ spread.description }}</span>
+    <!-- Before draw: title + subtitle -->
+    <div class="reading-left-panel" id="leftSelector">
+      <div class="page-arch-eyebrow reading-eyebrow">
+        <span class="page-arch-rule"></span>
+        <span class="page-arch-label">The Oracle</span>
+        <span class="page-arch-rule"></span>
+      </div>
+      <h1 class="reading-left-title">Your Reading</h1>
+      <p class="reading-left-sub">Still your mind, hold your question, and let the cards speak.</p>
+    </div>
+
+    <!-- After draw: spread name + position list -->
+    <div class="reading-left-panel" id="leftResult" style="display:none">
+      <div class="page-arch-eyebrow reading-eyebrow">
+        <span class="page-arch-rule"></span>
+        <span class="page-arch-label">Your Spread</span>
+        <span class="page-arch-rule"></span>
+      </div>
+      <h2 class="reading-result-name" id="resultSpreadName"></h2>
+      <p class="reading-result-desc" id="resultSpreadDesc"></p>
+      <button class="btn btn-outline reading-new-btn" id="newReadingBtn">✦ New Reading</button>
+    </div>
+
+  </aside>
+
+  <!-- ── RIGHT: spread selector → cards ────────────────────── -->
+  <main class="reading-right">
+
+    <!-- SELECTOR: spread options + shuffle -->
+    <div class="reading-right-selector" id="rightSelector">
+      <h2 class="spread-selector-title">Choose Your Spread</h2>
+      <div class="spread-options">
+        {% for key, spread in spreads.items() %}
+        <button class="spread-option {% if key == 'three_card' %}selected{% endif %}" data-spread="{{ key }}">
+          <span class="spread-option-count">{{ spread.positions | length }}</span>
+          <span class="spread-option-name">{{ spread.name }}</span>
+          <span class="spread-option-desc">{{ spread.description }}</span>
+        </button>
+        {% endfor %}
+      </div>
+      <button class="btn btn-primary btn-large shuffle-btn" id="shuffleBtn">
+        <span class="shuffle-icon">✦</span>
+        Shuffle &amp; Draw
       </button>
-      {% endfor %}
-    </div>
-    <button class="btn btn-primary btn-large shuffle-btn" id="shuffleBtn">
-      <span class="shuffle-icon">✦</span>
-      Shuffle &amp; Draw
-    </button>
-  </div>
-
-  <!-- Loading animation -->
-  <div class="reading-loading" id="readingLoading" style="display:none">
-    <div class="loading-cards">
-      <div class="loading-card lc1"></div>
-      <div class="loading-card lc2"></div>
-      <div class="loading-card lc3"></div>
-    </div>
-    <p class="loading-text">The cards are being drawn...</p>
-  </div>
-
-  <!-- Reading result -->
-  <div class="reading-result" id="readingResult" style="display:none">
-    <div class="result-header">
-      <h2 class="result-spread-name" id="resultSpreadName"></h2>
-      <p class="result-spread-desc" id="resultSpreadDesc"></p>
     </div>
 
-    <!-- Spread layout container -->
+    <!-- LOADING -->
+    <div class="reading-loading" id="readingLoading" style="display:none">
+      <div class="loading-cards">
+        <div class="loading-card lc1"></div>
+        <div class="loading-card lc2"></div>
+        <div class="loading-card lc3"></div>
+      </div>
+      <p class="loading-text">The cards are being drawn...</p>
+    </div>
+
+    <!-- RESULT: cards appear here -->
     <div class="spread-layout" id="spreadLayout"></div>
 
-    <!-- Card detail panel -->
-    <div class="card-panel" id="cardPanel" style="display:none">
+  </main>
+
+</div><!-- /reading-layout -->
+
+<!-- Card detail panel (fixed overlay) -->
+<div class="card-panel" id="cardPanel" style="display:none">
+  <div class="panel-inner">
+    <div class="panel-nav">
+      <button class="panel-back" id="panelBack">← Back to Reading</button>
       <button class="panel-close" id="panelClose">✕</button>
-      <div class="panel-inner">
-        <div class="panel-card-visual" id="panelCardVisual"></div>
-        <div class="panel-card-info" id="panelCardInfo"></div>
-      </div>
     </div>
-
-    <!-- New reading button -->
-    <div class="new-reading-wrap">
-      <button class="btn btn-outline" id="newReadingBtn">✦ New Reading</button>
-    </div>
+    <div class="panel-card-visual" id="panelCardVisual"></div>
+    <div class="panel-card-info" id="panelCardInfo"></div>
   </div>
+</div>
 
-</section>
 {% endblock %}
 
 {% block scripts %}
@@ -72,7 +91,7 @@ const spreads = {{ spreads | tojson }};
 let currentSpread = 'three_card';
 let drawnCards = [];
 
-/* ---- Spread selection ---- */
+/* ── Spread selection ───────────────────────────────────── */
 document.querySelectorAll('.spread-option').forEach(opt => {
   opt.addEventListener('click', () => {
     document.querySelectorAll('.spread-option').forEach(o => o.classList.remove('selected'));
@@ -81,16 +100,9 @@ document.querySelectorAll('.spread-option').forEach(opt => {
   });
 });
 
-/* ---- Shuffle & Draw ---- */
+/* ── Shuffle & Draw ─────────────────────────────────────── */
 document.getElementById('shuffleBtn').addEventListener('click', async () => {
-  const spreadSelector = document.getElementById('spreadSelector');
-  const loading = document.getElementById('readingLoading');
-  const result = document.getElementById('readingResult');
-
-  spreadSelector.style.display = 'none';
-  result.style.display = 'none';
-  loading.style.display = 'flex';
-
+  setState('loading');
   try {
     const res = await fetch('/api/reading', {
       method: 'POST',
@@ -102,31 +114,38 @@ document.getElementById('shuffleBtn').addEventListener('click', async () => {
     renderReading(data);
   } catch (e) {
     console.error(e);
-    loading.style.display = 'none';
-    spreadSelector.style.display = 'block';
+    setState('selector');
   }
 });
 
-/* ---- New Reading ---- */
+/* ── New Reading ────────────────────────────────────────── */
 document.getElementById('newReadingBtn').addEventListener('click', () => {
-  document.getElementById('readingResult').style.display = 'none';
-  document.getElementById('spreadSelector').style.display = 'block';
+  document.getElementById('spreadLayout').innerHTML = '';
   document.getElementById('cardPanel').style.display = 'none';
+  setState('selector');
 });
 
 document.getElementById('panelClose').addEventListener('click', () => {
   document.getElementById('cardPanel').style.display = 'none';
 });
+document.getElementById('panelBack').addEventListener('click', () => {
+  document.getElementById('cardPanel').style.display = 'none';
+});
 
-/* ---- Render reading ---- */
+/* ── State machine ──────────────────────────────────────── */
+function setState(state) {
+  document.getElementById('leftSelector').style.display   = state === 'selector' ? '' : 'none';
+  document.getElementById('leftResult').style.display     = state === 'result'   ? '' : 'none';
+  document.getElementById('rightSelector').style.display  = state === 'selector' ? '' : 'none';
+  document.getElementById('readingLoading').style.display = state === 'loading'  ? 'flex' : 'none';
+}
+
+/* ── Render reading ─────────────────────────────────────── */
 function renderReading(data) {
-  const loading = document.getElementById('readingLoading');
-  const result = document.getElementById('readingResult');
-  const layout = document.getElementById('spreadLayout');
-
   document.getElementById('resultSpreadName').textContent = data.spread.name;
   document.getElementById('resultSpreadDesc').textContent = data.spread.description;
 
+  const layout = document.getElementById('spreadLayout');
   layout.innerHTML = '';
   layout.className = 'spread-layout spread-' + currentSpread.replace('_', '-');
 
@@ -139,13 +158,10 @@ function renderReading(data) {
       <div class="spread-card ${card.reversed ? 'reversed' : ''}"
            style="--card-color: ${card.card_color}; --accent-color: ${card.accent_color}"
            data-index="${i}">
-        <div class="spread-card-back">
-          <span class="card-back-symbol">✦</span>
-        </div>
+        <div class="spread-card-back"><span class="card-back-symbol">✦</span></div>
         <div class="spread-card-face">
+          ${card.image_url ? `<img class="spread-card-img" src="${card.image_url}" alt="${card.name}">` : ''}
           <div class="sc-number">${card.number}</div>
-          <div class="sc-symbol">${card.symbol}</div>
-          <div class="sc-name">${card.name}</div>
           ${card.reversed ? '<div class="sc-reversed-badge">Reversed</div>' : ''}
         </div>
       </div>
@@ -154,9 +170,7 @@ function renderReading(data) {
     layout.appendChild(cardEl);
   });
 
-  /* Animate cards in */
-  loading.style.display = 'none';
-  result.style.display = 'block';
+  setState('result');
 
   setTimeout(() => {
     document.querySelectorAll('.spread-card').forEach((c, i) => {
@@ -165,25 +179,24 @@ function renderReading(data) {
   }, 100);
 }
 
-/* ---- Card panel ---- */
+/* ── Card panel ─────────────────────────────────────────── */
 function openCardPanel(index) {
-  const card = drawnCards[index];
-  const panel = document.getElementById('cardPanel');
+  const card   = drawnCards[index];
+  const panel  = document.getElementById('cardPanel');
   const visual = document.getElementById('panelCardVisual');
-  const info = document.getElementById('panelCardInfo');
+  const info   = document.getElementById('panelCardInfo');
 
-  const suitSymbol = { Wands: 'Ψ', Cups: 'Ω', Swords: '✚', Pentacles: '✶' };
+  const suitSymbol  = { Wands: 'Ψ', Cups: 'Ω', Swords: '✚', Pentacles: '✶' };
   const suitDisplay = card.suit ? (suitSymbol[card.suit] + ' ' + card.suit) : 'Major Arcana';
-  const meaning = card.reversed ? card.reversed_meaning : card.upright_meaning;
-  const keywords = card.reversed ? card.keywords_reversed : card.keywords_upright;
+  const meaning     = card.reversed ? card.reversed_meaning : card.upright_meaning;
+  const keywords    = card.reversed ? card.keywords_reversed : card.keywords_upright;
 
   visual.innerHTML = `
     <div class="panel-card ${card.reversed ? 'reversed' : ''}"
          style="--card-color: ${card.card_color}; --accent-color: ${card.accent_color}">
+      ${card.image_url ? `<img class="panel-card-img" src="${card.image_url}" alt="${card.name}">` : ''}
       <div class="panel-card-inner">
         <div class="panel-card-number">${card.number}</div>
-        <div class="panel-card-symbol">${card.symbol}</div>
-        <div class="panel-card-name">${card.name}</div>
         <div class="panel-card-suit">${suitDisplay}</div>
       </div>
     </div>
@@ -201,9 +214,7 @@ function openCardPanel(index) {
       <h4>${card.reversed ? '↩ Reversed' : '☝ Upright'} Meaning</h4>
       <p>${meaning}</p>
     </div>
-    <div class="panel-description">
-      <p><em>${card.description}</em></p>
-    </div>
+    <div class="panel-description"><p><em>${card.description}</em></p></div>
     <a href="/card/${card.id}" class="btn btn-outline btn-sm" target="_blank">View Full Card →</a>
   `;
 

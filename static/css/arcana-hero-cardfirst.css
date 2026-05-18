@@ -1,0 +1,368 @@
+/* ============================================================
+   ARCANA — Card-First Hero (Direction B)
+   The artwork dominates the canvas, brand recedes to a hallmark,
+   navigation lives in a filmstrip ribbon at the bottom.
+   ============================================================ */
+
+.cf-hero {
+  --cf-gold:       #c4933a;
+  --cf-gold-pale:  #e8c888;
+  --cf-gold-dim:   #7a6a48;
+  --cf-text:       #d4c8b0;
+  --cf-text-dim:   #a89878;
+  --cf-text-mute:  #7a6a48;
+  --cf-rule:       rgba(196,147,58,.18);
+
+  position: relative;
+  width: 100%;
+  min-height: calc(100vh - 60px);
+  overflow: hidden;
+  background: #060c0a;
+  color: var(--cf-text);
+  font-family: 'EB Garamond', Georgia, serif;
+}
+
+/* Full-bleed artwork, bleeding off the right edge.
+   Uses two layers so we can crossfade with a gold-sweep overlay. */
+.cf-artwork {
+  position: absolute;
+  top: 0; right: -8%; bottom: 0;
+  width: 62%;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  filter: saturate(1.05);
+  transition: filter .55s ease;
+}
+/* The gold sweep: a thin angled gradient that races across the artwork
+   at the moment of swap. Driven by `.is-sweeping` toggle in JS. */
+.cf-artwork::after {
+  content: '';
+  position: absolute; inset: 0;
+  pointer-events: none;
+  background: linear-gradient(100deg,
+    transparent 0%,
+    rgba(232,200,136,0)   38%,
+    rgba(232,200,136,.55) 49%,
+    rgba(255,240,200,.95) 50%,
+    rgba(232,200,136,.55) 51%,
+    rgba(232,200,136,0)   62%,
+    transparent 100%);
+  mix-blend-mode: screen;
+  transform: translateX(-110%);
+  opacity: 0;
+}
+.cf-artwork.is-sweeping {
+  filter: saturate(1.15) brightness(1.12);
+}
+.cf-artwork.is-sweeping::after {
+  animation: cfGoldSweep .85s cubic-bezier(.55,.02,.42,1) forwards;
+}
+.cf-artwork.dir-prev.is-sweeping::after {
+  animation-name: cfGoldSweepPrev;
+}
+@keyframes cfGoldSweep {
+  0%   { transform: translateX(-110%); opacity: 0; }
+  20%  { opacity: 1; }
+  80%  { opacity: 1; }
+  100% { transform: translateX( 110%); opacity: 0; }
+}
+@keyframes cfGoldSweepPrev {
+  0%   { transform: translateX( 110%); opacity: 0; }
+  20%  { opacity: 1; }
+  80%  { opacity: 1; }
+  100% { transform: translateX(-110%); opacity: 0; }
+}
+
+/* Fade the artwork into the left side + softened edges */
+.cf-artwork-vignette {
+  position: absolute; inset: 0; pointer-events: none; z-index: 1;
+  background:
+    linear-gradient(to right, #060c0a 0%, rgba(6,12,10,.6) 22%, rgba(6,12,10,0) 42%),
+    radial-gradient(ellipse at 65% 50%, transparent 40%, rgba(6,12,10,.55) 100%);
+}
+
+/* =================================================================
+   MASSIVE OVERLAY CARD NAME
+   ================================================================= */
+.cf-overlay-num {
+  position: absolute;
+  top: clamp(80px, 14vh, 130px);
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Cinzel', serif;
+  font-size: 13px; letter-spacing: .5em;
+  color: var(--cf-gold);
+  z-index: 4;
+  white-space: nowrap;
+  transition: opacity .25s ease, transform .3s ease;
+}
+.cf-overlay-num.is-out {
+  opacity: 0;
+  transform: translateX(-50%) translateY(-6px);
+}
+
+.cf-overlay-name {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Cinzel', serif;
+  font-weight: 400;
+  font-size: clamp(80px, 14vw, 200px);
+  line-height: .95;
+  letter-spacing: .04em;
+  color: transparent;
+  -webkit-text-stroke: 1px #e8c888;
+  z-index: 4;
+  mix-blend-mode: screen;
+  white-space: nowrap;
+  margin: 0;
+  pointer-events: none;
+  will-change: transform, opacity, filter, text-shadow;
+}
+/* Ghost name slides off with a motion-blur trail then slides in from the
+   opposite side. Direction modifier picks the axis. */
+.cf-overlay-name.is-out      { animation: cfNameOutNext .35s cubic-bezier(.55,.02,.42,1) forwards; }
+.cf-overlay-name.is-in       { animation: cfNameInNext  .55s cubic-bezier(.22,.7,.3,1) forwards; }
+.cf-overlay-name.dir-prev.is-out { animation-name: cfNameOutPrev; }
+.cf-overlay-name.dir-prev.is-in  { animation-name: cfNameInPrev; }
+
+@keyframes cfNameOutNext {
+  0%   { opacity: 1; transform: translate(-50%, -50%)            scale(1);   filter: blur(0); }
+  100% { opacity: 0; transform: translate(-92%, -50%) skewX(-6deg) scale(.96); filter: blur(8px); }
+}
+@keyframes cfNameInNext {
+  0%   { opacity: 0; transform: translate( -8%, -50%) skewX( 6deg) scale(.96); filter: blur(10px); }
+  55%  { opacity: 1; }
+  100% { opacity: 1; transform: translate(-50%, -50%)            scale(1);   filter: blur(0); }
+}
+@keyframes cfNameOutPrev {
+  0%   { opacity: 1; transform: translate(-50%, -50%)             scale(1);   filter: blur(0); }
+  100% { opacity: 0; transform: translate( -8%, -50%) skewX( 6deg) scale(.96); filter: blur(8px); }
+}
+@keyframes cfNameInPrev {
+  0%   { opacity: 0; transform: translate(-92%, -50%) skewX(-6deg) scale(.96); filter: blur(10px); }
+  55%  { opacity: 1; }
+  100% { opacity: 1; transform: translate(-50%, -50%)             scale(1);   filter: blur(0); }
+}
+
+/* =================================================================
+   MARGINALIA PANEL (LEFT)
+   ================================================================= */
+.cf-marginalia {
+  position: absolute;
+  top: 50%;
+  left: clamp(40px, 6vw, 92px);
+  transform: translateY(-50%);
+  width: clamp(280px, 28vw, 360px);
+  z-index: 6;
+  transition: opacity .3s ease, transform .35s ease, filter .3s ease;
+}
+.cf-marginalia.is-out {
+  opacity: 0;
+  transform: translateY(-50%) translateX(-12px);
+  filter: blur(3px);
+}
+.cf-marginalia.dir-prev.is-out {
+  transform: translateY(-50%) translateX(12px);
+}
+/* Stagger keyword reveal */
+.cf-marginalia.is-in .cf-kw-block .cf-kw {
+  animation: cfKwIn .55s cubic-bezier(.22,.7,.3,1) both;
+}
+.cf-marginalia.is-in .cf-kw-block .cf-kw:nth-child(1) { animation-delay: 80ms;  }
+.cf-marginalia.is-in .cf-kw-block .cf-kw:nth-child(2) { animation-delay: 170ms; }
+.cf-marginalia.is-in .cf-kw-block .cf-kw:nth-child(3) { animation-delay: 260ms; }
+@keyframes cfKwIn {
+  0%   { opacity: 0; transform: translateX(-14px); filter: blur(4px); }
+  100% { opacity: 1; transform: translateX(0);    filter: blur(0); }
+}
+
+.cf-eyebrow {
+  display: flex; align-items: center; gap: 10px;
+  font-family: 'Cinzel', serif;
+  font-size: 10px; letter-spacing: .4em;
+  color: var(--cf-gold);
+  margin-bottom: 18px;
+}
+.cf-eyebrow-dot {
+  width: 6px; height: 6px;
+  background: var(--cf-gold);
+  border-radius: 50%;
+}
+
+.cf-kw-block {
+  border-left: 1px solid rgba(196,147,58,.4);
+  padding-left: 22px;
+  margin: 24px 0 28px;
+  min-height: 72px;
+}
+.cf-kw-block .cf-kw {
+  display: block;
+  font-family: 'Cinzel', serif;
+  font-size: 13px; letter-spacing: .15em;
+  color: var(--cf-gold-pale);
+  line-height: 2.1;
+  text-transform: capitalize;
+}
+
+.cf-desc {
+  font-size: 15px;
+  line-height: 1.75;
+  color: var(--cf-text-dim);
+  font-style: italic;
+  margin: 0;
+}
+
+.cf-cta {
+  display: inline-flex; align-items: center; gap: 16px;
+  margin-top: 36px;
+  padding: 14px 24px;
+  border-top: 1px solid var(--cf-gold);
+  border-bottom: 1px solid var(--cf-gold);
+  font-family: 'Cinzel', serif;
+  font-size: 11px; letter-spacing: .3em;
+  color: var(--cf-gold-pale);
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: background .25s ease, color .25s ease;
+}
+.cf-cta:hover { background: rgba(196,147,58,.08); color: #fff5d6; }
+
+.cf-cta-ghost {
+  display: inline-flex; align-items: center;
+  margin: 22px 0 0 20px;
+  font-family: 'Cinzel', serif;
+  font-size: 11px; letter-spacing: .3em;
+  color: var(--cf-text-dim);
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: color .25s ease;
+}
+.cf-cta-ghost:hover { color: var(--cf-gold-pale); }
+
+/* =================================================================
+   FILMSTRIP RIBBON
+   ================================================================= */
+.cf-ribbon {
+  position: absolute;
+  bottom: 32px;
+  left: clamp(40px, 5vw, 80px);
+  right: clamp(40px, 5vw, 80px);
+  display: flex; align-items: center; gap: 18px;
+  z-index: 7;
+}
+
+.cf-ribbon-arrow {
+  background: none; border: 0; cursor: pointer;
+  font-family: 'Cinzel', serif;
+  font-size: 18px; line-height: 1;
+  color: var(--cf-text-dim);
+  padding: 6px 10px;
+  transition: color .25s ease, transform .25s ease;
+}
+.cf-ribbon-arrow:hover {
+  color: var(--cf-gold-pale);
+  transform: scale(1.15);
+}
+
+.cf-ribbon-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: .18em;
+  color: var(--cf-text-mute);
+  width: 90px;
+  flex-shrink: 0;
+  line-height: 1.5;
+}
+.cf-ribbon-label #cfRibbonProgress { color: var(--cf-gold-pale); }
+
+.cf-strip {
+  flex: 1;
+  display: flex; align-items: center; gap: 10px;
+  overflow: hidden;
+  height: 90px;
+}
+
+.cf-strip-card {
+  height: 56px;
+  width: 44px;
+  border-radius: 2px;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 1px solid rgba(196,147,58,.15);
+  position: relative;
+  cursor: pointer;
+  background: #0a1411;
+  transition: transform .3s ease, border-color .3s ease,
+              opacity .3s ease, width .3s ease, height .3s ease;
+}
+.cf-strip-card img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.cf-strip-card:hover {
+  border-color: rgba(196,147,58,.55);
+  transform: scale(1.05);
+}
+.cf-strip-card.is-active {
+  width: 60px;
+  height: 78px;
+  border: 1px solid #e8c888;
+  opacity: 1;
+  box-shadow: 0 0 16px rgba(196,147,58,.3);
+}
+/* Just-activated thumb does a satisfying "snap" */
+.cf-strip-card.is-just-active {
+  animation: cfThumbSnap .55s cubic-bezier(.3,.8,.4,1.4);
+}
+@keyframes cfThumbSnap {
+  0%   { box-shadow: 0 0 0 rgba(232,200,136,0); }
+  35%  { box-shadow: 0 0 26px rgba(232,200,136,.85); }
+  100% { box-shadow: 0 0 16px rgba(196,147,58,.3); }
+}
+/* Distance-based opacity is set inline by JS */
+
+.cf-ribbon-progress {
+  font-family: 'Cinzel', serif;
+  font-size: 11px; letter-spacing: .25em;
+  color: var(--cf-gold-pale);
+  width: 160px; text-align: right;
+  flex-shrink: 0;
+}
+
+/* =================================================================
+   RESPONSIVE
+   ================================================================= */
+@media (max-width: 1100px) {
+  .cf-overlay-name { font-size: clamp(64px, 11vw, 140px); }
+  .cf-marginalia { width: clamp(240px, 30vw, 320px); }
+}
+
+@media (max-width: 800px) {
+  .cf-artwork {
+    right: -20%;
+    width: 100%;
+    opacity: .45;
+  }
+  .cf-overlay-name {
+    top: 24%;
+    font-size: clamp(48px, 14vw, 90px);
+    white-space: normal;
+    text-align: center;
+    width: 90%;
+  }
+  .cf-overlay-num { top: 22px; }
+  .cf-marginalia {
+    position: relative;
+    top: auto; left: auto; transform: none;
+    width: auto;
+    padding: 50vh 32px 200px;
+  }
+  .cf-ribbon {
+    left: 16px; right: 16px;
+    gap: 10px;
+  }
+  .cf-ribbon-label, .cf-ribbon-progress { display: none; }
+}

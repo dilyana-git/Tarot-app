@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}Arcana — The Tarot Oracle{% endblock %}
+
+{% block head %}
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/arcana-hero-cardfirst.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- ── Card-First Hero ─────────────────────────────────────── -->
+<section class="cf-hero">
+
+  <!-- Full-bleed artwork backdrop -->
+  <div class="cf-artwork" id="cfArtwork"></div>
+  <div class="cf-artwork-vignette" aria-hidden="true"></div>
+
+  <!-- Massive ghost card name overlaid on artwork -->
+  <div class="cf-overlay-num"  id="cfOverlayNum">·  0 / XXI  ·</div>
+  <h1 class="cf-overlay-name"  id="cfOverlayName">THE FOOL</h1>
+
+  <!-- Marginalia panel (left) -->
+  <div class="cf-marginalia" id="cfMarginalia">
+    <div class="cf-eyebrow">
+      <span class="cf-eyebrow-dot"></span>
+      <span>MAJOR ARCANA &nbsp;·&nbsp; <span id="cfEyebrowCard">CARD ZERO</span></span>
+    </div>
+
+    <div class="cf-kw-block" id="cfKwBlock">
+      <!-- keywords injected by JS -->
+    </div>
+
+    <p class="cf-desc" id="cfDesc">A young wanderer stands at the edge of a cliff, face raised to the sun — about to step into open air with carefree abandon.</p>
+
+    <a class="cf-cta" href="{{ url_for('reading') }}">BEGIN A READING &nbsp;→</a>
+    <a class="cf-cta-ghost" href="{{ url_for('cards') }}">EXPLORE THE DECK ↗</a>
+  </div>
+
+  <!-- Filmstrip ribbon at the bottom -->
+  <div class="cf-ribbon">
+    <button class="cf-ribbon-arrow" id="cfPrev" aria-label="Previous card">←</button>
+    <div class="cf-ribbon-label">
+      THE DECK<br/>
+      <span id="cfRibbonProgress">00 / XXI</span>
+    </div>
+    <div class="cf-strip" id="cfStrip">
+      <!-- filmstrip thumbs injected by JS -->
+    </div>
+    <div class="cf-ribbon-progress">
+      <span id="cfRibbonName">THE FOOL</span>
+    </div>
+    <button class="cf-ribbon-arrow" id="cfNext" aria-label="Next card">→</button>
+  </div>
+</section>
+
+<!-- Botanical divider (reuses sitewide style.css) -->
+<div class="botanical-divider" aria-hidden="true">
+  <svg viewBox="0 0 560 36" xmlns="http://www.w3.org/2000/svg" fill="none">
+    <line x1="0" y1="18" x2="240" y2="18" stroke="currentColor" stroke-width="0.5" opacity="0.3"/>
+    <line x1="320" y1="18" x2="560" y2="18" stroke="currentColor" stroke-width="0.5" opacity="0.3"/>
+    <rect x="276" y="14" width="8" height="8" fill="currentColor" transform="rotate(45 280 18)"/>
+  </svg>
+</div>
+
+<!-- Reused page sections from existing index.html ─────────── -->
+<section class="features-section">
+  <h2 class="section-title">The Path of the Seeker</h2>
+  <div class="features-grid">
+    <a href="{{ url_for('cards') }}?filter=major" class="feature-card">
+      <div class="feature-icon">Major Arcana</div>
+      <h3 class="feature-title">The Great Mysteries</h3>
+      <p class="feature-desc">The 22 archetypal forces that shape the soul's great journey through life, death, and rebirth.</p>
+    </a>
+    <a href="{{ url_for('cards') }}?filter=minor" class="feature-card">
+      <div class="feature-icon">Minor Arcana</div>
+      <h3 class="feature-title">The Living World</h3>
+      <p class="feature-desc">56 cards across four sacred suits reveal the everyday dramas, challenges, and joys of human experience.</p>
+    </a>
+    <a href="{{ url_for('reading') }}" class="feature-card">
+      <div class="feature-icon">Spreads &amp; Readings</div>
+      <h3 class="feature-title">Illumination</h3>
+      <p class="feature-desc">From a single card to the Celtic Cross — let the cards illuminate past, present, and future.</p>
+    </a>
+  </div>
+</section>
+
+<section class="suits-section">
+  <h2 class="section-title">The Four Suits</h2>
+  <p class="section-subtitle">Each suit governs a realm of human experience</p>
+  <div class="suits-grid">
+    <a href="{{ url_for('cards') }}?filter=minor&suit=Wands" class="suit-card suit-wands">
+      <div class="suit-symbol">Ψ</div>
+      <h3 class="suit-name">Wands</h3>
+      <p class="suit-element">Fire · Passion · Will</p>
+      <p class="suit-desc">Creativity, ambition, and the spark of inspiration that drives all action.</p>
+    </a>
+    <a href="{{ url_for('cards') }}?filter=minor&suit=Cups" class="suit-card suit-cups">
+      <div class="suit-symbol">Ω</div>
+      <h3 class="suit-name">Cups</h3>
+      <p class="suit-element">Water · Emotion · Dream</p>
+      <p class="suit-desc">Love, intuition, the inner life, and the deep currents of feeling.</p>
+    </a>
+    <a href="{{ url_for('cards') }}?filter=minor&suit=Swords" class="suit-card suit-swords">
+      <div class="suit-symbol">✚</div>
+      <h3 class="suit-name">Swords</h3>
+      <p class="suit-element">Air · Mind · Truth</p>
+      <p class="suit-desc">Intellect, conflict, clarity, and the power of thought and communication.</p>
+    </a>
+    <a href="{{ url_for('cards') }}?filter=minor&suit=Pentacles" class="suit-card suit-pentacles">
+      <div class="suit-symbol">✶</div>
+      <h3 class="suit-name">Pentacles</h3>
+      <p class="suit-element">Earth · Matter · Craft</p>
+      <p class="suit-desc">Material wealth, the body, the natural world, and practical skill.</p>
+    </a>
+  </div>
+</section>
+
+<section class="cta-section">
+  <div class="cta-inner">
+    <h2 class="cta-title">The cards await</h2>
+    <p class="cta-text">Shuffle the deck, hold your question in mind, and let the wisdom of the tarot speak.</p>
+    <a href="{{ url_for('reading') }}" class="btn-primary btn-large">
+      <span class="btn-dot"></span>
+      BEGIN YOUR READING
+    </a>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  window.ARCANA = {{ major_arcana | tojson }};
+</script>
+<script src="{{ url_for('static', filename='js/arcana-hero-cardfirst.js') }}"></script>
+{% endblock %}

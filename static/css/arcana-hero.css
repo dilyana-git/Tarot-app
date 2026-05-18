@@ -1,0 +1,721 @@
+/* ============================================================
+   ARCANA — Architectural Hero (Direction A)
+   Drop-in stylesheet for index.html's <section class="arcana-hero">.
+   Pairs with static/js/arcana-hero.js.
+
+   Scoped under .arcana-hero so it composes cleanly with the
+   sitewide style.css (which already provides the page chrome,
+   navbar, footer, features, suits and cta sections).
+   ============================================================ */
+
+/* Tokens local to the hero — names don't collide with style.css */
+.arcana-hero {
+  --ah-gold:       #c4933a;
+  --ah-gold-pale:  #e8c888;
+  --ah-gold-warm:  #d4a85c;
+  --ah-gold-dim:   #7a6a48;
+  --ah-gold-faint: rgba(196,147,58,.18);
+  --ah-gold-ghost: rgba(196,147,58,.08);
+  --ah-text:       #d4c8b0;
+  --ah-text-dim:   #a89878;
+  --ah-text-mute:  #7a6a48;
+  --ah-rule:       rgba(196,147,58,.18);
+  --ah-bg-warm:    #0a1411;
+  --ah-bg-glow:    #15201c;
+
+  /* Layout */
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(380px, 0.8fr) 1.6fr;
+  width: 100%;
+  /* The site has a 60px fixed navbar (see base.html). Fill the rest. */
+  min-height: calc(100vh - 60px);
+  overflow: hidden;
+  font-family: 'EB Garamond', Georgia, serif;
+  color: var(--ah-text);
+
+  /* Warm radial glow behind the hero */
+  background:
+    radial-gradient(ellipse 80% 65% at 62% 42%,
+      var(--ah-bg-glow) 0%, var(--ah-bg-warm) 38%, transparent 78%);
+}
+
+/* Mosaic tile texture — the system motif from the design canvas */
+.arcana-hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  pointer-events: none;
+  opacity: .12;
+  background-image:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32'><rect x='1' y='1' width='13' height='13' fill='none' stroke='%23c4933a' stroke-width='.3'/><rect x='17' y='17' width='13' height='13' fill='none' stroke='%23c4933a' stroke-width='.3'/></svg>");
+  background-size: 32px 32px;
+  z-index: 0;
+}
+
+/* Soft vignette so the orbital display reads against the page */
+.arcana-hero::after {
+  content: '';
+  position: absolute; inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse 70% 60% at 60% 50%,
+    transparent 30%, rgba(3,6,5,.55) 100%);
+  z-index: 0;
+}
+
+/* =================================================================
+   LEFT TEXT COLUMN
+   ================================================================= */
+.arcana-hero .hero-left {
+  position: relative;
+  z-index: 2;
+  padding: 38px 40px 32px 64px;
+  display: flex; flex-direction: column;
+  min-width: 0;
+}
+
+.arcana-hero .eyebrow-row {
+  display: flex; align-items: center; gap: 14px;
+  margin-bottom: 18px;
+}
+.arcana-hero .eyebrow-rule {
+  width: 30px; height: 1px;
+  background: var(--ah-gold);
+  display: inline-block;
+}
+.arcana-hero .eyebrow {
+  font-family: 'Cinzel', serif;
+  font-size: 10px; letter-spacing: .45em;
+  color: var(--ah-gold);
+  text-transform: uppercase;
+}
+
+/* Text stack — children cascade in/out with a stagger.
+   The whole stack still moves as a group via .is-out, but each
+   child has its own animation-delay for the entry. */
+.arcana-hero .text-stack {
+  transition: opacity .25s ease, filter .25s ease;
+}
+.arcana-hero .text-stack.is-out {
+  opacity: 0;
+  filter: blur(4px);
+}
+.arcana-hero .text-stack.is-out > * {
+  animation: ahTextOut .28s cubic-bezier(.55,.02,.42,1) forwards;
+}
+.arcana-hero .text-stack.is-in > * {
+  animation: ahTextIn .48s cubic-bezier(.22,.7,.3,1) both;
+}
+/* Stagger entrance — keep the whole cascade under ~250ms so the last
+   element finishes well within the flip-in animation. */
+.arcana-hero .text-stack.is-in > *:nth-child(1) { animation-delay:   0ms; }
+.arcana-hero .text-stack.is-in > *:nth-child(2) { animation-delay:  35ms; }
+.arcana-hero .text-stack.is-in > *:nth-child(3) { animation-delay:  70ms; }
+.arcana-hero .text-stack.is-in > *:nth-child(4) { animation-delay: 105ms; }
+.arcana-hero .text-stack.is-in > *:nth-child(5) { animation-delay: 140ms; }
+.arcana-hero .text-stack.is-in > *:nth-child(6) { animation-delay: 175ms; }
+
+@keyframes ahTextOut {
+  0%   { opacity: 1; transform: translateY(0)    translateX(0);     filter: blur(0); }
+  100% { opacity: 0; transform: translateY(-8px) translateX(-12px); filter: blur(4px); }
+}
+@keyframes ahTextIn {
+  0%   { opacity: 0; transform: translateY(14px) translateX(8px);   filter: blur(6px); }
+  60%  { opacity: 1; }
+  100% { opacity: 1; transform: translateY(0)    translateX(0);     filter: blur(0); }
+}
+/* Mirror the X-offset when going to the previous card */
+.arcana-hero .text-stack.dir-prev.is-out > * {
+  animation-name: ahTextOutPrev;
+}
+.arcana-hero .text-stack.dir-prev.is-in > * {
+  animation-name: ahTextInPrev;
+}
+@keyframes ahTextOutPrev {
+  0%   { opacity: 1; transform: translateY(0)    translateX(0);    filter: blur(0); }
+  100% { opacity: 0; transform: translateY(-8px) translateX(12px); filter: blur(4px); }
+}
+@keyframes ahTextInPrev {
+  0%   { opacity: 0; transform: translateY(14px) translateX(-8px); filter: blur(6px); }
+  60%  { opacity: 1; }
+  100% { opacity: 1; transform: translateY(0)    translateX(0);    filter: blur(0); }
+}
+
+.arcana-hero .card-num {
+  font-family: 'Cinzel', serif;
+  font-size: 11px; letter-spacing: .35em;
+  color: var(--ah-text-mute);
+  margin-bottom: 10px;
+}
+.arcana-hero .card-num-bold {
+  color: var(--ah-gold);
+  font-weight: 600;
+}
+
+.arcana-hero .card-title {
+  font-family: 'Cinzel', serif;
+  font-weight: 500;
+  font-size: clamp(42px, 5vw, 78px);
+  color: var(--ah-gold-pale);
+  line-height: .9;
+  letter-spacing: -.005em;
+  text-shadow: 0 0 60px rgba(232,200,136,.12);
+  margin: 0;
+}
+
+.arcana-hero .card-roman {
+  margin-top: 10px;
+  font-family: 'Cinzel', serif;
+  font-size: 20px; letter-spacing: .25em;
+  color: var(--ah-gold);
+  opacity: .7;
+}
+
+.arcana-hero .kw-row {
+  display: flex; align-items: center;
+  gap: 12px; flex-wrap: wrap;
+  margin-top: 20px;
+}
+.arcana-hero .kw-diamond {
+  width: 6px; height: 6px;
+  background: var(--ah-gold);
+  clip-path: polygon(50% 0,100% 50%,50% 100%,0 50%);
+}
+.arcana-hero .kw {
+  font-family: 'Cinzel', serif;
+  font-size: 11px; letter-spacing: .3em;
+  color: var(--ah-gold-pale);
+  text-transform: uppercase;
+}
+
+.arcana-hero .card-desc {
+  margin-top: 16px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ah-text-dim);
+  font-style: italic;
+  max-width: 460px;
+}
+
+.arcana-hero .meta {
+  margin-top: 16px;
+  display: flex; gap: 36px;
+  padding-top: 14px;
+  border-top: 1px solid var(--ah-gold-ghost);
+  max-width: 460px;
+}
+.arcana-hero .meta-row {
+  display: flex; flex-direction: column; gap: 6px;
+}
+.arcana-hero .meta dt {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; letter-spacing: .2em;
+  color: var(--ah-text-mute);
+}
+.arcana-hero .meta dd {
+  font-family: 'Cinzel', serif;
+  font-size: 12px; letter-spacing: .2em;
+  color: var(--ah-gold-pale);
+}
+
+/* CTA row — overrides sitewide .btn-primary / .btn-ghost inside the hero
+   so the hero has its architectural outline button instead of the solid
+   amber one used elsewhere on the page. */
+.arcana-hero .cta-row {
+  display: flex; gap: 10px; align-items: center;
+  margin-top: 22px;
+  flex-wrap: wrap;
+}
+
+.arcana-hero .cta-row .btn-primary {
+  display: inline-flex; align-items: center; gap: 12px;
+  padding: 12px 22px;
+  background: transparent;
+  border: 1px solid var(--ah-gold);
+  color: var(--ah-gold-pale);
+  font-family: 'Cinzel', serif;
+  letter-spacing: .25em; font-size: 11px;
+  text-transform: uppercase;
+  text-decoration: none;
+  box-shadow: none;
+  transition: background .25s ease, color .25s ease, border-color .25s ease;
+  position: relative;
+}
+.arcana-hero .cta-row .btn-primary::before {
+  content: '';
+  position: absolute; inset: -3px;
+  border: 1px solid rgba(196,147,58,.18);
+  pointer-events: none;
+}
+.arcana-hero .cta-row .btn-primary:hover {
+  background: rgba(196,147,58,.08);
+  color: #fff5d6;
+  transform: none;
+}
+.arcana-hero .btn-dot {
+  width: 6px; height: 6px;
+  background: var(--ah-gold);
+  clip-path: polygon(50% 0,100% 50%,50% 100%,0 50%);
+}
+
+.arcana-hero .cta-row .btn-ghost {
+  padding: 12px 18px;
+  background: transparent;
+  border: 0;
+  color: var(--ah-text-dim);
+  font-family: 'Cinzel', serif;
+  letter-spacing: .25em; font-size: 11px;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: color .25s ease;
+}
+.arcana-hero .cta-row .btn-ghost:hover { color: var(--ah-gold-pale); }
+
+/* Side circles do a soft pop-scale when their image changes */
+.arcana-hero .nav-btn-circle.is-changing {
+  animation: ahSatellitePop .55s cubic-bezier(.22,.7,.3,1);
+}
+@keyframes ahSatellitePop {
+  0%   { transform: scale(1)    rotate(0); filter: brightness(.6) blur(2px); }
+  40%  { transform: scale(1.08) rotate(2deg); }
+  100% { transform: scale(1)    rotate(0); filter: brightness(1)   blur(0); }
+}
+
+/* =================================================================
+   COUNTER / PROGRESS — lives in the left column flow
+   ================================================================= */
+.arcana-hero .counter-row {
+  display: flex; align-items: center; gap: 14px;
+  margin-top: auto;
+  padding-top: 22px;
+  max-width: 480px;
+}
+.arcana-hero .counter-caption {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 10px;
+  max-width: 480px;
+  font-family: 'Cinzel', serif;
+  font-size: 10px; letter-spacing: .3em;
+  color: var(--ah-text-mute);
+}
+.arcana-hero .counter-hint {
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: .2em; font-size: 9px;
+}
+.arcana-hero .counter-arrow {
+  background: none; border: 0;
+  font-family: 'Cinzel', serif;
+  font-size: 13px;
+  color: var(--ah-text-dim);
+  padding: 4px 8px;
+  cursor: pointer;
+  transition: color .25s ease;
+}
+.arcana-hero .counter-arrow:hover { color: var(--ah-gold-pale); }
+.arcana-hero .counter-txt {
+  font-family: 'Cinzel', serif;
+  font-size: 11px; letter-spacing: .25em;
+  color: var(--ah-gold-pale);
+  min-width: 28px;
+}
+.arcana-hero .counter-txt-end { color: var(--ah-text-mute); }
+.arcana-hero .counter-track {
+  position: relative;
+  flex: 1;
+  height: 1px;
+  background: rgba(196,147,58,.2);
+}
+.arcana-hero .counter-fill {
+  position: absolute; left: 0; top: 0; bottom: 0;
+  width: 0%;
+  background: var(--ah-gold);
+  transition: width .35s ease;
+}
+.arcana-hero .counter-tick {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 14px; height: 14px;
+  padding: 0; background: none; border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.arcana-hero .counter-tick::before {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 3px; height: 3px;
+  border-radius: 50%;
+  background: var(--ah-text-mute);
+  transition: width .25s, height .25s, background .25s, box-shadow .25s;
+}
+.arcana-hero .counter-tick:hover::before {
+  background: var(--ah-gold-pale);
+  width: 5px; height: 5px;
+}
+.arcana-hero .counter-tick.is-active::before {
+  background: var(--ah-gold-pale);
+  width: 6px; height: 6px;
+  box-shadow: 0 0 10px rgba(232,200,136,.6);
+}
+/* Pop the just-activated tick to draw the eye */
+.arcana-hero .counter-tick.just-activated::before {
+  animation: ahTickPop .6s cubic-bezier(.3,.8,.4,1.4);
+}
+@keyframes ahTickPop {
+  0%   { transform: translate(-50%, -50%) scale(1);   box-shadow: 0 0 0 rgba(232,200,136,0); }
+  35%  { transform: translate(-50%, -50%) scale(2.4); box-shadow: 0 0 22px rgba(232,200,136,.9); }
+  100% { transform: translate(-50%, -50%) scale(1);   box-shadow: 0 0 10px rgba(232,200,136,.6); }
+}
+
+/* =================================================================
+   RIGHT — ORBITAL DISPLAY
+   ================================================================= */
+.arcana-hero .hero-right {
+  position: relative;
+  z-index: 2;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.arcana-hero .orbit-svg {
+  position: absolute;
+  width: 96%; height: 90%;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -52%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   ORBIT — continuous mystical motion
+   ─────────────────────────────────────────────────────────────────
+   The SVG ships in the template untouched. We target it positionally
+   via nth-of-type so no markup changes are required.
+
+   Structure (see index.html):
+     <defs>, <circle><!-- glow -->,
+     <ellipse> × 3   ← orbit rings
+     <path>          ← top dashed arc
+     <rect> × 3      ← gold diamonds at arc endpoints + top
+     <circle> × 4    ← small twinkling stars (after the glow circle)
+*/
+
+/* All animatable shapes pivot around their own visual center */
+.arcana-hero .orbit-svg ellipse,
+.arcana-hero .orbit-svg > circle:first-of-type {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  will-change: transform, opacity;
+}
+
+/* 1) Counter-rotating orbit rings — different periods + directions.
+      The ellipses are slightly non-circular (rx ≠ ry) so the rotation
+      reads as a slow swim rather than appearing static. */
+.arcana-hero .orbit-svg ellipse:nth-of-type(1) {
+  animation: ahOrbitRotate 140s linear infinite;
+}
+.arcana-hero .orbit-svg ellipse:nth-of-type(2) {
+  animation: ahOrbitRotate 95s  linear infinite reverse;
+}
+.arcana-hero .orbit-svg ellipse:nth-of-type(3) {
+  animation: ahOrbitRotate 70s  linear infinite;
+}
+@keyframes ahOrbitRotate {
+  from { transform: rotate(0deg);   }
+  to   { transform: rotate(360deg); }
+}
+
+/* 2) The top arc — a flow of energy across the curve.
+      stroke-dashoffset animation makes the existing dasharray crawl. */
+.arcana-hero .orbit-svg path {
+  animation: ahOrbitDashFlow 18s linear infinite;
+}
+@keyframes ahOrbitDashFlow {
+  from { stroke-dashoffset: 0;   }
+  to   { stroke-dashoffset: -90; }
+}
+
+/* 3) Glow circle — breathes in and out, slow and steady. */
+.arcana-hero .orbit-svg > circle:first-of-type {
+  animation: ahOrbitGlow 6.5s ease-in-out infinite;
+}
+@keyframes ahOrbitGlow {
+  0%, 100% { opacity: .85; transform: scale(1);    }
+  50%      { opacity: 1;   transform: scale(1.05); }
+}
+
+/* 4) Diamond endpoints — pulse opacity (transform would clobber the
+      SVG transform="rotate(45 …)" attribute, so we touch opacity only). */
+.arcana-hero .orbit-svg rect:nth-of-type(1) {
+  animation: ahOrbitDiamond 4.2s ease-in-out infinite;
+}
+.arcana-hero .orbit-svg rect:nth-of-type(2) {
+  animation: ahOrbitDiamond 4.2s ease-in-out infinite -1.4s;
+}
+.arcana-hero .orbit-svg rect:nth-of-type(3) {
+  animation: ahOrbitDiamond 4.2s ease-in-out infinite -2.8s;
+}
+@keyframes ahOrbitDiamond {
+  0%, 100% { opacity: 1;  filter: drop-shadow(0 0 0   rgba(232,200,136,0)); }
+  50%      { opacity: .5; filter: drop-shadow(0 0 6px rgba(232,200,136,.6)); }
+}
+
+/* 5) Small corner stars — twinkle independently at offset phases. */
+.arcana-hero .orbit-svg > circle:not(:first-of-type) {
+  transform-origin: center;
+  animation: ahOrbitTwinkle 5.4s ease-in-out infinite;
+}
+.arcana-hero .orbit-svg > circle:nth-of-type(2) { animation-delay:    0s; }
+.arcana-hero .orbit-svg > circle:nth-of-type(3) { animation-delay: -1.3s; }
+.arcana-hero .orbit-svg > circle:nth-of-type(4) { animation-delay: -2.7s; }
+.arcana-hero .orbit-svg > circle:nth-of-type(5) { animation-delay: -4.1s; }
+@keyframes ahOrbitTwinkle {
+  0%, 100% { opacity: .25; }
+  50%      { opacity: 1;   }
+}
+
+/* Respect user motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .arcana-hero .orbit-svg ellipse,
+  .arcana-hero .orbit-svg path,
+  .arcana-hero .orbit-svg rect,
+  .arcana-hero .orbit-svg circle {
+    animation: none !important;
+  }
+}
+
+/* Main card */
+.arcana-hero .main-card-wrap {
+  position: relative;
+  width: min(46vw, 78vh);
+  min-width: 380px;
+  max-width: 620px;
+  aspect-ratio: 3 / 4;
+  z-index: 2;
+  /* 3D context for layer rotations */
+  perspective: 1400px;
+  perspective-origin: 50% 50%;
+}
+.arcana-hero .main-card {
+  position: absolute; inset: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow:
+    0 0 160px rgba(196,147,58,.28),
+    0 0 80px rgba(0,0,0,.55),
+    inset 0 0 80px rgba(0,0,0,.45);
+}
+
+/* Each image lives in its own absolutely-positioned layer so we can
+   crossfade old→new with 3D rotation simultaneously. The new image is
+   visible (low opacity, rotated in) from t=0 so there's no perceptual
+   "wait for edge-on" lag. */
+.arcana-hero .main-card-layer {
+  position: absolute; inset: 0;
+  border-radius: inherit;
+  overflow: hidden;
+  transform-origin: 50% 50%;
+  backface-visibility: hidden;
+  will-change: transform, opacity, filter;
+}
+.arcana-hero .main-card-layer img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+}
+/* The outgoing layer sits on top so it can fade away over the incoming. */
+.arcana-hero .main-card-layer.is-out {
+  animation: ahLayerOut .36s cubic-bezier(.55,.02,.42,1) forwards;
+  z-index: 3;
+}
+.arcana-hero .main-card-layer.is-in {
+  animation: ahLayerIn  .38s cubic-bezier(.22,.7,.3,1) forwards;
+  z-index: 2;
+}
+.arcana-hero .main-card-layer.is-out.dir-prev { animation-name: ahLayerOutPrev; }
+.arcana-hero .main-card-layer.is-in.dir-prev  { animation-name: ahLayerInPrev; }
+
+@keyframes ahLayerOut {
+  0%   { opacity: 1; transform: rotateY(0)     scale(1);    filter: brightness(1); }
+  100% { opacity: 0; transform: rotateY(38deg) scale(1.05); filter: brightness(1.5) blur(3px); }
+}
+@keyframes ahLayerIn {
+  0%   { opacity: 0; transform: rotateY(-38deg) scale(.94); filter: brightness(.85) blur(3px); }
+  55%  { opacity: 1; }
+  100% { opacity: 1; transform: rotateY(0)      scale(1);   filter: brightness(1) blur(0); }
+}
+@keyframes ahLayerOutPrev {
+  0%   { opacity: 1; transform: rotateY(0)      scale(1);    filter: brightness(1); }
+  100% { opacity: 0; transform: rotateY(-38deg) scale(1.05); filter: brightness(1.5) blur(3px); }
+}
+@keyframes ahLayerInPrev {
+  0%   { opacity: 0; transform: rotateY(38deg) scale(.94); filter: brightness(.85) blur(3px); }
+  55%  { opacity: 1; }
+  100% { opacity: 1; transform: rotateY(0)     scale(1);   filter: brightness(1) blur(0); }
+}
+
+/* Glow and mask sit above the layers via source order. Ensure they
+   stay on top even when layers gain z-index during transition. */
+.arcana-hero .main-card-glow,
+.arcana-hero .main-card-mask { z-index: 4; }
+
+/* Gold shimmer that pulses at the moment of swap, centered on the card */
+.arcana-hero .shimmer-pulse {
+  position: absolute; inset: -8%;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 5;
+  background:
+    radial-gradient(circle at center,
+      rgba(232,200,136,.45) 0%,
+      rgba(232,200,136,.18) 28%,
+      rgba(232,200,136,0)   60%);
+  mix-blend-mode: screen;
+  animation: ahShimmer .9s cubic-bezier(.3,.7,.4,1) forwards;
+}
+@keyframes ahShimmer {
+  0%   { opacity: 0; transform: scale(.45) rotateZ(0); }
+  35%  { opacity: 1; transform: scale(1)   rotateZ(0); }
+  100% { opacity: 0; transform: scale(1.18) rotateZ(0); }
+}
+
+/* A thin gold seam that appears along the center axis during the swap. */
+.arcana-hero .main-card-wrap::after {
+  content: '';
+  position: absolute; top: 0; bottom: 0; left: 50%;
+  width: 2px; margin-left: -1px;
+  background: linear-gradient(to bottom,
+    transparent 0%, rgba(232,200,136,.85) 50%, transparent 100%);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 5;
+  transition: opacity .1s ease;
+}
+.arcana-hero .main-card-wrap.is-flipping::after {
+  opacity: 1;
+  animation: ahSeam .42s ease-out forwards;
+}
+@keyframes ahSeam {
+  0%   { opacity: 0; transform: scaleY(.6); }
+  35%  { opacity: 1; transform: scaleY(1); }
+  100% { opacity: 0; transform: scaleY(1); }
+}
+.arcana-hero .main-card img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.arcana-hero .main-card-mask {
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at center,
+    transparent 60%, rgba(6,12,10,.45) 100%);
+  pointer-events: none;
+}
+.arcana-hero .main-card-glow {
+  position: absolute; inset: -8px;
+  border-radius: 50%;
+  border: 1px solid rgba(196,147,58,.35);
+  pointer-events: none;
+}
+.arcana-hero .main-card-orbit-ring {
+  position: absolute; inset: -32px;
+  border-radius: 50%;
+  border: 1px solid rgba(196,147,58,.12);
+  pointer-events: none;
+}
+.arcana-hero .main-card-label {
+  position: absolute;
+  bottom: -48px; left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Cinzel', serif;
+  font-size: 13px; letter-spacing: .5em;
+  color: var(--ah-gold-pale);
+  white-space: nowrap;
+  text-decoration: none;
+  transition: opacity .2s ease;
+}
+.arcana-hero .main-card-label.is-out {
+  opacity: 0;
+  transform: translateX(-50%) translateY(6px);
+}
+.arcana-hero .main-card-label {
+  transition: opacity .35s ease, transform .35s ease;
+}
+
+/* Prev / Next satellite buttons */
+.arcana-hero .nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  padding: 8px;
+  background: none; border: 0;
+  cursor: pointer;
+  z-index: 3;
+  transition: transform .3s ease, filter .3s ease;
+}
+.arcana-hero .nav-btn-prev { left: 2%; }
+.arcana-hero .nav-btn-next { right: 2%; }
+.arcana-hero .nav-btn:hover {
+  transform: translateY(-50%) scale(1.06);
+  filter: brightness(1.2);
+}
+.arcana-hero .nav-btn:hover .nav-btn-circle {
+  border-color: var(--ah-gold);
+  box-shadow: 0 0 40px rgba(196,147,58,.4);
+}
+.arcana-hero .nav-btn:hover .nav-btn-label { color: var(--ah-gold-pale); }
+.arcana-hero .nav-btn:hover .nav-chevron   { color: var(--ah-gold-pale); }
+
+.arcana-hero .nav-btn-circle {
+  position: relative;
+  width: 78px; height: 78px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1px solid rgba(196,147,58,.35);
+  box-shadow: 0 0 24px rgba(0,0,0,.5);
+  transition: border-color .25s ease, box-shadow .3s ease;
+}
+.arcana-hero .nav-btn-circle img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.arcana-hero .nav-btn-ring {
+  position: absolute; inset: -5px;
+  border-radius: 50%;
+  border: 1px solid rgba(196,147,58,.18);
+  pointer-events: none;
+}
+.arcana-hero .nav-chevron {
+  font-family: 'Cinzel', serif;
+  font-size: 10px; letter-spacing: .25em;
+  color: var(--ah-text-dim);
+  transition: color .25s ease;
+}
+.arcana-hero .nav-btn-label {
+  font-family: 'Cinzel', serif;
+  font-size: 9px; letter-spacing: .3em;
+  color: var(--ah-text-mute);
+  width: 100px; text-align: center;
+  transition: color .25s ease;
+}
+
+/* =================================================================
+   RESPONSIVE
+   ================================================================= */
+@media (max-width: 1200px) {
+  .arcana-hero .hero-left { padding: 32px 32px 28px 48px; }
+  .arcana-hero .nav-btn-circle { width: 64px; height: 64px; }
+}
+
+@media (max-width: 900px) {
+  .arcana-hero {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+  .arcana-hero .hero-left  { padding: 32px; }
+  .arcana-hero .hero-right { min-height: 70vh; padding: 32px 0 80px; }
+  .arcana-hero .nav-btn-prev { left: 4%; }
+  .arcana-hero .nav-btn-next { right: 4%; }
+}

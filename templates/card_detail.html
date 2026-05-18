@@ -3,9 +3,9 @@
 {% block title %}{{ card.name }} — Arcana{% endblock %}
 
 {% block content %}
-<div class="card-detail-page">
 
-  <!-- Back link -->
+<!-- Full-width card spotlight hero -->
+<section class="card-detail-hero" style="--card-color: {{ card.card_color }}">
   <div class="breadcrumb">
     <a href="{{ url_for('cards') }}" class="breadcrumb-link">← The Cards</a>
     {% if card.suit %}
@@ -16,7 +16,26 @@
     <a href="{{ url_for('cards') }}?filter=major" class="breadcrumb-link">Major Arcana</a>
     {% endif %}
   </div>
+  <div class="page-arch-eyebrow">
+    <span class="page-arch-rule"></span>
+    <span class="page-arch-label">
+      {% if card.arcana == 'major' %}Major Arcana{% else %}{{ card.suit }}{% endif %}
+    </span>
+    <span class="page-arch-rule"></span>
+  </div>
+  <h1 class="card-detail-title">{{ card.name }}</h1>
+  <div class="card-detail-hero-meta">
+    <span class="card-detail-hero-num">{{ card.number }}</span>
+    <span class="card-detail-hero-sep">✦</span>
+    <span class="card-detail-hero-element">{{ card.element }}</span>
+    {% if card.symbol %}
+    <span class="card-detail-hero-sep">✦</span>
+    <span class="card-detail-hero-symbol">{{ card.symbol }}</span>
+    {% endif %}
+  </div>
+</section>
 
+<div class="card-detail-page">
   <div class="card-detail-layout">
 
     <!-- Card visual -->
@@ -40,8 +59,6 @@
           <span class="cl-symbol-small">{{ card.symbol }}</span>
         </div>
         <div class="card-large-center">
-          <div class="card-large-symbol">{{ card.symbol }}</div>
-          <div class="card-large-name">{{ card.name }}</div>
           {% if card.suit %}
           <div class="card-large-suit">
             {% if card.suit == 'Wands' %}Ψ{% elif card.suit == 'Cups' %}Ω{% elif card.suit == 'Swords' %}✚{% else %}✶{% endif %}
@@ -90,11 +107,7 @@
 
     <!-- Card info -->
     <div class="card-detail-info">
-      <div class="detail-header">
-        <p class="detail-number">{{ card.number }}</p>
-        <h1 class="detail-name">{{ card.name }}</h1>
-        <p class="detail-desc">{{ card.description }}</p>
-      </div>
+      <p class="detail-desc">{{ card.description }}</p>
 
       <!-- Keywords -->
       <div class="detail-section">

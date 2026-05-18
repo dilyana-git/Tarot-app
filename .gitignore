@@ -4,3 +4,8 @@ __pycache__/
 static/images/
 static/media/
 venv/
+integration/*
+flask-port/*
+screenshots/*
+uploads/*
+venv/*

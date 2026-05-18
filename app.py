@@ -49,14 +49,34 @@ def get_card_image_filename(card):
 
     if card['arcana'] == 'minor' and card.get('suit'):
         rank = MINOR_RANK_MAP.get(card['number'], str(card['number']).lower().replace(' ', '_'))
-        return get_card_image_path(f"images/minor/{card['suit'].lower()}/{rank}.jpg")
+        return get_card_image_path(f"images/minor/{card['suit'].lower()}/{rank}")
 
     slug = card['name'].lower().replace("'", '').replace(' ', '_')
     if slug.startswith('the_'):
         slug = slug[4:]
-    return get_card_image_path(f"images/major/{slug}.jpg")
+    return get_card_image_path(f"images/major/{slug}")
 
 app.jinja_env.globals['get_card_image_filename'] = get_card_image_filename
+
+
+def get_card_video_url(card):
+    """Return a /static/… URL for the card's video, or empty string if none exists."""
+    raw_vid = card.get('video', '')
+    if raw_vid:
+        path = f'media/{raw_vid}'
+        if os.path.exists(os.path.join(app.static_folder, path)):
+            return f'/static/{path}'
+
+    slug = card['name'].lower().replace("'", '').replace(' ', '_')
+    if slug.startswith('the_'):
+        slug = slug[4:]
+    path = f'media/{slug}.mp4'
+    if os.path.exists(os.path.join(app.static_folder, path)):
+        return f'/static/{path}'
+
+    return ''
+
+app.jinja_env.globals['get_card_video_url'] = get_card_video_url
 
 
 def draw_cards(n):
@@ -69,6 +89,12 @@ def draw_cards(n):
         for c in drawn
     ]
 
+
+_HERO_TEMPLATES = {
+    'architectural': 'index.html',
+    'cardfirst':     'index_cardfirst.html',
+    'editorial':     'index_editorial.html',
+}
 
 @app.route('/')
 def index():
@@ -85,17 +111,29 @@ def index():
             img_path = f'images/major/{slug}.jpg'
         resolved = get_card_image_path(img_path)
         c['image_url'] = '' if resolved == 'images/card-placeholder.svg' else f'/static/{resolved}'
-
-        raw_vid = card.get('video', '')
-        if raw_vid:
-            vid_path = f'media/{raw_vid}'
-            c['video_url'] = f'/static/{vid_path}' if os.path.exists(os.path.join(app.static_folder, vid_path)) else ''
-        else:
-            c['video_url'] = ''
-
+        c['video_url'] = ''
         arcana.append(c)
-    return render_template('index.html', major_arcana=arcana)
 
+    hero = request.args.get('hero', 'architectural')
+    template = _HERO_TEMPLATES.get(hero, 'index.html')
+    return render_template(template, major_arcana=arcana)
+
+
+def _card_json(card):
+    img = get_card_image_filename(card)
+    return {
+        'id':       card['id'],
+        'name':     card['name'],
+        'number':   card['number'],
+        'arcana':   card['arcana'],
+        'suit':     card.get('suit'),
+        'element':  card.get('element', ''),
+        'symbol':   card.get('symbol', '✦'),
+        'keywords': card.get('keywords_upright', [])[:3],
+        'image_url': '' if img == 'images/card-placeholder.svg' else f'/static/{img}',
+        'card_color':   card.get('card_color', '#162420'),
+        'accent_color': card.get('accent_color', '#c4933a'),
+    }
 
 @app.route('/cards')
 def cards():
@@ -114,7 +152,16 @@ def cards():
             title = 'Minor Arcana'
     else:
         display_cards = ALL_CARDS
-        title = 'All 78 Cards'
+        title = 'The Deck'
+
+    # Spread-view data (always the full deck, grouped)
+    spread = {
+        'major':     [_card_json(c) for c in get_major_arcana()],
+        'wands':     [_card_json(c) for c in get_cards_by_suit('Wands')],
+        'cups':      [_card_json(c) for c in get_cards_by_suit('Cups')],
+        'swords':    [_card_json(c) for c in get_cards_by_suit('Swords')],
+        'pentacles': [_card_json(c) for c in get_cards_by_suit('Pentacles')],
+    }
 
     return render_template(
         'cards.html',
@@ -123,6 +170,7 @@ def cards():
         filter_type=filter_type,
         suit_filter=suit_filter,
         total=len(display_cards),
+        spread=spread,
     )
 
 
@@ -157,6 +205,8 @@ def api_reading():
 
     result_cards = []
     for i, card in enumerate(drawn):
+        img_filename = get_card_image_filename(card)
+        image_url = '' if img_filename == 'images/card-placeholder.svg' else f'/static/{img_filename}'
         result_cards.append({
             'id': card['id'],
             'name': card['name'],
@@ -174,6 +224,7 @@ def api_reading():
             'accent_color': card['accent_color'],
             'reversed': random.random() < 0.35,
             'position': spread['positions'][i],
+            'image_url': image_url,
         })
 
     return jsonify({
