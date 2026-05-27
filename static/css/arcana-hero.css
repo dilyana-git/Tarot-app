@@ -84,10 +84,11 @@
 }
 .arcana-hero .eyebrow {
   font-family: 'Cinzel', serif;
-  font-size: 10px; letter-spacing: .45em;
+  font-size: 12px; letter-spacing: .45em;
   color: var(--ah-gold);
   text-transform: uppercase;
 }
+
 
 /* Text stack — children cascade in/out with a stagger.
    The whole stack still moves as a group via .is-out, but each
@@ -189,7 +190,7 @@
 
 .arcana-hero .card-desc {
   margin-top: 16px;
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.6;
   color: var(--ah-text-dim);
   font-style: italic;
@@ -208,7 +209,7 @@
 }
 .arcana-hero .meta dt {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 9px; letter-spacing: .2em;
+  font-size: 12px; letter-spacing: .2em;
   color: var(--ah-text-mute);
 }
 .arcana-hero .meta dd {
@@ -229,16 +230,17 @@
 .arcana-hero .cta-row .btn-primary {
   display: inline-flex; align-items: center; gap: 12px;
   padding: 12px 22px;
-  background: transparent;
+  background: var(--ah-gold);
   border: 1px solid var(--ah-gold);
-  color: var(--ah-gold-pale);
+  color: #060c0a;
   font-family: 'Cinzel', serif;
   letter-spacing: .25em; font-size: 11px;
   text-transform: uppercase;
   text-decoration: none;
-  box-shadow: none;
+  box-shadow: inset 0 0 10px rgba(232,200,136,.15);
   transition: background .25s ease, color .25s ease, border-color .25s ease;
   position: relative;
+  min-height: 44px;
 }
 .arcana-hero .cta-row .btn-primary::before {
   content: '';
@@ -247,8 +249,9 @@
   pointer-events: none;
 }
 .arcana-hero .cta-row .btn-primary:hover {
-  background: rgba(196,147,58,.08);
-  color: #fff5d6;
+  background: var(--ah-gold-warm);
+  border-color: var(--ah-gold-warm);
+  color: #060c0a;
   transform: none;
 }
 .arcana-hero .btn-dot {
@@ -299,7 +302,7 @@
 }
 .arcana-hero .counter-hint {
   font-family: 'JetBrains Mono', monospace;
-  letter-spacing: .2em; font-size: 9px;
+  letter-spacing: .2em; font-size: 12px;
 }
 .arcana-hero .counter-arrow {
   background: none; border: 0;
@@ -334,7 +337,7 @@
   position: absolute;
   top: 50%;
   transform: translate(-50%, -50%);
-  width: 14px; height: 14px;
+  width: 24px; height: 24px;
   padding: 0; background: none; border: 0;
   border-radius: 50%;
   cursor: pointer;
