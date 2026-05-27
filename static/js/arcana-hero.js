@@ -89,7 +89,8 @@
     const tick = document.createElement('button');
     tick.className = 'counter-tick';
     tick.style.left = `${(i / (cards.length - 1)) * 100}%`;
-    tick.setAttribute('aria-label', `Card ${i}`);
+    tick.setAttribute('aria-label', cards[i].name);
+    tick.setAttribute('title', cards[i].name);
     tick.addEventListener('click', () => goTo(i));
     els.counterTrack.appendChild(tick);
   });
@@ -178,7 +179,7 @@
 
     els.cardNum.textContent     = String(idx).padStart(2, '0');
     els.cardTitle.textContent   = card.name.toUpperCase();
-    els.cardRoman.textContent   = `·  ${card.number}  ·`;
+    if (els.cardRoman) els.cardRoman.textContent = `·  ${card.number}  ·`;
     els.cardDesc.textContent    = card.description || '';
     els.cardElement.textContent = (card.element || '').toUpperCase();
     els.cardSymbol.textContent  = card.symbol || '';

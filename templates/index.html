@@ -22,7 +22,6 @@
     <div class="text-stack" id="textStack">
       <div class="card-num">CARD <span class="card-num-bold" id="cardNum">00</span></div>
       <h1 class="card-title" id="cardTitle">THE FOOL</h1>
-      <div class="card-roman" id="cardRoman">·  0  ·</div>
 
       <div class="kw-row" id="kwRow">
         <!-- populated by JS -->
@@ -47,7 +46,7 @@
         <span class="btn-dot"></span>
         BEGIN A READING
       </a>
-      <a href="{{ url_for('cards') }}" class="btn-ghost">EXPLORE THE DECK ↗</a>
+      <a href="{{ url_for('cards') }}" class="btn-ghost">EXPLORE THE DECK</a>
     </div>
 
     <!-- Counter / progress -->
@@ -161,25 +160,25 @@
   <p class="section-subtitle">Each suit governs a realm of human experience</p>
   <div class="suits-grid">
     <a href="{{ url_for('cards') }}?filter=minor&suit=Wands" class="suit-card suit-wands">
-      <div class="suit-symbol">Ψ</div>
+      <div class="suit-symbol">△</div>
       <h3 class="suit-name">Wands</h3>
       <p class="suit-element">Fire · Passion · Will</p>
       <p class="suit-desc">Creativity, ambition, and the spark of inspiration that drives all action.</p>
     </a>
     <a href="{{ url_for('cards') }}?filter=minor&suit=Cups" class="suit-card suit-cups">
-      <div class="suit-symbol">Ω</div>
+      <div class="suit-symbol">▽</div>
       <h3 class="suit-name">Cups</h3>
       <p class="suit-element">Water · Emotion · Dream</p>
       <p class="suit-desc">Love, intuition, the inner life, and the deep currents of feeling.</p>
     </a>
     <a href="{{ url_for('cards') }}?filter=minor&suit=Swords" class="suit-card suit-swords">
-      <div class="suit-symbol">✚</div>
+      <div class="suit-symbol">✕</div>
       <h3 class="suit-name">Swords</h3>
       <p class="suit-element">Air · Mind · Truth</p>
       <p class="suit-desc">Intellect, conflict, clarity, and the power of thought and communication.</p>
     </a>
     <a href="{{ url_for('cards') }}?filter=minor&suit=Pentacles" class="suit-card suit-pentacles">
-      <div class="suit-symbol">✶</div>
+      <div class="suit-symbol">⊕</div>
       <h3 class="suit-name">Pentacles</h3>
       <p class="suit-element">Earth · Matter · Craft</p>
       <p class="suit-desc">Material wealth, the body, the natural world, and practical skill.</p>
@@ -192,10 +191,7 @@
   <div class="cta-inner">
     <h2 class="cta-title">The cards await</h2>
     <p class="cta-text">Shuffle the deck, hold your question in mind, and let the wisdom of the tarot speak.</p>
-    <a href="{{ url_for('reading') }}" class="btn-primary btn-large">
-      <span class="btn-dot"></span>
-      BEGIN YOUR READING
-    </a>
+    <a href="{{ url_for('reading') }}" class="btn btn-primary btn-large">BEGIN A READING</a>
   </div>
 </section>
 {% endblock %}

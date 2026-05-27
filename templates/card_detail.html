@@ -25,6 +25,13 @@
   </div>
   <h1 class="card-detail-title">{{ card.name }}</h1>
   <div class="card-detail-hero-meta">
+    {% if card.arcana == 'major' %}
+    <span class="card-detail-position">{{ card.id + 1 }} / 22</span>
+    <span class="card-detail-hero-sep">✦</span>
+    {% else %}
+    <span class="card-detail-position">{{ ((card.id - 22) % 14) + 1 }} / 14</span>
+    <span class="card-detail-hero-sep">✦</span>
+    {% endif %}
     <span class="card-detail-hero-num">{{ card.number }}</span>
     <span class="card-detail-hero-sep">✦</span>
     <span class="card-detail-hero-element">{{ card.element }}</span>
@@ -61,7 +68,7 @@
         <div class="card-large-center">
           {% if card.suit %}
           <div class="card-large-suit">
-            {% if card.suit == 'Wands' %}Ψ{% elif card.suit == 'Cups' %}Ω{% elif card.suit == 'Swords' %}✚{% else %}✶{% endif %}
+            {% if card.suit == 'Wands' %}△{% elif card.suit == 'Cups' %}▽{% elif card.suit == 'Swords' %}✕{% else %}⊕{% endif %}
             {{ card.suit }}
           </div>
           {% else %}
@@ -150,7 +157,7 @@
 
       <!-- CTA -->
       <div class="detail-cta">
-        <a href="{{ url_for('reading') }}" class="btn btn-primary">Get a Reading</a>
+        <a href="{{ url_for('reading') }}" class="btn btn-primary">Begin a Reading</a>
         <a href="{{ url_for('cards') }}" class="btn btn-outline">View All Cards</a>
       </div>
     </div>

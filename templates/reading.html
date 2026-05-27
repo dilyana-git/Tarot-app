@@ -186,7 +186,7 @@ function openCardPanel(index) {
   const visual = document.getElementById('panelCardVisual');
   const info   = document.getElementById('panelCardInfo');
 
-  const suitSymbol  = { Wands: 'Ψ', Cups: 'Ω', Swords: '✚', Pentacles: '✶' };
+  const suitSymbol  = { Wands: '△', Cups: '▽', Swords: '✕', Pentacles: '⊕' };
   const suitDisplay = card.suit ? (suitSymbol[card.suit] + ' ' + card.suit) : 'Major Arcana';
   const meaning     = card.reversed ? card.reversed_meaning : card.upright_meaning;
   const keywords    = card.reversed ? card.keywords_reversed : card.keywords_upright;

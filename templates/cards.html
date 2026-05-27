@@ -13,26 +13,31 @@
       <span class="suit-tile-sigil">✦</span>
       <span class="suit-tile-name">Major Arcana</span>
       <span class="suit-tile-el">0 — XXI</span>
+      <span class="suit-tile-count">22</span>
     </button>
     <button class="suit-tile" data-suit="wands"     style="--tile-accent:#b07820">
-      <span class="suit-tile-sigil">Ψ</span>
+      <span class="suit-tile-sigil">△</span>
       <span class="suit-tile-name">Wands</span>
       <span class="suit-tile-el">Fire</span>
+      <span class="suit-tile-count">14</span>
     </button>
     <button class="suit-tile" data-suit="cups"      style="--tile-accent:#5d8aa8">
-      <span class="suit-tile-sigil">Ω</span>
+      <span class="suit-tile-sigil">▽</span>
       <span class="suit-tile-name">Cups</span>
       <span class="suit-tile-el">Water</span>
+      <span class="suit-tile-count">14</span>
     </button>
     <button class="suit-tile" data-suit="swords"    style="--tile-accent:#a89968">
-      <span class="suit-tile-sigil">✚</span>
+      <span class="suit-tile-sigil">✕</span>
       <span class="suit-tile-name">Swords</span>
       <span class="suit-tile-el">Air</span>
+      <span class="suit-tile-count">14</span>
     </button>
     <button class="suit-tile" data-suit="pentacles" style="--tile-accent:#5a8060">
-      <span class="suit-tile-sigil">✶</span>
+      <span class="suit-tile-sigil">⊕</span>
       <span class="suit-tile-name">Pentacles</span>
       <span class="suit-tile-el">Earth</span>
+      <span class="suit-tile-count">14</span>
     </button>
   </div>
   {% endif %}
@@ -97,7 +102,7 @@
           <span class="card-tile-number">{{ card.number }}</span>
           {% if card.suit %}
           <span class="card-tile-suit">
-            {% if card.suit == 'Wands' %}Ψ{% elif card.suit == 'Cups' %}Ω{% elif card.suit == 'Swords' %}✚{% else %}✶{% endif %}
+            {% if card.suit == 'Wands' %}△{% elif card.suit == 'Cups' %}▽{% elif card.suit == 'Swords' %}✕{% else %}⊕{% endif %}
           </span>
           {% else %}
           <span class="card-tile-arcana">✦</span>
@@ -254,10 +259,10 @@
 
   /* ── Suit Fans ──────────────────────────────────────────── */
   const SUIT_META = {
-    wands:     { sigil:'Ψ', color:'#b07820' },
-    cups:      { sigil:'Ω', color:'#5d8aa8' },
-    swords:    { sigil:'✚', color:'#a89968' },
-    pentacles: { sigil:'✶', color:'#5a8060' },
+    wands:     { sigil:'△', color:'#b07820' },
+    cups:      { sigil:'▽', color:'#5d8aa8' },
+    swords:    { sigil:'✕', color:'#a89968' },
+    pentacles: { sigil:'⊕', color:'#5a8060' },
   };
 
   /* ── Suit tile interactivity ────────────────────────────── */

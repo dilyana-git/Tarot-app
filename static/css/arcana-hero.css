@@ -89,7 +89,6 @@
   text-transform: uppercase;
 }
 
-
 /* Text stack — children cascade in/out with a stagger.
    The whole stack still moves as a group via .is-out, but each
    child has its own animation-delay for the entry. */
