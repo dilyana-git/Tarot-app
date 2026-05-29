@@ -10,18 +10,18 @@
 
 /* Tokens local to the hero — names don't collide with style.css */
 .arcana-hero {
-  --ah-gold:       #c4933a;
-  --ah-gold-pale:  #e8c888;
-  --ah-gold-warm:  #d4a85c;
-  --ah-gold-dim:   #7a6a48;
-  --ah-gold-faint: rgba(196,147,58,.18);
-  --ah-gold-ghost: rgba(196,147,58,.08);
-  --ah-text:       #d4c8b0;
-  --ah-text-dim:   #a89878;
-  --ah-text-mute:  #7a6a48;
-  --ah-rule:       rgba(196,147,58,.18);
-  --ah-bg-warm:    #0a1411;
-  --ah-bg-glow:    #15201c;
+  --ah-gold:       var(--gold-300);
+  --ah-gold-pale:  var(--gold-100);
+  --ah-gold-warm:  var(--gold-200);
+  --ah-gold-dim:   var(--gold-500);
+  --ah-gold-faint: color-mix(in srgb, var(--gold-300) 18%, transparent);
+  --ah-gold-ghost: color-mix(in srgb, var(--gold-300) 8%, transparent);
+  --ah-text:       var(--parchment);
+  --ah-text-dim:   var(--parchment-dim);
+  --ah-text-mute:  var(--gold-500);
+  --ah-rule:       color-mix(in srgb, var(--gold-300) 18%, transparent);
+  --ah-bg-warm:    var(--ink-800);
+  --ah-bg-glow:    var(--ink-700);
 
   /* Layout */
   position: relative;
@@ -158,7 +158,7 @@
   color: var(--ah-gold-pale);
   line-height: .9;
   letter-spacing: -.005em;
-  text-shadow: 0 0 60px rgba(232,200,136,.12);
+  text-shadow: 0 0 60px color-mix(in srgb, var(--gold-100) 12%, transparent);
   margin: 0;
 }
 
@@ -231,12 +231,12 @@
   padding: 12px 22px;
   background: var(--ah-gold);
   border: 1px solid var(--ah-gold);
-  color: #060c0a;
+  color: var(--ink-900);
   font-family: 'Cinzel', serif;
   letter-spacing: .25em; font-size: 11px;
   text-transform: uppercase;
   text-decoration: none;
-  box-shadow: inset 0 0 10px rgba(232,200,136,.15);
+  box-shadow: inset 0 0 10px color-mix(in srgb, var(--gold-100) 15%, transparent);
   transition: background .25s ease, color .25s ease, border-color .25s ease;
   position: relative;
   min-height: 44px;
@@ -244,13 +244,13 @@
 .arcana-hero .cta-row .btn-primary::before {
   content: '';
   position: absolute; inset: -3px;
-  border: 1px solid rgba(196,147,58,.18);
+  border: 1px solid var(--ah-gold-faint);
   pointer-events: none;
 }
 .arcana-hero .cta-row .btn-primary:hover {
   background: var(--ah-gold-warm);
   border-color: var(--ah-gold-warm);
-  color: #060c0a;
+  color: var(--ink-900);
   transform: none;
 }
 .arcana-hero .btn-dot {
@@ -324,7 +324,7 @@
   position: relative;
   flex: 1;
   height: 1px;
-  background: rgba(196,147,58,.2);
+  background: color-mix(in srgb, var(--gold-300) 20%, transparent);
 }
 .arcana-hero .counter-fill {
   position: absolute; left: 0; top: 0; bottom: 0;
@@ -358,16 +358,16 @@
 .arcana-hero .counter-tick.is-active::before {
   background: var(--ah-gold-pale);
   width: 6px; height: 6px;
-  box-shadow: 0 0 10px rgba(232,200,136,.6);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--gold-100) 60%, transparent);
 }
 /* Pop the just-activated tick to draw the eye */
 .arcana-hero .counter-tick.just-activated::before {
   animation: ahTickPop .6s cubic-bezier(.3,.8,.4,1.4);
 }
 @keyframes ahTickPop {
-  0%   { transform: translate(-50%, -50%) scale(1);   box-shadow: 0 0 0 rgba(232,200,136,0); }
-  35%  { transform: translate(-50%, -50%) scale(2.4); box-shadow: 0 0 22px rgba(232,200,136,.9); }
-  100% { transform: translate(-50%, -50%) scale(1);   box-shadow: 0 0 10px rgba(232,200,136,.6); }
+  0%   { transform: translate(-50%, -50%) scale(1);   box-shadow: 0 0 0 color-mix(in srgb, var(--gold-100) 0%, transparent); }
+  35%  { transform: translate(-50%, -50%) scale(2.4); box-shadow: 0 0 22px color-mix(in srgb, var(--gold-100) 90%, transparent); }
+  100% { transform: translate(-50%, -50%) scale(1);   box-shadow: 0 0 10px color-mix(in srgb, var(--gold-100) 60%, transparent); }
 }
 
 /* =================================================================
@@ -458,8 +458,8 @@
   animation: ahOrbitDiamond 4.2s ease-in-out infinite -2.8s;
 }
 @keyframes ahOrbitDiamond {
-  0%, 100% { opacity: 1;  filter: drop-shadow(0 0 0   rgba(232,200,136,0)); }
-  50%      { opacity: .5; filter: drop-shadow(0 0 6px rgba(232,200,136,.6)); }
+  0%, 100% { opacity: 1;  filter: drop-shadow(0 0 0   color-mix(in srgb, var(--gold-100) 0%, transparent)); }
+  50%      { opacity: .5; filter: drop-shadow(0 0 6px color-mix(in srgb, var(--gold-100) 60%, transparent)); }
 }
 
 /* 5) Small corner stars — twinkle independently at offset phases. */
@@ -503,7 +503,7 @@
   border-radius: 50%;
   overflow: hidden;
   box-shadow:
-    0 0 160px rgba(196,147,58,.28),
+    0 0 160px color-mix(in srgb, var(--gold-300) 28%, transparent),
     0 0 80px rgba(0,0,0,.55),
     inset 0 0 80px rgba(0,0,0,.45);
 }
@@ -569,9 +569,9 @@
   z-index: 5;
   background:
     radial-gradient(circle at center,
-      rgba(232,200,136,.45) 0%,
-      rgba(232,200,136,.18) 28%,
-      rgba(232,200,136,0)   60%);
+      color-mix(in srgb, var(--gold-100) 45%, transparent) 0%,
+      color-mix(in srgb, var(--gold-100) 18%, transparent) 28%,
+      color-mix(in srgb, var(--gold-100) 0%, transparent)  60%);
   mix-blend-mode: screen;
   animation: ahShimmer .9s cubic-bezier(.3,.7,.4,1) forwards;
 }
@@ -587,7 +587,7 @@
   position: absolute; top: 0; bottom: 0; left: 50%;
   width: 2px; margin-left: -1px;
   background: linear-gradient(to bottom,
-    transparent 0%, rgba(232,200,136,.85) 50%, transparent 100%);
+    transparent 0%, color-mix(in srgb, var(--gold-100) 85%, transparent) 50%, transparent 100%);
   opacity: 0;
   pointer-events: none;
   z-index: 5;
@@ -616,13 +616,13 @@
 .arcana-hero .main-card-glow {
   position: absolute; inset: -8px;
   border-radius: 50%;
-  border: 1px solid rgba(196,147,58,.35);
+  border: 1px solid color-mix(in srgb, var(--gold-300) 35%, transparent);
   pointer-events: none;
 }
 .arcana-hero .main-card-orbit-ring {
   position: absolute; inset: -32px;
   border-radius: 50%;
-  border: 1px solid rgba(196,147,58,.12);
+  border: 1px solid color-mix(in srgb, var(--gold-300) 12%, transparent);
   pointer-events: none;
 }
 .arcana-hero .main-card-label {
@@ -664,7 +664,7 @@
 }
 .arcana-hero .nav-btn:hover .nav-btn-circle {
   border-color: var(--ah-gold);
-  box-shadow: 0 0 40px rgba(196,147,58,.4);
+  box-shadow: 0 0 40px color-mix(in srgb, var(--gold-300) 40%, transparent);
 }
 .arcana-hero .nav-btn:hover .nav-btn-label { color: var(--ah-gold-pale); }
 .arcana-hero .nav-btn:hover .nav-chevron   { color: var(--ah-gold-pale); }
@@ -674,7 +674,7 @@
   width: 78px; height: 78px;
   border-radius: 50%;
   overflow: hidden;
-  border: 1px solid rgba(196,147,58,.35);
+  border: 1px solid color-mix(in srgb, var(--gold-300) 35%, transparent);
   box-shadow: 0 0 24px rgba(0,0,0,.5);
   transition: border-color .25s ease, box-shadow .3s ease;
 }
@@ -686,7 +686,7 @@
 .arcana-hero .nav-btn-ring {
   position: absolute; inset: -5px;
   border-radius: 50%;
-  border: 1px solid rgba(196,147,58,.18);
+  border: 1px solid var(--ah-gold-faint);
   pointer-events: none;
 }
 .arcana-hero .nav-chevron {

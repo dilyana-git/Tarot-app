@@ -5,19 +5,19 @@
    ============================================================ */
 
 .ed-hero {
-  --ed-gold:       #c4933a;
-  --ed-gold-pale:  #e8c888;
-  --ed-gold-dim:   #7a6a48;
-  --ed-text:       #d4c8b0;
-  --ed-text-dim:   #b8a888;
-  --ed-text-mute:  #7a6a48;
-  --ed-rule:       rgba(196,147,58,.22);
-  --ed-rule-soft:  rgba(196,147,58,.12);
+  --ed-gold:       var(--gold-300);
+  --ed-gold-pale:  var(--gold-100);
+  --ed-gold-dim:   var(--gold-500);
+  --ed-text:       var(--parchment);
+  --ed-text-dim:   var(--parchment-dim);
+  --ed-text-mute:  var(--gold-500);
+  --ed-rule:       color-mix(in srgb, var(--gold-300) 22%, transparent);
+  --ed-rule-soft:  color-mix(in srgb, var(--gold-300) 12%, transparent);
 
   position: relative;
   width: 100%;
   min-height: calc(100vh - 60px);
-  background: radial-gradient(ellipse 80% 60% at 50% 40%, #0d1814 0%, #0a1411 50%, #060c0a 100%);
+  background: radial-gradient(ellipse 80% 60% at 50% 40%, var(--ink-700) 0%, var(--ink-800) 50%, var(--ink-900) 100%);
   color: var(--ed-text);
   font-family: 'EB Garamond', Georgia, serif;
   display: grid;
@@ -199,7 +199,7 @@
 .ed-plate-col {
   position: relative;
   display: flex; align-items: center; justify-content: center;
-  background: radial-gradient(ellipse at center, #0d1814 0%, #060c0a 80%);
+  background: radial-gradient(ellipse at center, var(--ink-700) 0%, var(--ink-900) 80%);
   padding: 0 36px;
 }
 
@@ -223,7 +223,7 @@
 .ed-plate-inner.is-out { opacity: 0; transform: scale(.98); }
 .ed-plate-link:hover .ed-plate-inner {
   transform: scale(1.02);
-  box-shadow: 0 0 80px rgba(196,147,58,.25);
+  box-shadow: 0 0 80px color-mix(in srgb, var(--gold-300) 25%, transparent);
 }
 .ed-plate-inner img {
   width: 100%; height: 100%;
@@ -232,12 +232,12 @@
 }
 .ed-plate-frame {
   position: absolute; inset: -14px;
-  border: 1px solid rgba(196,147,58,.4);
+  border: 1px solid color-mix(in srgb, var(--gold-300) 40%, transparent);
   pointer-events: none;
 }
 .ed-plate-frame-inner {
   position: absolute; inset: -8px;
-  border: 1px solid rgba(196,147,58,.18);
+  border: 1px solid color-mix(in srgb, var(--gold-300) 18%, transparent);
   pointer-events: none;
 }
 .ed-plate-corner {
@@ -266,8 +266,8 @@
 .ed-thumb {
   width: 32px; height: 42px;
   overflow: hidden;
-  border: 1px solid rgba(196,147,58,.3);
-  background: #0a1411;
+  border: 1px solid color-mix(in srgb, var(--gold-300) 30%, transparent);
+  background: var(--ink-800);
   display: block; flex-shrink: 0;
 }
 .ed-thumb img {
@@ -301,7 +301,7 @@
 .ed-pagination-right { justify-content: flex-end; }
 .ed-bar {
   width: 200px; height: 1px;
-  background: rgba(196,147,58,.2);
+  background: color-mix(in srgb, var(--gold-300) 20%, transparent);
   position: relative;
 }
 .ed-bar-fill {

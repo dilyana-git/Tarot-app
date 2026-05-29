@@ -34,8 +34,8 @@ body.intro-running .preview-stage::before {
   pointer-events: none;
   background: radial-gradient(
     ellipse 50% 50% at 72% 50%,
-    rgba(232,200,136,.22) 0%,
-    rgba(232,200,136,.06) 28%,
+    color-mix(in srgb, var(--gold-100) 22%, transparent) 0%,
+    color-mix(in srgb, var(--gold-100) 6%, transparent) 28%,
     transparent 60%
   );
   opacity: 0;
@@ -101,14 +101,14 @@ body.intro-running .arcana-hero .text-stack .card-title::after {
   height: 1px;
   width: 100%;
   background: linear-gradient(90deg,
-    rgba(232,200,136,0)   0%,
-    rgba(232,200,136,.95) 20%,
-    rgba(232,200,136,.95) 80%,
-    rgba(232,200,136,0)   100%);
+    color-mix(in srgb, var(--gold-100) 0%, transparent)   0%,
+    color-mix(in srgb, var(--gold-100) 95%, transparent)  20%,
+    color-mix(in srgb, var(--gold-100) 95%, transparent)  80%,
+    color-mix(in srgb, var(--gold-100) 0%, transparent)   100%);
   transform-origin: left center;
   transform: scaleX(0);
   animation: introUnderline 1200ms cubic-bezier(.2,.7,.2,1) 2060ms forwards;
-  box-shadow: 0 0 8px rgba(232,200,136,.6);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--gold-100) 60%, transparent);
   pointer-events: none;
 }
 @keyframes introUnderline {
@@ -283,13 +283,13 @@ body.intro-running .arcana-hero .nav-btn-next {
   left: 50%; top: 50%;
   width: 72px; height: 108px;
   margin-left: -36px; margin-top: -54px;
-  border: 1px solid #c4933a;
+  border: 1px solid var(--gold-300);
   background:
-    radial-gradient(ellipse at 50% 50%, rgba(196,147,58,.20), transparent 70%),
+    radial-gradient(ellipse at 50% 50%, color-mix(in srgb, var(--gold-300) 20%, transparent), transparent 70%),
     linear-gradient(135deg, #1a1230 0%, #0a0820 60%, #060410 100%);
   box-shadow:
-    0 0 30px rgba(196,147,58,.55),
-    inset 0 0 14px rgba(196,147,58,.18);
+    0 0 30px color-mix(in srgb, var(--gold-300) 55%, transparent),
+    inset 0 0 14px color-mix(in srgb, var(--gold-300) 18%, transparent);
   border-radius: 4px;
   pointer-events: none;
   z-index: 4;
@@ -298,17 +298,17 @@ body.intro-running .arcana-hero .nav-btn-next {
 .intro-flyin::before {
   content: '';
   position: absolute; inset: 6px;
-  border: 1px solid rgba(232,200,136,.45);
+  border: 1px solid color-mix(in srgb, var(--gold-100) 45%, transparent);
   border-radius: 2px;
 }
 .intro-flyin::after {
   content: '✦';
   position: absolute; inset: 0;
   display: flex; align-items: center; justify-content: center;
-  color: #e8c888;
+  color: var(--gold-100);
   font-family: 'Cinzel', 'EB Garamond', serif;
   font-size: 22px;
-  text-shadow: 0 0 8px rgba(232,200,136,.7);
+  text-shadow: 0 0 8px color-mix(in srgb, var(--gold-100) 70%, transparent);
   opacity: .8;
 }
 
@@ -322,9 +322,9 @@ body.intro-running .arcana-hero .nav-btn-next {
   background: radial-gradient(
     circle,
     rgba(255,245,210,.98) 0%,
-    rgba(232,200,136,.72) 22%,
-    rgba(196,147,58,.28)  50%,
-    rgba(196,147,58,0)    75%
+    color-mix(in srgb, var(--gold-100) 72%, transparent) 22%,
+    color-mix(in srgb, var(--gold-300) 28%, transparent) 50%,
+    color-mix(in srgb, var(--gold-300) 0%, transparent)  75%
   );
   opacity: 0;
   pointer-events: none;
@@ -347,10 +347,10 @@ body.intro-running .arcana-hero .nav-btn-next {
   width: 50%; height: 50%;
   margin-left: -25%; margin-top: -25%;
   border-radius: 50%;
-  border: 1px solid rgba(232,200,136,.9);
+  border: 1px solid color-mix(in srgb, var(--gold-100) 90%, transparent);
   box-shadow:
-    0 0 22px rgba(232,200,136,.55),
-    inset 0 0 12px rgba(232,200,136,.25);
+    0 0 22px color-mix(in srgb, var(--gold-100) 55%, transparent),
+    inset 0 0 12px color-mix(in srgb, var(--gold-100) 25%, transparent);
   opacity: 0;
   pointer-events: none;
   z-index: 3;
@@ -367,8 +367,8 @@ body.intro-running .arcana-hero .nav-btn-next {
   position: absolute;
   width: 3px; height: 3px;
   border-radius: 50%;
-  background: #e8c888;
-  box-shadow: 0 0 6px rgba(232,200,136,.9);
+  background: var(--gold-100);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--gold-100) 90%, transparent);
   pointer-events: none;
   z-index: 2;
   opacity: 0;
