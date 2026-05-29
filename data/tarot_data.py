@@ -18,6 +18,7 @@ MAJOR_ARCANA = [
         'card_color': '#1a0533',
         'accent_color': '#7b4fa6',
         'image': 'major/fool.jpg',
+        'focal_point': '55% 22%',   # figure right-of-center, face near top
     },
     {
         'id': 1,
@@ -35,6 +36,7 @@ MAJOR_ARCANA = [
         'card_color': '#2d1b69',
         'accent_color': '#8c6fd4',
         'image': 'major/magician.jpg',
+        'focal_point': '50% 22%',   # standing figure, raised arm at top
     },
     {
         'id': 2,
@@ -52,6 +54,7 @@ MAJOR_ARCANA = [
         'card_color': '#003d4d',
         'accent_color': '#4db8cc',
         'image': 'major/high_priestess.jpg',
+        'focal_point': '50% 30%',   # seated figure fills upper two-thirds
     },
     {
         'id': 3,
@@ -69,6 +72,7 @@ MAJOR_ARCANA = [
         'card_color': '#2d4a00',
         'accent_color': '#7abf2e',
         'image': 'major/empress.jpg',
+        'focal_point': '50% 28%',   # reclining figure, wheat below — show upper body
     },
     {
         'id': 4,
@@ -86,6 +90,7 @@ MAJOR_ARCANA = [
         'card_color': '#4a0000',
         'accent_color': '#c04040',
         'image': 'major/emperor.jpg',
+        'focal_point': '50% 30%',   # enthroned figure, ram-head armrests mid-card
     },
     {
         'id': 5,
@@ -103,6 +108,7 @@ MAJOR_ARCANA = [
         'card_color': '#3b1a00',
         'accent_color': '#c08030',
         'image': 'major/hierophant.jpg',
+        'focal_point': '50% 32%',   # papal figure with supplicants kneeling at lower half
     },
     {
         'id': 6,
@@ -120,6 +126,7 @@ MAJOR_ARCANA = [
         'card_color': '#1a2a4a',
         'accent_color': '#5580c4',
         'image': 'major/lovers.jpg',
+        'focal_point': '50% 28%',   # angel at top, two figures below — keep angel visible
     },
     {
         'id': 7,
@@ -137,6 +144,7 @@ MAJOR_ARCANA = [
         'card_color': '#0a0d3b',
         'accent_color': '#4455cc',
         'image': 'major/chariot.jpg',
+        'focal_point': '50% 30%',   # warrior in chariot upper half, sphinxes below
     },
     {
         'id': 8,
@@ -154,6 +162,7 @@ MAJOR_ARCANA = [
         'card_color': '#4a2600',
         'accent_color': '#d4820a',
         'image': 'major/strength.jpg',
+        'focal_point': '50% 40%',   # woman and lion occupy center of card
     },
     {
         'id': 9,
@@ -171,6 +180,7 @@ MAJOR_ARCANA = [
         'card_color': '#1a1a2e',
         'accent_color': '#9090d4',
         'image': 'major/hermit.jpg',
+        'focal_point': '50% 25%',   # cloaked figure on peak, lantern raised high
     },
     {
         'id': 10,
@@ -189,6 +199,7 @@ MAJOR_ARCANA = [
         'accent_color': '#9933cc',
         'image': 'major/wheel_of_fortune.jpg',
         'video': 'wheel_of_fortune.mp4',
+        'focal_point': '50% 45%',   # wheel fills the card center
     },
     {
         'id': 11,
@@ -206,6 +217,7 @@ MAJOR_ARCANA = [
         'card_color': '#0d2b0d',
         'accent_color': '#3d9e3d',
         'image': 'major/justice.jpg',
+        'focal_point': '50% 32%',   # seated figure, sword raised, scales in hand
     },
     {
         'id': 12,
@@ -223,6 +235,7 @@ MAJOR_ARCANA = [
         'card_color': '#003333',
         'accent_color': '#33cccc',
         'image': 'major/hanged_man.jpg',
+        'focal_point': '50% 28%',   # T-cross at top, figure hangs down — keep cross/feet visible
     },
     {
         'id': 13,
@@ -240,6 +253,7 @@ MAJOR_ARCANA = [
         'card_color': '#1a0000',
         'accent_color': '#cc2200',
         'image': 'major/death.jpg',
+        'focal_point': '50% 35%',   # skeleton on horseback fills middle, sunrise at lower horizon
     },
     {
         'id': 14,
@@ -257,6 +271,7 @@ MAJOR_ARCANA = [
         'card_color': '#003d1a',
         'accent_color': '#33cc77',
         'image': 'major/temperance.jpg',
+        'focal_point': '50% 35%',   # standing angel, cups at chest height, pool at feet
     },
     {
         'id': 15,
@@ -275,6 +290,7 @@ MAJOR_ARCANA = [
         'accent_color': '#cc5500',
         'image': 'major/devil.jpg',
         'video': 'devil.mp4',
+        'focal_point': '50% 38%',   # devil figure upper half, chained figures below mid-card
     },
     {
         'id': 16,
@@ -293,6 +309,7 @@ MAJOR_ARCANA = [
         'accent_color': '#ff6600',
         'image': 'major/tower.jpg',
         'video': 'tower.mp4',
+        'focal_point': '50% 40%',   # crown struck off top, figures falling mid-card
     },
     {
         'id': 17,
@@ -310,6 +327,7 @@ MAJOR_ARCANA = [
         'card_color': '#00204d',
         'accent_color': '#4d99ff',
         'image': 'major/star.jpg',
+        'focal_point': '50% 48%',   # figure kneeling at pool, stars spread above and below
     },
     {
         'id': 18,
@@ -327,6 +345,7 @@ MAJOR_ARCANA = [
         'card_color': '#0d0d2e',
         'accent_color': '#6666cc',
         'image': 'major/moon.jpg',
+        'focal_point': '50% 50%',   # full scene — moon above, animals and pool below
     },
     {
         'id': 19,
@@ -344,6 +363,7 @@ MAJOR_ARCANA = [
         'card_color': '#4a2e00',
         'accent_color': '#ffcc00',
         'image': 'major/sun.jpg',
+        'focal_point': '50% 35%',   # sun face at top, child on horse in lower half
     },
     {
         'id': 20,
@@ -361,6 +381,7 @@ MAJOR_ARCANA = [
         'card_color': '#1a1a00',
         'accent_color': '#cccc00',
         'image': 'major/judgement.jpg',
+        'focal_point': '50% 38%',   # angel and trumpet above, rising figures span full height
     },
     {
         'id': 21,
@@ -378,6 +399,7 @@ MAJOR_ARCANA = [
         'card_color': '#002233',
         'accent_color': '#0099aa',
         'image': 'major/world.jpg',
+        'focal_point': '50% 45%',   # dancer centered in wreath, corner creatures frame the card
     },
 ]
 

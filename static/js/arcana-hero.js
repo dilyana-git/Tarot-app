@@ -279,6 +279,7 @@
       newImgEl.src = card.image_url;
       newImgEl.alt = card.name;
     }
+    newImgEl.style.objectPosition = card.focal_point || '50% 25%';
     newImgEl.decoding = 'async';
     newLayer.appendChild(newImgEl);
     els.mainCard.insertBefore(newLayer, currentLayer);
@@ -371,5 +372,6 @@
     els.mainImg.src = cards[0].image_url;
     els.mainImg.alt = cards[0].name;
   }
+  els.mainImg.style.objectPosition = cards[0].focal_point || '50% 25%';
   startAuto();
 })();
