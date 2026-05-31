@@ -2,23 +2,43 @@
 
 {% block title %}Arcana — The Tarot Oracle{% endblock %}
 
+{# Home page drops the site footer to match the clean arcana-card look #}
+{% block footer %}{% endblock %}
+
 {% block head %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/arcana-hero.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/arcana-hero-intro.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/arcana-card.css') }}">
+  <style>
+    /* Drop the oval frame entirely — the mosaic card stands on its own with its
+       feathered, tiled edges. No circular clip, no border-radius, no ring glow. */
+    #heroMosaicMount { position: absolute; inset: 0; }
+    .arcana-hero .main-card {
+      border-radius: 0;
+      overflow: visible;
+      background: none;
+      box-shadow: none;
+    }
+    /* the old oval ring/glow/mask frames + orbit SVG are gone */
+    .arcana-hero .main-card-glow,
+    .arcana-hero .main-card-mask,
+    .arcana-hero .main-card-orbit-ring,
+    .arcana-hero .orbit-svg { display: none; }
+
+    /* body background now matches the card page — no hero-specific override needed */
+  </style>
 {% endblock %}
 
 {% block content %}
 <!-- ── Major Arcana Journey Hero ─────────────────────────── -->
 <section class="arcana-hero">
 
+  <!-- Prev nav — roman numeral disc (far left, beside the text) -->
+  <button class="nav-btn nav-btn-prev" id="navPrev" aria-label="Previous card">
+    <span class="nav-disc"><em class="nav-roman" id="prevRoman">XXI</em></span>
+  </button>
+
   <!-- LEFT — text column -->
   <div class="hero-left">
-    <div class="eyebrow-row">
-      <span class="eyebrow-rule"></span>
-      <span class="eyebrow">MAJOR ARCANA</span>
-      <span class="eyebrow-rule"></span>
-    </div>
-
     <div class="text-stack" id="textStack">
       <div class="card-num">CARD <span class="card-num-bold" id="cardNum">00</span></div>
       <h1 class="card-title" id="cardTitle">THE FOOL</h1>
@@ -36,7 +56,7 @@
         </div>
         <div class="meta-row">
           <dt>SYMBOL</dt>
-          <dd id="cardSymbol">✦</dd>
+          <dd id="cardSymbol" class="meta-symbol">✦</dd>
         </div>
       </dl>
     </div>
@@ -67,133 +87,25 @@
     </div>
   </div>
 
-  <!-- RIGHT — orbital card display -->
+  <!-- RIGHT — mosaic card display -->
   <div class="hero-right">
-    <svg class="orbit-svg" viewBox="0 0 760 700" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
-      <defs>
-        <radialGradient id="orbGlow" cx="0.5" cy="0.5" r="0.5">
-          <stop offset="0%" stop-color="rgba(196,147,58,0.05)"/>
-          <stop offset="100%" stop-color="rgba(196,147,58,0)"/>
-        </radialGradient>
-      </defs>
-      <circle cx="380" cy="350" r="320" fill="url(#orbGlow)"/>
-      <ellipse cx="380" cy="350" rx="300" ry="295" fill="none" stroke="rgba(196,147,58,.14)" stroke-width="0.6"/>
-      <ellipse cx="380" cy="350" rx="260" ry="265" fill="none" stroke="rgba(196,147,58,.08)" stroke-width="0.5"/>
-      <ellipse cx="380" cy="350" rx="220" ry="240" fill="none" stroke="rgba(196,147,58,.06)" stroke-width="0.4"/>
-      <path d="M 60 350 Q 380 90, 700 350" stroke="rgba(196,147,58,.38)" stroke-width="0.7" stroke-dasharray="3 6" fill="none"/>
-      <rect x="56" y="346" width="8" height="8" fill="#c4933a" transform="rotate(45 60 350)"/>
-      <rect x="696" y="346" width="8" height="8" fill="#c4933a" transform="rotate(45 700 350)"/>
-      <rect x="376" y="86" width="8" height="8" fill="#c4933a" transform="rotate(45 380 90)"/>
-      <circle cx="200" cy="200" r="1.5" fill="#c4933a" opacity="0.5"/>
-      <circle cx="560" cy="200" r="1.5" fill="#c4933a" opacity="0.5"/>
-      <circle cx="120" cy="500" r="1.2" fill="#c4933a" opacity="0.3"/>
-      <circle cx="640" cy="500" r="1.2" fill="#c4933a" opacity="0.3"/>
-    </svg>
+    <!-- Ambient gold sparkles scattered around the card (populated by JS) -->
+    <div class="hero-sparkles" id="heroSparkles" aria-hidden="true"></div>
 
-    <!-- Prev nav button -->
-    <button class="nav-btn nav-btn-prev" id="navPrev" aria-label="Previous card">
-      <span class="nav-chevron" id="prevChevron">←</span>
-      <div class="nav-btn-circle">
-        <img id="prevImg" src="" alt=""/>
-        <div class="nav-btn-ring"></div>
-      </div>
-      <span class="nav-btn-label" id="prevLabel"></span>
-    </button>
-
-    <!-- Main card oval -->
+    <!-- Main card — interactive mosaic-tiling widget mounted here -->
     <div class="main-card-wrap">
       <div class="main-card" id="mainCard">
-        <img id="mainImg" src="" alt=""/>
-        <div class="main-card-glow"></div>
-        <div class="main-card-mask"></div>
+        <div id="heroMosaicMount"></div>
       </div>
-      <div class="main-card-orbit-ring"></div>
-      <a class="main-card-label" id="mainLabel" href="#"></a>
     </div>
-
-    <!-- Next nav button -->
-    <button class="nav-btn nav-btn-next" id="navNext" aria-label="Next card">
-      <span class="nav-chevron" id="nextChevron">→</span>
-      <div class="nav-btn-circle">
-        <img id="nextImg" src="" alt=""/>
-        <div class="nav-btn-ring"></div>
-      </div>
-      <span class="nav-btn-label" id="nextLabel"></span>
-    </button>
   </div>
+
+  <!-- Next nav — roman numeral disc (far right, beside the image) -->
+  <button class="nav-btn nav-btn-next" id="navNext" aria-label="Next card">
+    <span class="nav-disc"><em class="nav-roman" id="nextRoman">I</em></span>
+  </button>
 </section>
 
-<!-- Botanical divider -->
-<div class="botanical-divider" aria-hidden="true">
-  <svg viewBox="0 0 560 36" xmlns="http://www.w3.org/2000/svg" fill="none">
-    <line x1="0" y1="18" x2="240" y2="18" stroke="currentColor" stroke-width="0.5" opacity="0.3"/>
-    <line x1="320" y1="18" x2="560" y2="18" stroke="currentColor" stroke-width="0.5" opacity="0.3"/>
-    <rect x="276" y="14" width="8" height="8" fill="currentColor" transform="rotate(45 280 18)"/>
-  </svg>
-</div>
-
-<!-- Features -->
-<section class="features-section">
-  <h2 class="section-title">The Path of the Seeker</h2>
-  <div class="features-grid">
-    <a href="{{ url_for('cards') }}?filter=major" class="feature-card">
-      <div class="feature-icon">Major Arcana</div>
-      <h3 class="feature-title">The Great Mysteries</h3>
-      <p class="feature-desc">The 22 archetypal forces that shape the soul's great journey through life, death, and rebirth.</p>
-    </a>
-    <a href="{{ url_for('cards') }}?filter=minor" class="feature-card">
-      <div class="feature-icon">Minor Arcana</div>
-      <h3 class="feature-title">The Living World</h3>
-      <p class="feature-desc">56 cards across four sacred suits reveal the everyday dramas, challenges, and joys of human experience.</p>
-    </a>
-    <a href="{{ url_for('reading') }}" class="feature-card">
-      <div class="feature-icon">Spreads &amp; Readings</div>
-      <h3 class="feature-title">Illumination</h3>
-      <p class="feature-desc">From a single card to the Celtic Cross — let the cards illuminate past, present, and future.</p>
-    </a>
-  </div>
-</section>
-
-<!-- Suits showcase -->
-<section class="suits-section">
-  <h2 class="section-title">The Four Suits</h2>
-  <p class="section-subtitle">Each suit governs a realm of human experience</p>
-  <div class="suits-grid">
-    <a href="{{ url_for('cards') }}?filter=minor&suit=Wands" class="suit-card suit-wands">
-      <div class="suit-symbol">△</div>
-      <h3 class="suit-name">Wands</h3>
-      <p class="suit-element">Fire · Passion · Will</p>
-      <p class="suit-desc">Creativity, ambition, and the spark of inspiration that drives all action.</p>
-    </a>
-    <a href="{{ url_for('cards') }}?filter=minor&suit=Cups" class="suit-card suit-cups">
-      <div class="suit-symbol">▽</div>
-      <h3 class="suit-name">Cups</h3>
-      <p class="suit-element">Water · Emotion · Dream</p>
-      <p class="suit-desc">Love, intuition, the inner life, and the deep currents of feeling.</p>
-    </a>
-    <a href="{{ url_for('cards') }}?filter=minor&suit=Swords" class="suit-card suit-swords">
-      <div class="suit-symbol">✕</div>
-      <h3 class="suit-name">Swords</h3>
-      <p class="suit-element">Air · Mind · Truth</p>
-      <p class="suit-desc">Intellect, conflict, clarity, and the power of thought and communication.</p>
-    </a>
-    <a href="{{ url_for('cards') }}?filter=minor&suit=Pentacles" class="suit-card suit-pentacles">
-      <div class="suit-symbol">⊕</div>
-      <h3 class="suit-name">Pentacles</h3>
-      <p class="suit-element">Earth · Matter · Craft</p>
-      <p class="suit-desc">Material wealth, the body, the natural world, and practical skill.</p>
-    </a>
-  </div>
-</section>
-
-<!-- CTA -->
-<section class="cta-section">
-  <div class="cta-inner">
-    <h2 class="cta-title">The cards await</h2>
-    <p class="cta-text">Shuffle the deck, hold your question in mind, and let the wisdom of the tarot speak.</p>
-    <a href="{{ url_for('reading') }}" class="btn btn-primary btn-large">BEGIN A READING</a>
-  </div>
-</section>
 {% endblock %}
 
 {% block scripts %}
@@ -201,6 +113,6 @@
   /* Card data injected from Flask */
   window.ARCANA = {{ major_arcana | tojson }};
 </script>
-<script src="{{ url_for('static', filename='js/arcana-hero-intro.js') }}"></script>
-<script src="{{ url_for('static', filename='js/arcana-hero.js') }}"></script>
+<script src="{{ url_for('static', filename='js/arcana-card.js') }}"></script>
+<script src="{{ url_for('static', filename='js/arcana-hero-mosaic.js') }}"></script>
 {% endblock %}

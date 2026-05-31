@@ -116,7 +116,7 @@ def index():
 
     hero = request.args.get('hero', 'architectural')
     template = _HERO_TEMPLATES.get(hero, 'index.html')
-    return render_template(template, major_arcana=arcana)
+    return render_template(template, major_arcana=arcana, cards=_arcana_widget_cards())
 
 
 def _card_json(card):
@@ -129,7 +129,8 @@ def _card_json(card):
         'suit':     card.get('suit'),
         'element':  card.get('element', ''),
         'symbol':   card.get('symbol', '✦'),
-        'keywords': card.get('keywords_upright', [])[:3],
+        'keywords':    card.get('keywords_upright', [])[:3],
+        'description': card.get('description', ''),
         'image_url': '' if img == 'images/card-placeholder.svg' else f'/static/{img}',
         'card_color':   card.get('card_color', '#162420'),
         'accent_color': card.get('accent_color', '#c4933a'),
@@ -231,6 +232,36 @@ def api_reading():
         'spread': spread,
         'cards': result_cards,
     })
+
+
+_ROMAN_NUMERALS = [
+    '0','I','II','III','IV','V','VI','VII','VIII','IX','X',
+    'XI','XII','XIII','XIV','XV','XVI','XVII','XVIII','XIX','XX','XXI',
+]
+
+def _arcana_widget_cards():
+    """Build the card list expected by the arcana-card widget from MAJOR_ARCANA."""
+    result = []
+    for i, card in enumerate(MAJOR_ARCANA):
+        img_filename = get_card_image_filename(card)
+        image_url = '' if img_filename == 'images/card-placeholder.svg' else f'/static/{img_filename}'
+        num_int = i  # 0-based index matches roman numeral position
+        result.append({
+            'id':       card['name'].lower().replace("'", '').replace(' ', '_').removeprefix('the_'),
+            'roman':    _ROMAN_NUMERALS[num_int],
+            'num':      str(num_int).zfill(2),
+            'name':     card['name'].upper(),
+            'element':  card.get('element', 'AIR').upper(),
+            'keywords': [k.upper() for k in card.get('keywords_upright', [])[:3]],
+            'meaning':  card.get('upright_meaning', ''),
+            'image':    image_url,
+        })
+    return result
+
+
+@app.route('/arcana-card')
+def arcana_card():
+    return render_template('arcana_card.html', cards=_arcana_widget_cards())
 
 
 @app.route('/api/cards')

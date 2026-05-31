@@ -17,50 +17,46 @@
   --ah-gold-faint: color-mix(in srgb, var(--gold-300) 18%, transparent);
   --ah-gold-ghost: color-mix(in srgb, var(--gold-300) 8%, transparent);
   --ah-text:       var(--parchment);
-  --ah-text-dim:   var(--parchment-dim);
-  --ah-text-mute:  var(--gold-500);
+  /* Brighter dim/mute tokens for WCAG-AA legibility against the near-black bg.
+     mute was gold-500 (#6E5527 = 2.81:1, fails); now burnished gold #C9A84C
+     (8.64:1). dim was parchment-dim; lifted toward full parchment (~+12% L). */
+  --ah-text-dim:   #D7CEB4;
+  --ah-text-mute:  #C9A84C;
   --ah-rule:       color-mix(in srgb, var(--gold-300) 18%, transparent);
   --ah-bg-warm:    var(--ink-800);
   --ah-bg-glow:    var(--ink-700);
 
-  /* Layout */
+  /* Layout — the content is constrained to a max-width and CENTRED so the text
+     column and the card sit together as one composition instead of being pinned
+     to opposite screen edges with a black chasm between them. The two columns are
+     sized to their content with a modest gap, and the whole group is centred. */
   position: relative;
   display: grid;
-  grid-template-columns: minmax(380px, 0.8fr) 1.6fr;
+  grid-template-columns: minmax(360px, 460px) auto;
+  justify-content: center;        /* centre the column group horizontally */
+  align-items: center;
+  /* Tight gap — the card's own feathered transparent margin already provides
+     visual breathing room, so the column gap just needs to clear the panel's
+     right edge. Anything wider re-opens a dead strip between the rule and art. */
+  column-gap: clamp(8px, 1vw, 16px);
+  max-width: 1400px;
+  margin-inline: auto;
+  /* The card's feathered glow visually fills its right margin while the panel's
+     hard left edge leaves the left margin reading emptier (the prev disc looked
+     stranded there). A small right-bias padding nudges the whole pairing right so
+     the two margins feel balanced. */
+  padding-left: clamp(0px, 3vw, 56px);
   width: 100%;
-  /* The site has a 60px fixed navbar (see base.html). Fill the rest. */
-  min-height: calc(100vh - 60px);
+  /* Hero spans the FULL viewport (the home page drops the 60px top gap); the
+     fixed navbar overlays the top transparently. */
+  min-height: 100vh;
   overflow: hidden;
   font-family: 'EB Garamond', Georgia, serif;
   color: var(--ah-text);
 
-  /* Warm radial glow behind the hero */
-  background:
-    radial-gradient(ellipse 80% 65% at 62% 42%,
-      var(--ah-bg-glow) 0%, var(--ah-bg-warm) 38%, transparent 78%);
+  /* No section-level background — inherits the body radial gradient */
 }
 
-/* Mosaic tile texture — the system motif from the design canvas */
-.arcana-hero::before {
-  content: '';
-  position: absolute; inset: 0;
-  pointer-events: none;
-  opacity: .12;
-  background-image:
-    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32'><rect x='1' y='1' width='13' height='13' fill='none' stroke='%23c4933a' stroke-width='.3'/><rect x='17' y='17' width='13' height='13' fill='none' stroke='%23c4933a' stroke-width='.3'/></svg>");
-  background-size: 32px 32px;
-  z-index: 0;
-}
-
-/* Soft vignette so the orbital display reads against the page */
-.arcana-hero::after {
-  content: '';
-  position: absolute; inset: 0;
-  pointer-events: none;
-  background: radial-gradient(ellipse 70% 60% at 60% 50%,
-    transparent 30%, rgba(3,6,5,.55) 100%);
-  z-index: 0;
-}
 
 /* =================================================================
    LEFT TEXT COLUMN
@@ -68,8 +64,11 @@
 .arcana-hero .hero-left {
   position: relative;
   z-index: 2;
-  padding: 38px 40px 32px 64px;
+  /* Symmetric, lighter padding — no heavy left indent pinning text to the edge.
+     The grid centring places this column next to the card. */
+  padding: 24px 8px 24px 24px;
   display: flex; flex-direction: column;
+  justify-content: center;
   min-width: 0;
 }
 
@@ -79,13 +78,13 @@
 }
 .arcana-hero .eyebrow-rule {
   width: 30px; height: 1px;
-  background: var(--ah-gold);
+  background: var(--ah-gold-pale);
   display: inline-block;
 }
 .arcana-hero .eyebrow {
   font-family: 'Cinzel', serif;
   font-size: 12px; letter-spacing: .45em;
-  color: var(--ah-gold);
+  color: var(--ah-gold-pale);
   text-transform: uppercase;
 }
 
@@ -142,64 +141,79 @@
 
 .arcana-hero .card-num {
   font-family: 'Cinzel', serif;
-  font-size: 11px; letter-spacing: .35em;
-  color: var(--ah-text-mute);
-  margin-bottom: 10px;
+  font-size: 12px; letter-spacing: .32em;
+  /* Brighter than the shared mute token — small, wide-tracked caps need extra
+     lift to read clearly. gold-200 (#E7C878) = 12.16:1 on the near-black bg. */
+  color: var(--gold-200);
+  margin-bottom: 6px;
 }
 .arcana-hero .card-num-bold {
-  color: var(--ah-gold);
+  color: var(--ah-gold-pale);
   font-weight: 600;
 }
 
 .arcana-hero .card-title {
   font-family: 'Cinzel', serif;
   font-weight: 500;
-  font-size: clamp(42px, 5vw, 78px);
+  font-size: clamp(28px, 3.5vw, 52px);
   color: var(--ah-gold-pale);
   line-height: .9;
   letter-spacing: -.005em;
   text-shadow: 0 0 60px color-mix(in srgb, var(--gold-100) 12%, transparent);
   margin: 0;
+  /* Reserve exactly two lines so the layout never reflows between cards.
+     Short names (THE LOVERS) get the same vertical footprint as long ones
+     (THE HIEROPHANT) — nothing below shifts as you click through the deck. */
+  min-height: calc(2em * .9);
 }
 
 .arcana-hero .card-roman {
   margin-top: 10px;
   font-family: 'Cinzel', serif;
   font-size: 20px; letter-spacing: .25em;
-  color: var(--ah-gold);
-  opacity: .7;
+  color: var(--ah-gold-pale);
+  opacity: .8;
 }
 
 .arcana-hero .kw-row {
   display: flex; align-items: center;
-  gap: 12px; flex-wrap: wrap;
-  margin-top: 20px;
+  flex-wrap: wrap;
+  margin-top: 10px;
 }
-.arcana-hero .kw-diamond {
-  width: 6px; height: 6px;
-  background: var(--ah-gold);
+/* Separator diamond drawn INSIDE each keyword (after the first) via ::before, so
+   it always travels with its keyword on a wrap — never stranded, never trailing. */
+.arcana-hero .kw-sep::before {
+  content: '';
+  display: inline-block;
+  width: 5px; height: 5px;
+  margin: 0 9px;           /* spacing that used to come from the flex gap */
+  background: var(--ah-gold-pale);
   clip-path: polygon(50% 0,100% 50%,50% 100%,0 50%);
+  vertical-align: middle;
 }
 .arcana-hero .kw {
   font-family: 'Cinzel', serif;
-  font-size: 11px; letter-spacing: .3em;
-  color: var(--ah-gold-pale);
+  /* Tighter tracking so a three-keyword line (e.g. THE HIEROPHANT) fits without
+     orphaning the last word; each keyword also stays unbroken internally. */
+  font-size: 11px; letter-spacing: .18em;
+  white-space: nowrap;
+  /* burnished gold #C9A84C = 8.64:1 (was gold-400 #9A7B36 = 4.95:1, borderline) */
+  color: #C9A84C;
   text-transform: uppercase;
 }
 
 .arcana-hero .card-desc {
-  margin-top: 16px;
-  font-size: 16px;
+  margin-top: 10px;
+  font-size: 15px;
   line-height: 1.6;
   color: var(--ah-text-dim);
-  font-style: italic;
   max-width: 460px;
 }
 
 .arcana-hero .meta {
-  margin-top: 16px;
+  margin-top: 12px;
   display: flex; gap: 36px;
-  padding-top: 14px;
+  padding-top: 10px;
   border-top: 1px solid var(--ah-gold-ghost);
   max-width: 460px;
 }
@@ -216,41 +230,77 @@
   font-size: 12px; letter-spacing: .2em;
   color: var(--ah-gold-pale);
 }
+/* Symbol glyph — large and luminous so the symbol (heart, etc.) reads clearly. */
+.arcana-hero .meta-symbol {
+  font-size: 34px;
+  line-height: 1;
+  letter-spacing: 0;
+  margin-top: 2px;
+  color: var(--ah-gold-pale);
+  text-shadow:
+    0 0 12px color-mix(in srgb, var(--gold-100) 55%, transparent),
+    0 0 28px color-mix(in srgb, var(--gold-200) 30%, transparent);
+}
 
 /* CTA row — overrides sitewide .btn-primary / .btn-ghost inside the hero
    so the hero has its architectural outline button instead of the solid
    amber one used elsewhere on the page. */
 .arcana-hero .cta-row {
   display: flex; gap: 10px; align-items: center;
-  margin-top: 22px;
+  margin-top: 14px;
   flex-wrap: wrap;
 }
 
 .arcana-hero .cta-row .btn-primary {
   display: inline-flex; align-items: center; gap: 12px;
-  padding: 12px 22px;
-  background: var(--ah-gold);
-  border: 1px solid var(--ah-gold);
+  padding: 12px 26px;
+  /* Warm BURNISHED gold, native to the palette — anchored on #c9a84c with the
+     top-light kept gold (blended toward gold-300, not the bright yellow gold-200)
+     and the base deepened toward gold-400, so it reads as the same burnished tone
+     as the borders/headings rather than a saturated yellow. The specular + glow
+     give it dominance without the default-yellow pop. */
+  background: linear-gradient(180deg,
+    color-mix(in srgb, #C9A84C 80%, var(--gold-300)) 0%,
+    #C9A84C 46%,
+    color-mix(in srgb, #C9A84C 72%, var(--gold-400)) 100%);
+  border: 1px solid color-mix(in srgb, #C9A84C 78%, var(--gold-400));
   color: var(--ink-900);
   font-family: 'Cinzel', serif;
-  letter-spacing: .25em; font-size: 11px;
+  letter-spacing: .25em; font-size: 11px; font-weight: 700;
   text-transform: uppercase;
   text-decoration: none;
-  box-shadow: inset 0 0 10px color-mix(in srgb, var(--gold-100) 15%, transparent);
-  transition: background .25s ease, color .25s ease, border-color .25s ease;
+  box-shadow:
+    /* top-edge specular — warmer catchlight (gold-200, not the pale gold-100) */
+    inset 0 1px 0 color-mix(in srgb, var(--gold-200) 45%, transparent),
+    /* inner warmth */
+    inset 0 0 14px color-mix(in srgb, var(--gold-300) 18%, transparent),
+    /* outer ambient glow — burnished, not bright */
+    0 0 22px color-mix(in srgb, #C9A84C 28%, transparent),
+    0 4px 18px rgba(0,0,0,.45);
+  transition: background .25s ease, box-shadow .25s ease, border-color .25s ease;
   position: relative;
   min-height: 44px;
 }
 .arcana-hero .cta-row .btn-primary::before {
   content: '';
   position: absolute; inset: -3px;
-  border: 1px solid var(--ah-gold-faint);
+  border: 1px solid color-mix(in srgb, #C9A84C 35%, transparent);
   pointer-events: none;
 }
 .arcana-hero .cta-row .btn-primary:hover {
-  background: var(--ah-gold-warm);
-  border-color: var(--ah-gold-warm);
+  /* Lift to a brighter BURNISHED gold on hover — luminous but still in the gold
+     family (blended toward gold-300, deepened base toward gold-400), not yellow. */
+  background: linear-gradient(180deg,
+    color-mix(in srgb, #C9A84C 62%, var(--gold-200)) 0%,
+    color-mix(in srgb, #C9A84C 85%, var(--gold-300)) 55%,
+    color-mix(in srgb, #C9A84C 84%, var(--gold-400)) 100%);
+  border-color: color-mix(in srgb, #C9A84C 70%, var(--gold-200));
   color: var(--ink-900);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--gold-200) 55%, transparent),
+    inset 0 0 18px color-mix(in srgb, var(--gold-300) 22%, transparent),
+    0 0 36px color-mix(in srgb, #C9A84C 46%, transparent),
+    0 6px 24px rgba(0,0,0,.5);
   transform: none;
 }
 .arcana-hero .btn-dot {
@@ -296,12 +346,15 @@
   margin-top: 10px;
   max-width: 480px;
   font-family: 'Cinzel', serif;
-  font-size: 10px; letter-spacing: .3em;
-  color: var(--ah-text-mute);
+  font-size: 11px; letter-spacing: .28em;
+  /* Functional navigation — lifted to a clearly legible gold. gold-200
+     (#E7C878) = 12.16:1 on the near-black bg, and the size is bumped from 10px. */
+  color: var(--gold-200);
 }
 .arcana-hero .counter-hint {
   font-family: 'JetBrains Mono', monospace;
   letter-spacing: .2em; font-size: 12px;
+  color: var(--gold-200);
 }
 .arcana-hero .counter-arrow {
   background: none; border: 0;
@@ -376,123 +429,79 @@
 .arcana-hero .hero-right {
   position: relative;
   z-index: 2;
-  display: flex; align-items: center; justify-content: center;
+  display: flex; align-items: center; justify-content: flex-start;
+  /* No side push — the card sits right next to the text column (the grid gap is
+     the only separation), so the two read as one grouped composition. */
+  /* Nudge the card down a touch from the navbar. */
+  padding-top: 80px;
+  /* Pin height to the viewport so the card position never reacts to
+     the left column's content (e.g. a long wrapping card title). The card is
+     centred within this height and capped so it never reaches the navbar. */
+  align-self: start;
+  height: 100vh;
 }
 
-.arcana-hero .orbit-svg {
-  position: absolute;
-  width: 96%; height: 90%;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -52%);
+.arcana-hero .orbit-svg { display: none; }
+
+/* ── Ambient sparkle field around the card ──────────────────────────────────
+   Scattered gold square glints in the space surrounding the title card, so the
+   card sheds light into the layout instead of sitting on an empty backdrop.
+   Same square gold look + wave timing as the mosaic tesserae glints. */
+.arcana-hero .hero-sparkles {
+  position: absolute; inset: 0;
   pointer-events: none;
-  z-index: 1;
+  z-index: 0;            /* behind the card (which is z-index 2) */
+  overflow: hidden;
 }
-
-/* ─────────────────────────────────────────────────────────────────
-   ORBIT — continuous mystical motion
-   ─────────────────────────────────────────────────────────────────
-   The SVG ships in the template untouched. We target it positionally
-   via nth-of-type so no markup changes are required.
-
-   Structure (see index.html):
-     <defs>, <circle><!-- glow -->,
-     <ellipse> × 3   ← orbit rings
-     <path>          ← top dashed arc
-     <rect> × 3      ← gold diamonds at arc endpoints + top
-     <circle> × 4    ← small twinkling stars (after the glow circle)
-*/
-
-/* All animatable shapes pivot around their own visual center */
-.arcana-hero .orbit-svg ellipse,
-.arcana-hero .orbit-svg > circle:first-of-type {
-  transform-box: fill-box;
-  transform-origin: 50% 50%;
-  will-change: transform, opacity;
+.arcana-hero .hero-spark {
+  position: absolute;
+  border-radius: 1px;
+  opacity: 0;
+  background: linear-gradient(135deg, rgba(255,244,196,1), rgba(232,186,94,.78));
+  box-shadow: 0 0 4px 0 color-mix(in srgb, var(--gold-300) 50%, transparent);
+  animation: heroSparkTwinkle 5s ease-in-out infinite;
+  will-change: opacity, transform;
 }
-
-/* 1) Counter-rotating orbit rings — different periods + directions.
-      The ellipses are slightly non-circular (rx ≠ ry) so the rotation
-      reads as a slow swim rather than appearing static. */
-.arcana-hero .orbit-svg ellipse:nth-of-type(1) {
-  animation: ahOrbitRotate 140s linear infinite;
+@keyframes heroSparkTwinkle {
+  0%, 70%, 100% { opacity: 0;   transform: scale(.6); }
+  85%           { opacity: var(--sb, .8); transform: scale(1); }
 }
-.arcana-hero .orbit-svg ellipse:nth-of-type(2) {
-  animation: ahOrbitRotate 95s  linear infinite reverse;
-}
-.arcana-hero .orbit-svg ellipse:nth-of-type(3) {
-  animation: ahOrbitRotate 70s  linear infinite;
-}
-@keyframes ahOrbitRotate {
-  from { transform: rotate(0deg);   }
-  to   { transform: rotate(360deg); }
-}
-
-/* 2) The top arc — a flow of energy across the curve.
-      stroke-dashoffset animation makes the existing dasharray crawl. */
-.arcana-hero .orbit-svg path {
-  animation: ahOrbitDashFlow 18s linear infinite;
-}
-@keyframes ahOrbitDashFlow {
-  from { stroke-dashoffset: 0;   }
-  to   { stroke-dashoffset: -90; }
-}
-
-/* 3) Glow circle — breathes in and out, slow and steady. */
-.arcana-hero .orbit-svg > circle:first-of-type {
-  animation: ahOrbitGlow 6.5s ease-in-out infinite;
-}
-@keyframes ahOrbitGlow {
-  0%, 100% { opacity: .85; transform: scale(1);    }
-  50%      { opacity: 1;   transform: scale(1.05); }
-}
-
-/* 4) Diamond endpoints — pulse opacity (transform would clobber the
-      SVG transform="rotate(45 …)" attribute, so we touch opacity only). */
-.arcana-hero .orbit-svg rect:nth-of-type(1) {
-  animation: ahOrbitDiamond 4.2s ease-in-out infinite;
-}
-.arcana-hero .orbit-svg rect:nth-of-type(2) {
-  animation: ahOrbitDiamond 4.2s ease-in-out infinite -1.4s;
-}
-.arcana-hero .orbit-svg rect:nth-of-type(3) {
-  animation: ahOrbitDiamond 4.2s ease-in-out infinite -2.8s;
-}
-@keyframes ahOrbitDiamond {
-  0%, 100% { opacity: 1;  filter: drop-shadow(0 0 0   color-mix(in srgb, var(--gold-100) 0%, transparent)); }
-  50%      { opacity: .5; filter: drop-shadow(0 0 6px color-mix(in srgb, var(--gold-100) 60%, transparent)); }
-}
-
-/* 5) Small corner stars — twinkle independently at offset phases. */
-.arcana-hero .orbit-svg > circle:not(:first-of-type) {
-  transform-origin: center;
-  animation: ahOrbitTwinkle 5.4s ease-in-out infinite;
-}
-.arcana-hero .orbit-svg > circle:nth-of-type(2) { animation-delay:    0s; }
-.arcana-hero .orbit-svg > circle:nth-of-type(3) { animation-delay: -1.3s; }
-.arcana-hero .orbit-svg > circle:nth-of-type(4) { animation-delay: -2.7s; }
-.arcana-hero .orbit-svg > circle:nth-of-type(5) { animation-delay: -4.1s; }
-@keyframes ahOrbitTwinkle {
-  0%, 100% { opacity: .25; }
-  50%      { opacity: 1;   }
-}
-
-/* Respect user motion preferences */
-@media (prefers-reduced-motion: reduce) {
-  .arcana-hero .orbit-svg ellipse,
-  .arcana-hero .orbit-svg path,
-  .arcana-hero .orbit-svg rect,
-  .arcana-hero .orbit-svg circle {
-    animation: none !important;
-  }
+/* Freeze the background sparkles during a card transition (toggled via JS) so
+   they don't compete with the image swap for the main thread. */
+.arcana-hero .hero-sparkles.is-paused .hero-spark {
+  animation-play-state: paused;
+  opacity: 0;
 }
 
 /* Main card */
 .arcana-hero .main-card-wrap {
   position: relative;
-  width: min(46vw, 78vh);
-  min-width: 380px;
-  max-width: 620px;
-  aspect-ratio: 3 / 4;
+  /* DYNAMIC sizing — fills the FULL height between the navbar and the bottom of
+     the viewport (no vertical scroll), while still not crowding the left text
+     column on narrow screens. The card is tall (320:470 ≈ 1.47×):
+       • height-bound: the entire space below the 60px navbar.
+       • width-bound:  a share of the viewport width (its grid column is ~1.6fr),
+                       so on narrow screens it shrinks instead of overlapping text.
+     The smaller of the two wins; aspect-ratio derives the width. */
+  /* Fill the available height (small gap top+bottom so the card's feathered edge
+     clears the navbar text)… */
+  --card-h-by-height: calc(100vh - 24px);
+  /* …but also cap the WIDTH so the card + text group stays within the centred
+     max-width band and the two columns sit close together (no chasm). The card
+     column gets roughly the remaining width after the ~460px text column + gap.
+     Expressed as an equivalent height via the tarot aspect ratio. */
+  --card-w-max:       min(54vw, 820px);
+  --card-h-by-width:  calc(var(--card-w-max) * (470 / 320));
+  height: min(var(--card-h-by-height), var(--card-h-by-width));
+  width: auto;
+  /* Pull the card left by roughly its own transparent mosaic margin (~7/84 of its
+     width ≈ 8.3%) so the tiled artwork starts right at the column edge instead of
+     leaving a dead strip between the panel's right rule and the first visible tile. */
+  margin-left: 0%;
+  /* Match the card's natural tarot ratio so the mosaic card fills the frame
+     without letterbox gaps and the dissolve renders identically to the
+     standalone widget. */
+  aspect-ratio: 320 / 470;
   z-index: 2;
   /* 3D context for layer rotations */
   perspective: 1400px;
@@ -503,8 +512,10 @@
   border-radius: 50%;
   overflow: hidden;
   box-shadow:
-    0 0 160px color-mix(in srgb, var(--gold-300) 28%, transparent),
-    0 0 80px rgba(0,0,0,.55),
+    /* deep depth-field glow — the card sits "in front of" the scene */
+    0 0 220px color-mix(in srgb, var(--gold-300) 48%, transparent),
+    0 0 80px  color-mix(in srgb, var(--gold-400) 30%, transparent),
+    0 0 80px  rgba(0,0,0,.55),
     inset 0 0 80px rgba(0,0,0,.45);
 }
 
@@ -653,47 +664,53 @@
   padding: 8px;
   background: none; border: 0;
   cursor: pointer;
-  z-index: 3;
+  /* Above the card's interactive layers. The card mount uses overflow:visible
+     and oversized inner layers (e.g. .ac-neb at 130%), which can extend over
+     the buttons and swallow their clicks — a high z-index keeps the nav on top. */
+  z-index: 20;
   transition: transform .3s ease, filter .3s ease;
 }
-.arcana-hero .nav-btn-prev { left: 2%; }
-.arcana-hero .nav-btn-next { right: 2%; }
+.arcana-hero .nav-btn-prev { left: 4%; }
+.arcana-hero .nav-btn-next { right: 4%; }
 .arcana-hero .nav-btn:hover {
   transform: translateY(-50%) scale(1.06);
   filter: brightness(1.2);
 }
-.arcana-hero .nav-btn:hover .nav-btn-circle {
-  border-color: var(--ah-gold);
-  box-shadow: 0 0 40px color-mix(in srgb, var(--gold-300) 40%, transparent);
-}
 .arcana-hero .nav-btn:hover .nav-btn-label { color: var(--ah-gold-pale); }
-.arcana-hero .nav-btn:hover .nav-chevron   { color: var(--ah-gold-pale); }
 
-.arcana-hero .nav-btn-circle {
-  position: relative;
-  width: 78px; height: 78px;
+.arcana-hero .nav-disc {
+  display: flex; align-items: center; justify-content: center;
+  width: 52px; height: 52px;
   border-radius: 50%;
-  overflow: hidden;
-  border: 1px solid color-mix(in srgb, var(--gold-300) 35%, transparent);
-  box-shadow: 0 0 24px rgba(0,0,0,.5);
-  transition: border-color .25s ease, box-shadow .3s ease;
+  /* Clearly visible gold ring at rest so it reads as an interactive control. */
+  border: 1.5px solid color-mix(in srgb, var(--gold-300) 70%, transparent);
+  background: radial-gradient(circle at 50% 35%,
+    color-mix(in srgb, var(--gold-300) 18%, transparent), rgba(8,7,14,.55));
+  box-shadow:
+    0 0 0 1px rgba(0,0,0,.4),
+    0 8px 24px -10px rgba(0,0,0,.8);
+  transition: border-color .25s ease, box-shadow .3s ease, background .3s ease;
 }
-.arcana-hero .nav-btn-circle img {
-  width: 100%; height: 100%;
-  object-fit: cover;
-  display: block;
-}
-.arcana-hero .nav-btn-ring {
-  position: absolute; inset: -5px;
-  border-radius: 50%;
-  border: 1px solid var(--ah-gold-faint);
-  pointer-events: none;
-}
-.arcana-hero .nav-chevron {
+.arcana-hero .nav-roman {
   font-family: 'Cinzel', serif;
-  font-size: 10px; letter-spacing: .25em;
-  color: var(--ah-text-dim);
-  transition: color .25s ease;
+  font-style: normal;
+  font-size: 16px; letter-spacing: .1em; line-height: 1;
+  color: var(--ah-gold-pale);
+}
+/* Clear hover state: brighter ring, a soft gold glow, and a lit background so the
+   control visibly responds to the pointer. */
+.arcana-hero .nav-btn:hover .nav-disc,
+.arcana-hero .nav-btn:focus-visible .nav-disc {
+  border-color: var(--gold-200);
+  background: radial-gradient(circle at 50% 35%,
+    color-mix(in srgb, var(--gold-200) 32%, transparent), rgba(8,7,14,.5));
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--gold-200) 50%, transparent),
+    0 0 26px -2px color-mix(in srgb, var(--gold-300) 60%, transparent);
+}
+.arcana-hero .nav-btn:hover .nav-roman,
+.arcana-hero .nav-btn:focus-visible .nav-roman {
+  color: var(--gold-100);
 }
 .arcana-hero .nav-btn-label {
   font-family: 'Cinzel', serif;
@@ -707,8 +724,12 @@
    RESPONSIVE
    ================================================================= */
 @media (max-width: 1200px) {
-  .arcana-hero .hero-left { padding: 32px 32px 28px 48px; }
-  .arcana-hero .nav-btn-circle { width: 64px; height: 64px; }
+  .arcana-hero { column-gap: clamp(20px, 3vw, 48px); }
+  .arcana-hero .hero-left { padding: 24px 8px 24px 20px; }
+  .arcana-hero .nav-disc { width: 44px; height: 44px; }
+  .arcana-hero .nav-roman { font-size: 13px; }
+  /* Slightly tighter text column so the two stay grouped on mid screens. */
+  .arcana-hero { grid-template-columns: minmax(320px, 420px) auto; }
 }
 
 @media (max-width: 900px) {
@@ -718,6 +739,12 @@
   }
   .arcana-hero .hero-left  { padding: 32px; }
   .arcana-hero .hero-right { min-height: 70vh; padding: 32px 0 80px; }
-  .arcana-hero .nav-btn-prev { left: 4%; }
-  .arcana-hero .nav-btn-next { right: 4%; }
+  .arcana-hero .nav-btn-prev { left: 6%; }
+  .arcana-hero .nav-btn-next { right: 6%; }
+  /* Single column now — the card can use most of the screen width, and the
+     height bound relaxes since the hero stacks and scrolls. */
+  .arcana-hero .main-card-wrap {
+    --card-h-by-width: calc(78vw * (470 / 320));
+    --card-h-by-height: 80vh;
+  }
 }

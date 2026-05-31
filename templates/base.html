@@ -13,7 +13,6 @@
 </head>
 <body>
   <div class="grain" aria-hidden="true"></div>
-  <div class="mosaic-overlay" aria-hidden="true"></div>
   <canvas id="stars-canvas"></canvas>
   <svg class="bg-sparkles" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice">
     <text fill="rgba(201,168,76,0.35)" font-size="14" font-family="serif" x="108" y="95">✦</text>
@@ -51,12 +50,14 @@
     {% block content %}{% endblock %}
   </main>
 
+  {% block footer %}
   <footer class="footer">
     <div class="footer-inner">
       <p class="footer-rule"></p>
       <p class="footer-text">Arcana &ensp;·&ensp; The Tarot Oracle &ensp;·&ensp; For contemplation &amp; reflection</p>
     </div>
   </footer>
+  {% endblock %}
 
   {% block scripts %}{% endblock %}
   <script src="{{ url_for('static', filename='js/main.js') }}"></script>

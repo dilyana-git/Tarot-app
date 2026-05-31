@@ -71,30 +71,35 @@
       <path d="M 80 36 Q 720 4 1360 36" fill="none" stroke="rgba(196,147,58,.2)" stroke-width="1" stroke-dasharray="2 5"/>
     </svg>
     <div class="st-arc-label">
-      <span class="st-arc-line"></span>
-      <span id="arcLabel">The Major Arcana · 0 — XXI</span>
-      <span class="st-arc-line"></span>
+      <button class="st-suit-nav st-suit-nav-prev" id="suitNavPrev" aria-label="Previous suit">
+        <span class="st-suit-disc"><em class="st-suit-roman" id="prevSuitSigil">⊕</em></span>
+        <span class="st-suit-nav-label">Prev</span>
+      </button>
+      <div class="st-arc-label-inner">
+        <span class="st-arc-label-dot"></span>
+        <span id="arcLabel">The Major Arcana · 0 — XXI</span>
+      </div>
+      <button class="st-suit-nav st-suit-nav-next" id="suitNavNext" aria-label="Next suit">
+        <span class="st-suit-disc"><em class="st-suit-roman" id="nextSuitSigil">△</em></span>
+        <span class="st-suit-nav-label">Next</span>
+      </button>
     </div>
   </div>
 
-  <!-- Showcase (hover any card to populate) -->
-  <div class="st-showcase" id="cardShowcase">
-    <div class="st-showcase-aura" id="showcaseAura"></div>
-    <a class="st-showcase-frame" id="showcaseFrame" href="#">
-      <div class="st-showcase-img-wrap" id="showcaseImg"></div>
-      <span class="st-ornament st-ornament-tl">✦</span>
-      <span class="st-ornament st-ornament-tr">✦</span>
-      <span class="st-ornament st-ornament-bl">✦</span>
-      <span class="st-ornament st-ornament-br">✦</span>
-    </a>
-    <div class="st-showcase-meta" id="showcaseMeta">
-      <h2 class="st-meta-name" id="showcaseName">Hover any card</h2>
-      <div class="st-meta-sub" id="showcaseSub">to bring it to the table</div>
-      <div class="st-meta-divider"><span></span><i>Keywords</i><span></span></div>
-      <div class="st-meta-kws" id="showcaseKws"></div>
-      <a class="st-meta-cta" id="showcaseCta" href="#">View this card →</a>
+  <!-- Showcase meta strip — updated when a card is lifted
+  <div class="st-showcase" id="stShowcase">
+    <div class="st-showcase-meta" id="stShowcaseMeta">
+      <div class="st-meta-eyebrow">
+        <span class="st-meta-eyebrow-dot"></span>
+        <span class="st-meta-eyebrow-label" id="stMetaEyebrow">Major Arcana</span>
+      </div>
+      <p class="st-meta-name" id="stMetaName">The Fool</p>
+      <div class="st-meta-kw-block" id="stMetaKw"></div>
+      <a href="#" class="st-meta-cta" id="stMetaCta" aria-label="View card detail">
+        <span class="st-cta-inner">View Card</span>
+      </a>
     </div>
-  </div>
+  </div> -->
 
 </div><!-- /st-wrap -->
 
@@ -145,51 +150,8 @@
   /* ── Data injected by Flask ─────────────────────────────── */
   const SPREAD = {{ spread | tojson }};
 
-  /* ── Helpers ────────────────────────────────────────────── */
-  function hexa(hex, a) {
-    const h = hex.replace('#', '');
-    const r = parseInt(h.slice(0,2),16), g = parseInt(h.slice(2,4),16), b = parseInt(h.slice(4,6),16);
-    return `rgba(${r},${g},${b},${a})`;
-  }
-
-  /* ── Showcase ───────────────────────────────────────────── */
-  const showcaseFrame = document.getElementById('showcaseFrame');
-  const showcaseAura  = document.getElementById('showcaseAura');
-  const showcaseImg   = document.getElementById('showcaseImg');
-  const showcaseName  = document.getElementById('showcaseName');
-  const showcaseSub   = document.getElementById('showcaseSub');
-  const showcaseKws   = document.getElementById('showcaseKws');
-  const showcaseCta   = document.getElementById('showcaseCta');
-
-  function updateShowcase(card, accent) {
-    const ac = accent || card.accent_color || '#c4933a';
-    const url = `/card/${card.id}`;
-
-    showcaseFrame.href = url;
-    showcaseCta.href   = url;
-    showcaseAura.style.background =
-      `radial-gradient(ellipse at 50% 50%, ${hexa(ac, .28)} 0%, transparent 62%)`;
-    showcaseFrame.style.borderColor = hexa(ac, .6);
-    showcaseFrame.style.boxShadow =
-      `0 28px 70px rgba(0,0,0,.85), 0 0 0 1px ${hexa(ac,.4)}, 0 0 55px ${hexa(ac,.22)}`;
-
-    if (card.image_url) {
-      showcaseImg.innerHTML = `<img src="${card.image_url}" alt="${card.name}">`;
-    } else {
-      showcaseImg.innerHTML = `<div class="st-ph-large"><span style="color:${ac}">✦</span><b>${card.number}</b></div>`;
-    }
-
-    showcaseName.textContent = card.name;
-    showcaseSub.textContent  = card.suit
-      ? `${card.suit} · ${card.element}`
-      : `Major Arcana · ${card.element}`;
-
-    showcaseKws.innerHTML = (card.keywords || []).map(k =>
-      `<span style="border-color:${hexa(ac,.35)};background:${hexa(ac,.06)}">${k}</span>`
-    ).join('');
-    showcaseCta.style.borderColor = hexa(ac, .55);
-    showcaseCta.style.color = ac;
-  }
+  let hoverTimer = null;
+  let cooldownUntil = 0;
 
   /* ── Major Arcana Arc ───────────────────────────────────── */
   const arcContainer = document.getElementById('majorArc');
@@ -203,19 +165,23 @@
     const n = cards.length;
     if (!n) return;
 
-    const cw = 150, ch = 225;
+    const cw = 96, ch = 144;
     const contW = arcContainer.offsetWidth || window.innerWidth;
 
-    // Symmetric arc: 150° total, radius fitted so the fan fills the container width
-    const totalSweep = 150; // degrees — brief spec: 140–160°
-    const halfSweep  = totalSweep / 2;
-    const angleStep  = n > 1 ? totalSweep / (n - 1) : 0;
-    const PAD_HORIZ  = 60; // min space from edge to outer card center
+    // Symmetric arc: tighter sweep for a compact, less-scrolly layout
+    const totalSweep  = 100; // degrees
+    const halfSweep   = totalSweep / 2;
+    const angleStep   = n > 1 ? totalSweep / (n - 1) : 0;
+    const halfSweepRad = halfSweep * Math.PI / 180;
+    // PAD_HORIZ must fit the rotated outer card's top corner inside the container.
+    // When a card of size cw×ch is rotated halfSweep° about its bottom-centre,
+    // its top-left corner protrudes horizontally by: cw/2·cos(θ) + ch·sin(θ).
+    const PAD_HORIZ  = Math.ceil(cw / 2 * Math.cos(halfSweepRad) + ch * Math.sin(halfSweepRad)) + 12;
     const availW     = contW - cw - 2 * PAD_HORIZ;
-    const radius     = availW / (2 * Math.sin(halfSweep * Math.PI / 180));
+    const radius     = availW / (2 * Math.sin(halfSweepRad));
 
     const cx      = contW / 2;
-    const PAD_TOP = 56;
+    const PAD_TOP = 12;
     const cy      = radius + ch + PAD_TOP;
 
     // ── Ecliptic arc SVG (DECK-5) ───────────────────────────────
@@ -299,47 +265,64 @@
         `left:${x.toFixed(1)}px;top:${y.toFixed(1)}px;` +
         `transform:rotate(${angle.toFixed(2)}deg);z-index:${zIdx}`;
 
-      el.innerHTML = card.image_url
-        ? `<img src="${card.image_url}" alt="${card.name}">`
-        : `<div class="st-ph"><span>✦</span><b>${card.number}</b></div>`;
-      el.innerHTML +=
-        `<span class="st-arc-num">${card.number}</span>` +
-        `<span class="st-arc-corner tl" aria-hidden="true">✦</span>` +
-        `<span class="st-arc-corner br" aria-hidden="true">✦</span>`;
+      if (card.image_url) {
+        const img = document.createElement('img');
+        img.src = card.image_url;
+        img.alt = card.name;
+        el.appendChild(img);
+      } else {
+        const ph = document.createElement('div');
+        ph.className = 'st-ph';
+        ph.innerHTML = `<span>✦</span><b>${card.number}</b>`;
+        el.appendChild(ph);
+      }
+      const numEl = document.createElement('span');
+      numEl.className = 'st-arc-num';
+      numEl.textContent = card.number;
+      el.appendChild(numEl);
+      const tlEl = document.createElement('span');
+      tlEl.className = 'st-arc-corner tl';
+      tlEl.setAttribute('aria-hidden', 'true');
+      tlEl.textContent = '✦';
+      el.appendChild(tlEl);
+      const brEl = document.createElement('span');
+      brEl.className = 'st-arc-corner br';
+      brEl.setAttribute('aria-hidden', 'true');
+      brEl.textContent = '✦';
+      el.appendChild(brEl);
 
       el.addEventListener('mouseenter', () => {
-        document.querySelectorAll('.st-arc-card.lifted').forEach(prev => {
-          const cs = getComputedStyle(prev);
-          const tx = cs.translate !== 'none' ? cs.translate : '0 0';
-          const sc = cs.scale !== 'none' ? cs.scale : '1';
-          prev.getAnimations().forEach(a => a.cancel());
-          prev.style.translate = tx;
-          prev.style.scale = sc;
-          prev.style.filter = cs.filter;
-          prev.classList.remove('lifted');
-          prev.offsetHeight;
-          prev.style.transition =
-            'translate .38s ease-out, scale .38s ease-out, ' +
-            'filter .28s ease-out, box-shadow .3s ease, border-color .22s ease';
-          prev.style.translate = '0 0';
-          prev.style.scale = '1';
-          prev.style.filter = 'brightness(1)';
-          prev.addEventListener('transitionend', () => {
-            prev.style.transition = '';
-            prev.style.translate  = '';
-            prev.style.scale      = '';
-            prev.style.filter     = '';
-          }, { once: true });
-        });
-
-        el.classList.add('lifted');
-        updateShowcase(card, accent);
+        clearTimeout(hoverTimer);
+        if (Date.now() < cooldownUntil) return;
+        hoverTimer = setTimeout(() => {
+          if (Date.now() < cooldownUntil) return;
+          document.querySelectorAll('.st-arc-card.lifted').forEach(prev => {
+            prev.classList.remove('lifted');
+          });
+          el.classList.add('lifted');
+          cooldownUntil = Date.now() + 600;
+          updateShowcase(card, currentArcAccent);
+        }, 120);
+      });
+      el.addEventListener('mouseleave', () => {
+        clearTimeout(hoverTimer);
       });
 
       arcContainer.appendChild(el);
     }
 
-    arcContainer.style.height = (maxBottom + 28) + 'px';
+    // ── Display slot at the bottom of the arc ──────────────────
+    // The lifted card moves here: centered, upright, scaled up.
+    const dispW = cw * 2.2;
+    const dispH = ch * 2.2;
+    const dispX = cx - dispW / 2;
+    const dispY = maxBottom - dispH * 0.55;
+
+    arcContainer.style.setProperty('--disp-x', `${dispX.toFixed(1)}px`);
+    arcContainer.style.setProperty('--disp-y', `${dispY.toFixed(1)}px`);
+    arcContainer.style.setProperty('--disp-w', `${dispW.toFixed(1)}px`);
+    arcContainer.style.setProperty('--disp-h', `${dispH.toFixed(1)}px`);
+    arcContainer.style.height = (dispY + dispH + 16) + 'px';
   }
 
   /* ── Suit Fans ──────────────────────────────────────────── */
@@ -358,9 +341,36 @@
     pentacles: 'Suit of Pentacles · Earth · 14 Cards',
   };
 
+  const SUIT_TITLES = {
+    major:     'The Arcana',
+    wands:     'Wands',
+    cups:      'Cups',
+    swords:    'Swords',
+    pentacles: 'Pentacles',
+  };
+  const SUIT_SIGILS = {
+    major: '✦', wands: '△', cups: '▽', swords: '✕', pentacles: '⊕',
+  };
+  const SUIT_ORDER  = ['major', 'wands', 'cups', 'swords', 'pentacles'];
+  const pageTitle   = document.querySelector('.page-arch-title');
+  const prevSigil   = document.getElementById('prevSuitSigil');
+  const nextSigil   = document.getElementById('nextSuitSigil');
+  const suitNavPrev = document.getElementById('suitNavPrev');
+  const suitNavNext = document.getElementById('suitNavNext');
+
   function activateTile(suit) {
     document.querySelectorAll('.suit-tile').forEach(b => b.classList.remove('suit-tile--active'));
     document.querySelector(`.suit-tile[data-suit="${suit}"]`)?.classList.add('suit-tile--active');
+
+    if (pageTitle) pageTitle.textContent = SUIT_TITLES[suit] || 'The Deck';
+
+    const idx = SUIT_ORDER.indexOf(suit);
+    const prevSuit = SUIT_ORDER[(idx - 1 + SUIT_ORDER.length) % SUIT_ORDER.length];
+    const nextSuit = SUIT_ORDER[(idx + 1) % SUIT_ORDER.length];
+    if (prevSigil) prevSigil.textContent = SUIT_SIGILS[prevSuit];
+    if (nextSigil) nextSigil.textContent = SUIT_SIGILS[nextSuit];
+    if (suitNavPrev) suitNavPrev.dataset.suit = prevSuit;
+    if (suitNavNext) suitNavNext.dataset.suit = nextSuit;
 
     if (suit === 'major') {
       arcLabel.textContent = 'The Major Arcana · 0 — XXI';
@@ -378,12 +388,34 @@
   document.querySelectorAll('.suit-tile').forEach(btn => {
     btn.addEventListener('click', () => activateTile(btn.dataset.suit));
   });
+  suitNavPrev?.addEventListener('click', () => activateTile(suitNavPrev.dataset.suit));
+  suitNavNext?.addEventListener('click', () => activateTile(suitNavNext.dataset.suit));
+
+  /* ── Showcase strip ─────────────────────────────────────── */
+  const stMetaEyebrow = document.getElementById('stMetaEyebrow');
+  const stMetaName    = document.getElementById('stMetaName');
+  const stMetaKw      = document.getElementById('stMetaKw');
+  const stMetaCta     = document.getElementById('stMetaCta');
+
+  function updateShowcase(card, accent) {
+    if (!card) return;
+    if (stMetaEyebrow) {
+      stMetaEyebrow.textContent = card.suit
+        ? `${card.suit} · ${card.arcana.charAt(0).toUpperCase() + card.arcana.slice(1)} Arcana`
+        : 'Major Arcana';
+    }
+    if (stMetaName) stMetaName.textContent = card.name;
+    if (stMetaKw) {
+      stMetaKw.innerHTML = (card.keywords_upright || []).slice(0, 3).map((kw, i, arr) =>
+        `<span class="st-kw">${kw}</span>${i < arr.length - 1 ? '<span class="st-kw-sep" aria-hidden="true">·</span>' : ''}`
+      ).join('');
+    }
+    if (stMetaCta) stMetaCta.href = `/card/${card.id}`;
+  }
 
   /* ── Init ───────────────────────────────────────────────── */
   document.addEventListener('DOMContentLoaded', () => {
-    buildArc(SPREAD.major, '#c4933a');
-    if (SPREAD.major.length) updateShowcase(SPREAD.major[0], '#c4933a');
-    document.querySelectorAll('.st-arc-card')[0]?.classList.add('lifted');
+    activateTile('major');
   });
 
   // Rebuild arc on resize (debounced) — respects whichever tile is active

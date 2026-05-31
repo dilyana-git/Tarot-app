@@ -25,6 +25,8 @@
     }));
   }
 
+  let raf = null, running = false;
+
   function draw(ts) {
     ctx.clearRect(0, 0, W, H);
     stars.forEach(s => {
@@ -35,13 +37,25 @@
       ctx.fillStyle = `rgba(220,205,172,${a})`;
       ctx.fill();
     });
-    requestAnimationFrame(draw);
+    if (running) raf = requestAnimationFrame(draw);
   }
+
+  function start() { if (!running) { running = true; raf = requestAnimationFrame(draw); } }
+  function stop()  { running = false; if (raf) { cancelAnimationFrame(raf); raf = null; } }
 
   window.addEventListener('resize', () => { resize(); makeStars(110); });
   resize();
   makeStars(110);
-  requestAnimationFrame(draw);
+  start();
+
+  /* Pause the starfield redraw while a card transition is in flight (the widget
+     fires these) so the loop doesn't compete for the main thread, and while the
+     tab is hidden. Resumes afterward. */
+  document.addEventListener('arcana:transition-start', stop);
+  document.addEventListener('arcana:transition-end', start);
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) stop(); else start();
+  });
 })();
 
 /* ---- Floating golden motes (hero only) -------------------- */

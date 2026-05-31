@@ -197,8 +197,7 @@
       els.kwRow.appendChild(span);
     });
 
-    els.mainLabel.textContent = `· ${card.name.toUpperCase()} ·`;
-    els.mainLabel.href = `/card/${card.id}`;
+    if (els.mainLabel) { els.mainLabel.textContent = `· ${card.name.toUpperCase()} ·`; els.mainLabel.href = `/card/${card.id}`; }
 
     if (prev.image_url) els.prevImg.src = prev.image_url;
     if (next.image_url) els.nextImg.src = next.image_url;
@@ -305,7 +304,7 @@
     els.textStack.classList.add('is-out');
     if (dirClass) els.textStack.classList.add(dirClass);
     els.textStack.classList.remove('is-in');
-    els.mainLabel.classList.add('is-out');
+    if (els.mainLabel) els.mainLabel.classList.add('is-out');
 
     setTimeout(() => {
       render();
@@ -314,7 +313,7 @@
       popActiveTick();
       els.textStack.classList.remove('is-out');
       els.textStack.classList.add('is-in');
-      els.mainLabel.classList.remove('is-out');
+      if (els.mainLabel) els.mainLabel.classList.remove('is-out');
     }, 90);
 
     // 5) Cleanup once the layer crossfade finishes.
