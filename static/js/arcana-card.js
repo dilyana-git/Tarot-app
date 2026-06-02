@@ -794,6 +794,7 @@ function buildMosaic(cw, ch) {
         '<p class="b-meaning">' + esc(c.meaning) + '</p>' +
         '<div class="b-foot">MAJOR ARCANA \u00b7 ' + esc(c.num) + ' OF XXI</div>';
       setV(frontEl, "--img", imgFor(c));
+      frontEl.classList.toggle("has-image", !!c.image);
       var f = (parseInt(c.num, 10) / 21) * 100;
       if (railFill) railFill.style.width = f + "%";
       if (railBead) railBead.style.left = f + "%";

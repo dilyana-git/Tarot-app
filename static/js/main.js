@@ -7,6 +7,7 @@
   const canvas = document.getElementById('stars-canvas');
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
+  const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   let stars = [];
   let W, H;
 
@@ -40,13 +41,13 @@
     if (running) raf = requestAnimationFrame(draw);
   }
 
-  function start() { if (!running) { running = true; raf = requestAnimationFrame(draw); } }
+  function start() { if (reduce || running) return; running = true; raf = requestAnimationFrame(draw); }
   function stop()  { running = false; if (raf) { cancelAnimationFrame(raf); raf = null; } }
 
-  window.addEventListener('resize', () => { resize(); makeStars(110); });
+  window.addEventListener('resize', () => { resize(); makeStars(110); if (reduce) draw(0); });
   resize();
   makeStars(110);
-  start();
+  if (reduce) draw(0); else start();   // reduced motion: one static frame, no loop
 
   /* Pause the starfield redraw while a card transition is in flight (the widget
      fires these) so the loop doesn't compete for the main thread, and while the
@@ -62,8 +63,9 @@
 (function initMotes() {
   const canvas = document.querySelector('.motes-canvas');
   if (!canvas) return;
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-  const hero = canvas.closest('.hero');
+  const hero = canvas.closest('.hero, .arcana-hero') || canvas.parentElement;
   Object.assign(canvas.style, {
     position: 'absolute', inset: '0',
     width: '100%', height: '100%',
@@ -96,6 +98,8 @@
     return m;
   }
 
+  let raf = null, running = false;
+
   function draw() {
     ctx.clearRect(0, 0, W, H);
     motes.forEach(m => {
@@ -116,13 +120,24 @@
       ctx.fillStyle = `rgba(212,168,80,${m.a})`;
       ctx.fill();
     });
-    requestAnimationFrame(draw);
+    if (running) raf = requestAnimationFrame(draw);
   }
+
+  function start() { if (running) return; running = true; raf = requestAnimationFrame(draw); }
+  function stop()  { running = false; if (raf) { cancelAnimationFrame(raf); raf = null; } }
 
   window.addEventListener('resize', () => { resize(); });
   resize();
-  makeMotes(38);
-  draw();
+  makeMotes(380);
+  start();
+
+  /* Match the starfield: yield the main thread during a card transition and
+     while the tab is hidden, so the motes never compete with the image swap. */
+  document.addEventListener('arcana:transition-start', stop);
+  document.addEventListener('arcana:transition-end', start);
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) stop(); else start();
+  });
 })();
 
 /* ---- Mobile nav toggle ------------------------------------ */

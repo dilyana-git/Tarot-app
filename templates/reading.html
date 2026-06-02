@@ -8,27 +8,19 @@
   <!-- ── LEFT: context, always visible ────────────────────── -->
   <aside class="reading-left">
 
-    <!-- Before draw: title + subtitle -->
+    <!-- Persistent header -->
+    <h1 class="reading-left-title" id="readingLeftTitle">Your Reading</h1>
+
+    <!-- Before draw: subtitle -->
     <div class="reading-left-panel" id="leftSelector">
-      <div class="page-arch-eyebrow reading-eyebrow">
-        <span class="page-arch-rule"></span>
-        <span class="page-arch-label">The Oracle</span>
-        <span class="page-arch-rule"></span>
-      </div>
-      <h1 class="reading-left-title">Your Reading</h1>
       <p class="reading-left-sub">Still your mind, hold your question, and let the cards speak.</p>
     </div>
 
-    <!-- After draw: spread name + position list -->
+    <!-- After draw: spread description, new reading button, card legend -->
     <div class="reading-left-panel" id="leftResult" style="display:none">
-      <div class="page-arch-eyebrow reading-eyebrow">
-        <span class="page-arch-rule"></span>
-        <span class="page-arch-label">Your Spread</span>
-        <span class="page-arch-rule"></span>
-      </div>
-      <h2 class="reading-result-name" id="resultSpreadName"></h2>
       <p class="reading-result-desc" id="resultSpreadDesc"></p>
       <button class="btn btn-outline reading-new-btn" id="newReadingBtn">✦ New Reading</button>
+      <div class="reading-legend" id="readingLegend"></div>
     </div>
 
   </aside>
@@ -38,7 +30,11 @@
 
     <!-- SELECTOR: spread options + shuffle -->
     <div class="reading-right-selector" id="rightSelector">
-      <h2 class="spread-selector-title">Choose Your Spread</h2>
+      <div class="page-arch-eyebrow reading-eyebrow reading-selector-eyebrow">
+        <span class="page-arch-rule"></span>
+        <span class="page-arch-label">Choose Your Spread</span>
+        <span class="page-arch-rule"></span>
+      </div>
       <div class="spread-options">
         {% for key, spread in spreads.items() %}
         <button class="spread-option {% if key == 'three_card' %}selected{% endif %}" data-spread="{{ key }}">
@@ -48,10 +44,6 @@
         </button>
         {% endfor %}
       </div>
-      <button class="btn btn-primary btn-large shuffle-btn" id="shuffleBtn">
-        <span class="shuffle-icon">✦</span>
-        Shuffle &amp; Draw
-      </button>
     </div>
 
     <!-- LOADING -->
@@ -75,7 +67,6 @@
 <div class="card-panel" id="cardPanel" style="display:none">
   <div class="panel-inner">
     <div class="panel-nav">
-      <button class="panel-back" id="panelBack">← Back to Reading</button>
       <button class="panel-close" id="panelClose">✕</button>
     </div>
     <div class="panel-card-visual" id="panelCardVisual"></div>
@@ -91,23 +82,15 @@ const spreads = {{ spreads | tojson }};
 let currentSpread = 'three_card';
 let drawnCards = [];
 
-/* ── Spread selection ───────────────────────────────────── */
-document.querySelectorAll('.spread-option').forEach(opt => {
-  opt.addEventListener('click', () => {
-    document.querySelectorAll('.spread-option').forEach(o => o.classList.remove('selected'));
-    opt.classList.add('selected');
-    currentSpread = opt.dataset.spread;
-  });
-});
-
-/* ── Shuffle & Draw ─────────────────────────────────────── */
-document.getElementById('shuffleBtn').addEventListener('click', async () => {
+/* ── Spread selection → immediate draw ──────────────────── */
+async function drawSpread(key) {
+  currentSpread = key;
   setState('loading');
   try {
     const res = await fetch('/api/reading', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ spread: currentSpread }),
+      body: JSON.stringify({ spread: key }),
     });
     const data = await res.json();
     drawnCards = data.cards;
@@ -116,20 +99,25 @@ document.getElementById('shuffleBtn').addEventListener('click', async () => {
     console.error(e);
     setState('selector');
   }
+}
+
+document.querySelectorAll('.spread-option').forEach(opt => {
+  opt.addEventListener('click', () => drawSpread(opt.dataset.spread));
 });
 
 /* ── New Reading ────────────────────────────────────────── */
 document.getElementById('newReadingBtn').addEventListener('click', () => {
   document.getElementById('spreadLayout').innerHTML = '';
+  document.getElementById('readingLegend').innerHTML = '';
   document.getElementById('cardPanel').style.display = 'none';
+  document.getElementById('readingLeftTitle').textContent = 'Your Reading';
   setState('selector');
 });
 
-document.getElementById('panelClose').addEventListener('click', () => {
-  document.getElementById('cardPanel').style.display = 'none';
-});
-document.getElementById('panelBack').addEventListener('click', () => {
-  document.getElementById('cardPanel').style.display = 'none';
+function closePanel() { document.getElementById('cardPanel').style.display = 'none'; }
+document.getElementById('panelClose').addEventListener('click', closePanel);
+document.getElementById('cardPanel').addEventListener('click', e => {
+  if (e.target === document.getElementById('cardPanel')) closePanel();
 });
 
 /* ── State machine ──────────────────────────────────────── */
@@ -140,9 +128,16 @@ function setState(state) {
   document.getElementById('readingLoading').style.display = state === 'loading'  ? 'flex' : 'none';
 }
 
+/* First sentence only — keeps each legend entry to one compact line of meaning */
+function firstSentence(text) {
+  const s = String(text || '').trim();
+  const m = s.match(/^.*?[.!?](?=\s|$)/);
+  return m ? m[0] : s;
+}
+
 /* ── Render reading ─────────────────────────────────────── */
 function renderReading(data) {
-  document.getElementById('resultSpreadName').textContent = data.spread.name;
+  document.getElementById('readingLeftTitle').textContent = data.spread.name;
   document.getElementById('resultSpreadDesc').textContent = data.spread.description;
 
   const layout = document.getElementById('spreadLayout');
@@ -154,10 +149,10 @@ function renderReading(data) {
     cardEl.className = 'spread-card-wrap';
     cardEl.style.setProperty('--delay', (i * 0.15) + 's');
     cardEl.innerHTML = `
-      <div class="spread-position-label">${card.position}</div>
       <div class="spread-card ${card.reversed ? 'reversed' : ''}"
            style="--card-color: ${card.card_color}; --accent-color: ${card.accent_color}"
            data-index="${i}">
+        <span class="spread-card-num">${i + 1}</span>
         <div class="spread-card-back"><span class="card-back-symbol">✦</span></div>
         <div class="spread-card-face">
           ${card.image_url ? `<img class="spread-card-img" src="${card.image_url}" alt="${card.name}">` : ''}
@@ -168,6 +163,35 @@ function renderReading(data) {
     `;
     cardEl.querySelector('.spread-card').addEventListener('click', () => openCardPanel(i));
     layout.appendChild(cardEl);
+  });
+
+  /* ── Build the numbered legend in the left sidebar ──────── */
+  const legend = document.getElementById('readingLegend');
+  legend.innerHTML = data.cards.map((card, i) => {
+    const meaning = firstSentence(card.reversed ? card.reversed_meaning : card.upright_meaning);
+    const name = card.name + (card.reversed ? ' · Reversed' : '');
+    return `
+      <div class="legend-item" data-index="${i}">
+        <span class="legend-num">${i + 1}</span>
+        <div class="legend-text">
+          <span class="legend-pos">${card.position}</span>
+          <span class="legend-name">${name}</span>
+          <p class="legend-meaning">${meaning}</p>
+        </div>
+      </div>`;
+  }).join('');
+
+  /* Link each legend entry to its card — hovering either highlights the match */
+  legend.querySelectorAll('.legend-item').forEach(item => {
+    const card = layout.querySelector('.spread-card[data-index="' + item.dataset.index + '"]');
+    const on  = () => { item.classList.add('is-linked'); if (card) card.classList.add('is-linked'); };
+    const off = () => { item.classList.remove('is-linked'); if (card) card.classList.remove('is-linked'); };
+    item.addEventListener('mouseenter', on);
+    item.addEventListener('mouseleave', off);
+    if (card) {
+      card.addEventListener('mouseenter', on);
+      card.addEventListener('mouseleave', off);
+    }
   });
 
   setState('result');
@@ -200,11 +224,11 @@ function openCardPanel(index) {
         <div class="panel-card-suit">${suitDisplay}</div>
       </div>
     </div>
-    <p class="panel-position">Position: <strong>${card.position}</strong></p>
     ${card.reversed ? '<p class="panel-reversed-label">↩ Reversed</p>' : ''}
   `;
 
   info.innerHTML = `
+    <p class="panel-position-top">${card.position}</p>
     <h3 class="panel-card-title">${card.name}</h3>
     <p class="panel-element">✦ ${card.element} · ${card.arcana === 'major' ? 'Major Arcana' : card.suit}</p>
     <div class="panel-keywords">
@@ -214,7 +238,6 @@ function openCardPanel(index) {
       <h4>${card.reversed ? '↩ Reversed' : '☝ Upright'} Meaning</h4>
       <p>${meaning}</p>
     </div>
-    <div class="panel-description"><p><em>${card.description}</em></p></div>
     <a href="/card/${card.id}" class="btn btn-outline btn-sm" target="_blank">View Full Card →</a>
   `;
 

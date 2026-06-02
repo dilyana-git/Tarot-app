@@ -129,7 +129,7 @@
     if (!field) return;
     if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-    var N = 150;                      // sparkle count
+    var N = 260;                      // sparkle count
     var frag = document.createDocumentFragment();
     for (var i = 0; i < N; i++) {
       // Bias positions toward the vertical centre band where the card sits.
@@ -150,9 +150,12 @@
       s.style.width = size.toFixed(1) + 'px';
       s.style.height = size.toFixed(1) + 'px';
       // brighter near the card, fainter far out
-      s.style.setProperty('--sb', (0.85 - dist * 0.5).toFixed(2));
+      s.style.setProperty('--sb', (1.0 - dist * 0.4).toFixed(2));
+      // Per-glint period so the field twinkles organically, not in lockstep.
+      var dur = 4 + Math.random() * 3;
+      s.style.animationDuration = dur.toFixed(2) + 's';
       // outward wave: nearer glints lead, far ones trail (+ jitter)
-      var delay = -((1 - dist) * 0.7 + Math.random() * 0.3) * 5;
+      var delay = -((1 - dist) * 0.7 + Math.random() * 0.3) * dur;
       s.style.animationDelay = delay.toFixed(2) + 's';
       frag.appendChild(s);
     }

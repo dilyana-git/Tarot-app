@@ -12,3 +12,6 @@ venv/*
 node_modules/
 screenshot*
 check_page*
+reading*.png
+spread*.png
+v_*.png

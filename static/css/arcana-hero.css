@@ -458,7 +458,9 @@
   border-radius: 1px;
   opacity: 0;
   background: linear-gradient(135deg, rgba(255,244,196,1), rgba(232,186,94,.78));
-  box-shadow: 0 0 4px 0 color-mix(in srgb, var(--gold-300) 50%, transparent);
+  box-shadow:
+    0 0 3px 0 color-mix(in srgb, var(--gold-200) 75%, transparent),
+    0 0 10px 0 color-mix(in srgb, var(--gold-300) 38%, transparent);
   animation: heroSparkTwinkle 5s ease-in-out infinite;
   will-change: opacity, transform;
 }
@@ -466,11 +468,40 @@
   0%, 70%, 100% { opacity: 0;   transform: scale(.6); }
   85%           { opacity: var(--sb, .8); transform: scale(1); }
 }
-/* Freeze the background sparkles during a card transition (toggled via JS) so
-   they don't compete with the image swap for the main thread. */
-.arcana-hero .hero-sparkles.is-paused .hero-spark {
+
+/* ── Edge dissolve: tesserae drifting off the card ──────────────────────────
+   A delicate, ambient echo of the demo's "edge crumble": a sparse handful of
+   gold mosaic chips detach near the card's edge and drift slowly outward into
+   the void with a faint upward rise, fading as they go — mirroring the card's
+   own static crumble band. Pure transform + opacity (compositor-only, no JS
+   loop); slow and faint so the card stays the focus. */
+.arcana-hero .hero-drift {
+  position: absolute;
+  border-radius: 1px;
+  opacity: 0;
+  pointer-events: none;
+  background: linear-gradient(135deg, rgba(255,244,196,.92), rgba(232,186,94,.66));
+  box-shadow: 0 0 4px 0 color-mix(in srgb, var(--gold-200) 50%, transparent);
+  animation: heroDrift 8s ease-out infinite;
+  will-change: transform, opacity;
+}
+@keyframes heroDrift {
+  0%   { opacity: 0;               transform: translate(0,0) rotate(0) scale(1); }
+  15%  { opacity: var(--peak, .5); }
+  100% { opacity: 0;               transform: translate(var(--dx,0), var(--dy,0)) rotate(var(--rot,18deg)) scale(.55); }
+}
+
+/* Freeze the background sparkles + drift during a card transition (toggled via
+   JS) so they don't compete with the image swap for the main thread. */
+.arcana-hero .hero-sparkles.is-paused .hero-spark,
+.arcana-hero .hero-sparkles.is-paused .hero-drift {
   animation-play-state: paused;
   opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arcana-hero .hero-spark,
+  .arcana-hero .hero-drift { animation: none; opacity: 0; }
 }
 
 /* Main card */

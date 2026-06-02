@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mosaic Edge Dissolve</title>
+<style>
+  :root{
+    --black:#0a0a0f;
+    --indigo:#1a1040;
+    --violet:#2d1b5e;
+    --gold:#c9a84c;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;background:var(--black);color:#e8e2d0;
+    font-family:Georgia,'EB Garamond',serif;overflow:hidden;}
+  .stage{position:relative;width:100vw;height:100vh;display:flex;
+    align-items:center;justify-content:center;}
+  canvas{display:block;}
+  .panel{position:absolute;top:24px;left:24px;z-index:10;
+    background:rgba(10,10,15,.55);border:1px solid rgba(201,168,76,.25);
+    border-radius:10px;padding:18px 20px;backdrop-filter:blur(6px);
+    width:300px;}
+  .panel h1{font-family:'Cinzel Decorative',Georgia,serif;
+    font-size:13px;letter-spacing:.28em;color:var(--gold);
+    text-transform:uppercase;margin-bottom:4px;font-weight:400;}
+  .panel p{font-size:13px;line-height:1.5;color:#9890a8;margin-bottom:16px;}
+  .row{margin-bottom:16px;}
+  .row label{display:block;font-size:10px;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--gold);margin-bottom:8px;}
+  .toggle{display:flex;border:1px solid rgba(201,168,76,.3);border-radius:6px;overflow:hidden;}
+  .toggle button{flex:1;background:transparent;border:none;color:#8a829a;
+    padding:9px 6px;font-family:inherit;font-size:11px;letter-spacing:.06em;
+    cursor:pointer;transition:all .2s;}
+  .toggle button.active{background:var(--gold);color:var(--black);font-weight:600;}
+  input[type=range]{width:100%;accent-color:var(--gold);}
+  .val{float:right;color:#e8e2d0;font-size:11px;}
+  .hint{font-size:11px;color:#6b6480;font-style:italic;line-height:1.4;
+    border-top:1px solid rgba(201,168,76,.15);padding-top:12px;}
+</style>
+</head>
+<body>
+<div class="stage">
+  <canvas id="c"></canvas>
+  <div class="panel">
+    <h1>Edge Dissolve</h1>
+    <p>The figure stays put. Tesserae detach at the silhouette edge and drift into the void, fading as they go.</p>
+    <div class="row">
+      <label>Effect mode</label>
+      <div class="toggle">
+        <button id="mDissolve" class="active">Edge crumble ✓</button>
+        <button id="mFly">Fly forward ✗</button>
+      </div>
+    </div>
+    <div class="row">
+      <label>Intensity <span class="val" id="vInt">1.0</span></label>
+      <input type="range" id="intensity" min="0" max="3" step="0.1" value="1">
+    </div>
+    <div class="row">
+      <label>Drift reach <span class="val" id="vReach">1.0</span></label>
+      <input type="range" id="reach" min="0.3" max="2.5" step="0.1" value="1">
+    </div>
+    <div class="hint">The right panel mode is what you want; the wrong one reproduces the "zoom toward camera" Claude Code keeps making.</div>
+  </div>
+</div>
+
+<script>
+const cv = document.getElementById('c');
+const ctx = cv.getContext('2d');
+const PAL = { black:'#0a0a0f', indigo:'#1a1040', violet:'#2d1b5e', gold:'#c9a84c' };
+
+let W, H, DPR;
+function resize(){
+  DPR = Math.min(window.devicePixelRatio||1, 2);
+  W = window.innerWidth; H = window.innerHeight;
+  cv.width = W*DPR; cv.height = H*DPR; cv.style.width=W+'px'; cv.style.height=H+'px';
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  buildFigure();
+}
+window.addEventListener('resize', resize);
+
+// ---- 1. Define the silhouette (a cloaked standing figure) ----
+// We draw it once to an offscreen canvas, then sample alpha to test "inside".
+let mask, mctx, MW, MH, originX, originY, tileSize;
+function silhouettePath(c, s){
+  // s = scale unit. Figure built in local coords then we read it back.
+  c.beginPath();
+  // head
+  c.arc(0, -3.4*s, 0.85*s, 0, Math.PI*2);
+  c.fill();
+  // cloak body: shoulders down to flared base
+  c.beginPath();
+  c.moveTo(-0.7*s, -2.7*s);
+  c.bezierCurveTo(-1.6*s,-1.6*s, -1.4*s, 1.2*s, -2.3*s, 3.6*s); // left edge billows out
+  c.lineTo( 2.0*s, 3.6*s);
+  c.bezierCurveTo( 1.2*s, 1.0*s, 1.5*s,-1.4*s, 0.7*s,-2.7*s);   // right edge
+  c.closePath();
+  c.fill();
+  // a trailing wind-caught flap (organic asymmetry)
+  c.beginPath();
+  c.moveTo(-2.0*s, 1.0*s);
+  c.quadraticCurveTo(-3.4*s, 2.2*s, -2.6*s, 3.5*s);
+  c.quadraticCurveTo(-2.1*s, 2.6*s, -1.8*s, 2.4*s);
+  c.closePath();
+  c.fill();
+}
+
+let tiles = [];      // {x,y,size,baseColor,edge, alive(0..1), respawnAt}
+let particles = [];  // {x,y,vx,vy,size,color,rot,vr,life,maxLife}
+let cx, cy;          // figure centroid (for outward drift)
+
+function buildFigure(){
+  const unit = Math.min(W, H) * 0.085;       // overall figure size
+  originX = W/2; originY = H/2 - unit*0.3;
+  tileSize = Math.max(7, unit*0.42);          // mosaic tessera size
+
+  // offscreen mask
+  const pad = unit*5;
+  MW = Math.ceil(pad); MH = Math.ceil(pad*1.4);
+  mask = document.createElement('canvas');
+  mask.width = MW; mask.height = MH;
+  mctx = mask.getContext('2d');
+  mctx.fillStyle='#fff';
+  mctx.translate(MW/2, MH/2 + unit*0.3);
+  silhouettePath(mctx, unit);
+  const data = mctx.getImageData(0,0,MW,MH).data;
+  const inside = (lx,ly)=>{
+    const px = Math.round(lx + MW/2), py = Math.round(ly + MH/2 + unit*0.3);
+    if(px<0||py<0||px>=MW||py>=MH) return false;
+    return data[(py*MW+px)*4+3] > 80;
+  };
+
+  // build tile grid
+  tiles = []; particles = [];
+  let sumx=0,sumy=0,n=0;
+  const step = tileSize;
+  for(let ly=-MH/2; ly<MH/2; ly+=step){
+    for(let lx=-MW/2; lx<MW/2; lx+=step){
+      if(!inside(lx,ly)) continue;
+      // colour by region: indigo low, gold catching light upper-right
+      const t = (ly + MH*0.35) / (MH*0.7);          // 0 top .. 1 bottom
+      const lightSide = (lx > -unit*0.4);
+      let col;
+      const r = Math.random();
+      if(t < 0.28){ col = r<0.55?PAL.gold:PAL.violet; }            // head / shoulders
+      else if(lightSide){ col = r<0.45?PAL.gold:(r<0.8?PAL.violet:PAL.indigo); }
+      else { col = r<0.65?PAL.indigo:(r<0.9?PAL.violet:PAL.gold); }
+      tiles.push({
+        lx, ly,
+        x: originX+lx, y: originY+ly,
+        size: step*(0.82+Math.random()*0.1),
+        color: col, edge:false, alive:1, respawnAt:0
+      });
+      sumx+=originX+lx; sumy+=originY+ly; n++;
+    }
+  }
+  cx = sumx/n; cy = sumy/n;
+
+  // mark edge tiles: a tile with an empty neighbour cell
+  const occ = new Set(tiles.map(t=>`${Math.round(t.lx/step)},${Math.round(t.ly/step)}`));
+  for(const t of tiles){
+    const gx = Math.round(t.lx/step), gy = Math.round(t.ly/step);
+    const has = (dx,dy)=>occ.has(`${gx+dx},${gy+dy}`);
+    if(!(has(1,0)&&has(-1,0)&&has(0,1)&&has(0,-1)&&has(1,1)&&has(-1,-1)&&has(1,-1)&&has(-1,1)))
+      t.edge = true;
+  }
+}
+
+// ---- 2. Particle dissolve ----
+let mode = 'dissolve';
+let intensity = 1, reach = 1;
+let flyT = 0;
+
+function spawnFromEdges(dt){
+  const edges = tiles.filter(t=>t.edge && t.alive>0.6);
+  const rate = 9 * intensity;            // particles per frame baseline
+  const count = Math.random() < (rate%1) ? Math.floor(rate)+1 : Math.floor(rate);
+  for(let i=0;i<count;i++){
+    const t = edges[(Math.random()*edges.length)|0];
+    if(!t) break;
+    // outward direction from centroid + upward bias + turbulence
+    let dx = t.x-cx, dy = t.y-cy, d = Math.hypot(dx,dy)||1;
+    dx/=d; dy/=d;
+    const turb = ()=> (Math.random()-0.5)*0.6;
+    const speed = (0.25+Math.random()*0.5) * reach;
+    particles.push({
+      x:t.x, y:t.y,
+      vx:(dx+turb())*speed, vy:(dy-0.35+turb())*speed,  // slight rise
+      size:t.size, color:t.color,
+      rot:Math.random()*Math.PI, vr:(Math.random()-0.5)*0.05,
+      life:0, maxLife:90+Math.random()*70
+    });
+    // erode the source tile, regenerate after a beat (continuous shimmer)
+    t.alive = 0; t.respawnAt = performance.now() + 600 + Math.random()*1400;
+  }
+}
+
+function drawTile(x,y,size,color,alpha,rot){
+  ctx.save();
+  ctx.translate(x,y); if(rot) ctx.rotate(rot);
+  ctx.globalAlpha = alpha;
+  if(color===PAL.gold){ ctx.shadowColor='rgba(201,168,76,.6)'; ctx.shadowBlur=size*0.8; }
+  ctx.fillStyle = color;
+  const g = size*0.16; // grout gap
+  ctx.fillRect(-size/2+g/2, -size/2+g/2, size-g, size-g);
+  ctx.restore();
+}
+
+function frame(now){
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle = PAL.black; ctx.fillRect(0,0,W,H);
+
+  if(mode==='dissolve'){
+    // regenerate eroded tiles
+    for(const t of tiles){ if(t.alive<1 && now>t.respawnAt) t.alive = Math.min(1, t.alive+0.04); }
+    spawnFromEdges();
+    // draw figure
+    ctx.shadowBlur=0;
+    for(const t of tiles){ if(t.alive>0.01) drawTile(t.x,t.y,t.size,t.color,t.alive,0); }
+    // update + draw particles
+    for(let i=particles.length-1;i>=0;i--){
+      const p=particles[i]; p.life++;
+      p.x+=p.vx; p.y+=p.vy; p.vy+=0.004; p.rot+=p.vr;
+      p.vx*=0.992; p.vy*=0.992;
+      const a = Math.max(0, 1 - p.life/p.maxLife);
+      if(a<=0){ particles.splice(i,1); continue; }
+      drawTile(p.x,p.y,p.size*(0.7+a*0.3),p.color,a*0.95,p.rot);
+    }
+    ctx.shadowBlur=0;
+  } else {
+    // WRONG effect: whole figure scales toward camera + fades, on loop
+    flyT += 0.006*intensity;
+    const cycle = flyT % 1;
+    const scale = 1 + cycle*1.8;
+    const alpha = 1 - cycle;
+    ctx.save();
+    ctx.translate(originX, originY);
+    ctx.scale(scale, scale);
+    ctx.translate(-originX, -originY);
+    for(const t of tiles) drawTile(t.x,t.y,t.size,t.color,alpha,0);
+    ctx.restore();
+    ctx.shadowBlur=0;
+  }
+  requestAnimationFrame(frame);
+}
+
+// ---- controls ----
+document.getElementById('mDissolve').onclick = e=>{ mode='dissolve';
+  e.target.classList.add('active'); document.getElementById('mFly').classList.remove('active'); buildFigure(); };
+document.getElementById('mFly').onclick = e=>{ mode='fly'; flyT=0;
+  e.target.classList.add('active'); document.getElementById('mDissolve').classList.remove('active'); };
+document.getElementById('intensity').oninput = e=>{ intensity=+e.target.value;
+  document.getElementById('vInt').textContent=intensity.toFixed(1); };
+document.getElementById('reach').oninput = e=>{ reach=+e.target.value;
+  document.getElementById('vReach').textContent=reach.toFixed(1); };
+
+resize();
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

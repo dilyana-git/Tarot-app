@@ -4,9 +4,11 @@
 
 {% block content %}
 
-<!-- Full-width card spotlight hero -->
-<section class="card-detail-hero" style="--card-color: {{ card.card_color }}">
-  <div class="breadcrumb">
+<!-- Unified spotlight: art + title in one breathing block -->
+<section class="card-detail-hero" style="--card-color: {{ card.card_color }}; --accent-color: {{ card.accent_color }}">
+
+  <!-- breadcrumb spans full width above the two-column spotlight -->
+  <div class="breadcrumb card-detail-breadcrumb">
     <a href="{{ url_for('cards') }}" class="breadcrumb-link">← The Cards</a>
     {% if card.suit %}
     <span class="breadcrumb-sep">/</span>
@@ -16,39 +18,12 @@
     <a href="{{ url_for('cards') }}?filter=major" class="breadcrumb-link">Major Arcana</a>
     {% endif %}
   </div>
-  <div class="page-arch-eyebrow">
-    <span class="page-arch-rule"></span>
-    <span class="page-arch-label">
-      {% if card.arcana == 'major' %}Major Arcana{% else %}{{ card.suit }}{% endif %}
-    </span>
-    <span class="page-arch-rule"></span>
-  </div>
-  <h1 class="card-detail-title">{{ card.name }}</h1>
-  <div class="card-detail-hero-meta">
-    {% if card.arcana == 'major' %}
-    <span class="card-detail-position">{{ card.id + 1 }} / 22</span>
-    <span class="card-detail-hero-sep">✦</span>
-    {% else %}
-    <span class="card-detail-position">{{ ((card.id - 22) % 14) + 1 }} / 14</span>
-    <span class="card-detail-hero-sep">✦</span>
-    {% endif %}
-    <span class="card-detail-hero-num">{{ card.number }}</span>
-    <span class="card-detail-hero-sep">✦</span>
-    <span class="card-detail-hero-element">{{ card.element }}</span>
-    {% if card.symbol %}
-    <span class="card-detail-hero-sep">✦</span>
-    <span class="card-detail-hero-symbol">{{ card.symbol }}</span>
-    {% endif %}
-  </div>
-</section>
 
-<div class="card-detail-page">
-  <div class="card-detail-layout">
+  <div class="card-detail-spotlight">
 
-    <!-- Card visual -->
+    <!-- LEFT: card art -->
     <div class="card-detail-visual">
       <div class="card-large" style="--card-color: {{ card.card_color }}; --accent-color: {{ card.accent_color }}">
-        <!-- Art Nouveau corner ornaments -->
         <svg class="card-corner card-corner-tl" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg" fill="none" aria-hidden="true">
           <path d="M1 1 C1 12 11 21 21 21" stroke="currentColor" stroke-width="0.9"/>
           <path d="M4 1 C4 11 13 19 21 19" stroke="currentColor" stroke-width="0.45" opacity="0.5"/>
@@ -85,7 +60,45 @@
         <div class="card-large-border-glow"></div>
       </div>
 
-      <!-- Meta badges -->
+      <!-- Navigation -->
+      <div class="card-nav">
+        {% if prev_card %}
+        <a href="{{ url_for('card_detail', card_id=prev_card.id) }}" class="card-nav-btn">← {{ prev_card.name }}</a>
+        {% else %}<span></span>{% endif %}
+        {% if next_card %}
+        <a href="{{ url_for('card_detail', card_id=next_card.id) }}" class="card-nav-btn">{{ next_card.name }} →</a>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- RIGHT: title, meta, and body copy flowing in one column -->
+    <div class="card-detail-spotlight-text">
+      <div class="page-arch-eyebrow">
+        <span class="page-arch-rule"></span>
+        <span class="page-arch-label">
+          {% if card.arcana == 'major' %}Major Arcana{% else %}{{ card.suit }}{% endif %}
+        </span>
+        <span class="page-arch-rule"></span>
+      </div>
+      <h1 class="card-detail-title">{{ card.name }}</h1>
+      <div class="card-detail-hero-meta">
+        {% if card.arcana == 'major' %}
+        <span class="card-detail-position">{{ card.id + 1 }} / 22</span>
+        <span class="card-detail-hero-sep" aria-hidden="true">|</span>
+        {% else %}
+        <span class="card-detail-position">{{ ((card.id - 22) % 14) + 1 }} / 14</span>
+        <span class="card-detail-hero-sep" aria-hidden="true">|</span>
+        {% endif %}
+        <span class="card-detail-hero-num">{{ card.number }}</span>
+        <span class="card-detail-hero-sep" aria-hidden="true">|</span>
+        <span class="card-detail-hero-element">{{ card.element }}</span>
+        {% if card.symbol %}
+        <span class="card-detail-hero-sep" aria-hidden="true">|</span>
+        <span class="card-detail-hero-symbol">{{ card.symbol }}</span>
+        {% endif %}
+      </div>
+
+      <!-- Meta badges
       <div class="card-meta-badges">
         <span class="meta-badge">{{ card.element }}</span>
         {% if card.arcana == 'major' %}
@@ -93,56 +106,16 @@
         {% else %}
         <span class="meta-badge">{{ card.suit }}</span>
         {% endif %}
-      </div>
+      </div> -->
 
-      <!-- Navigation -->
-      <div class="card-nav">
-        {% if prev_card %}
-        <a href="{{ url_for('card_detail', card_id=prev_card.id) }}" class="card-nav-btn">
-          ← {{ prev_card.name }}
-        </a>
-        {% else %}
-        <span></span>
-        {% endif %}
-        {% if next_card %}
-        <a href="{{ url_for('card_detail', card_id=next_card.id) }}" class="card-nav-btn">
-          {{ next_card.name }} →
-        </a>
-        {% endif %}
-      </div>
-    </div>
-
-    <!-- Card info -->
-    <div class="card-detail-info">
+  
+      <div class="card-detail-info">
       <p class="detail-desc">{{ card.description }}</p>
-
-      <!-- Keywords -->
-      <div class="detail-section">
-        <h2 class="detail-section-title">Keywords</h2>
-        <div class="keywords-row">
-          <div class="keywords-group">
-            <p class="keywords-label">Upright</p>
-            <div class="keywords-list">
-              {% for kw in card.keywords_upright %}
-              <span class="keyword-tag keyword-upright">{{ kw }}</span>
-              {% endfor %}
-            </div>
-          </div>
-          <div class="keywords-group">
-            <p class="keywords-label">Reversed</p>
-            <div class="keywords-list">
-              {% for kw in card.keywords_reversed %}
-              <span class="keyword-tag keyword-reversed">{{ kw }}</span>
-              {% endfor %}
-            </div>
-          </div>
-        </div>
-      </div>
 
       <!-- Meanings -->
       <div class="meanings-tabs">
-        <button class="tab-btn active" data-tab="upright">☝ Upright Meaning</button>
-        <button class="tab-btn" data-tab="reversed">↩ Reversed Meaning</button>
+        <button class="tab-btn active" data-tab="upright">Upright</button>
+        <button class="tab-btn" data-tab="reversed">Reversed</button>
       </div>
       <div class="tab-content active" id="tab-upright">
         <div class="meaning-box meaning-upright">
@@ -155,14 +128,10 @@
         </div>
       </div>
 
-      <!-- CTA -->
-      <div class="detail-cta">
-        <a href="{{ url_for('reading') }}" class="btn btn-primary">Begin a Reading</a>
-        <a href="{{ url_for('cards') }}" class="btn btn-outline">View All Cards</a>
-      </div>
-    </div>
-  </div>
-</div>
+    </div><!-- /card-detail-info -->
+    </div><!-- /card-detail-spotlight-text -->
+  </div><!-- /card-detail-spotlight -->
+</section><!-- /card-detail-hero -->
 {% endblock %}
 
 {% block scripts %}
@@ -175,5 +144,29 @@
       document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
     });
   });
+
+  // Suppress fallback chrome whenever real art is present
+  const img = document.querySelector('.card-detail-img');
+  if (img) {
+    const card = img.closest('.card-large');
+    const mark = () => { if (img.naturalWidth) card.classList.add('has-image'); };
+    img.complete ? mark() : img.addEventListener('load', mark);
+  }
+
+  // Lock eyebrow cap-height to the card's top border.
+  // Measure both after fonts are ready so the offset is pixel-exact.
+  const lockEyebrow = () => {
+    const eyebrow = document.querySelector('.card-detail-spotlight-text .page-arch-eyebrow');
+    const cardEl  = document.querySelector('.card-detail-visual .card-large');
+    if (!eyebrow || !cardEl) return;
+    eyebrow.style.marginTop = '0';                       // reset any prior value
+    const cardTop    = cardEl.getBoundingClientRect().top;
+    const eyebrowTop = eyebrow.getBoundingClientRect().top;
+    // getBoundingClientRect gives the top of the line box, which includes
+    // half-leading above the caps. Shift up by that difference.
+    eyebrow.style.marginTop = (cardTop - eyebrowTop) + 'px';
+  };
+  document.fonts.ready.then(lockEyebrow);
+  window.addEventListener('resize', lockEyebrow);
 </script>
 {% endblock %}

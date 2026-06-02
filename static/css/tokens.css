@@ -3,10 +3,10 @@
    Single source of truth. Load before all other stylesheets.
    ============================================================ */
 :root {
-  /* — Ground: candlelit near-black — */
-  --ink-900: #0A0C0B;
-  --ink-800: #10130F;
-  --ink-700: #171B16;
+  /* — Ground: candlelit near-black, midnight-indigo undertone — */
+  --ink-900: #0A0B11;
+  --ink-800: #0F1118;
+  --ink-700: #161A26;
 
   /* — Gold ramp — */
   --gold-100: #F6E7B2;
