@@ -161,6 +161,56 @@
     }
     field.appendChild(frag);
 
+    // ── Edge dissolve: tesserae drifting off the card into the void ─────────
+    // A delicate, ambient echo of the demo's "edge crumble" — a sparse handful
+    // of gold mosaic chips detach near the card's edge and drift slowly outward
+    // (with a faint upward rise), fading as they go, mirroring the card's own
+    // static crumble band. Emission is biased toward the open void to the card's
+    // right and top so chips never wander over the left text column, and the
+    // motion is slow/faint so the focus stays on the card. Pure CSS
+    // transform+opacity animation (no rAF); appended to the same field so the
+    // transition pause below covers it too.
+    (function buildDrift() {
+      var DRIFT_N = 130;
+      var dfrag = document.createDocumentFragment();
+      for (var d = 0; d < DRIFT_N; d++) {
+        // Bias the emission angle toward rightward + upward (the open void),
+        // away from the text column on the card's left.
+        var ang = 0;
+        for (var tries = 0; tries < 8; tries++) {
+          ang = Math.random() * Math.PI * 2;
+          var favor = 0.5 + 0.35 * Math.cos(ang) + 0.25 * (-Math.sin(ang));
+          if (Math.random() < favor) break;
+        }
+        // Start on a ring hugging the card edge (just past the clear zone), in
+        // the same 60%/50%-centred field space the sparkles use.
+        var r0 = 0.30 + Math.random() * 0.75;
+        var sx = 60 + Math.cos(ang) * r0 * 50;
+        var sy = 50 + Math.sin(ang) * r0 * 50;
+        if (sx < 1 || sx > 99 || sy < 1 || sy > 99) { continue; }
+        // Gentle outward reach + a small upward rise, like embers off the edge.
+        var reach = 24 + Math.random() * 44;
+        var dx2 = Math.cos(ang) * reach;
+        var dy2 = Math.sin(ang) * reach - (8 + Math.random() * 16);
+        var size = 2.2 + Math.random() * 2.4;
+        var dur = 6.5 + Math.random() * 4;
+        var chip = document.createElement('span');
+        chip.className = 'hero-drift';
+        chip.style.left = sx.toFixed(2) + '%';
+        chip.style.top = sy.toFixed(2) + '%';
+        chip.style.width = size.toFixed(1) + 'px';
+        chip.style.height = size.toFixed(1) + 'px';
+        chip.style.setProperty('--dx', dx2.toFixed(1) + 'px');
+        chip.style.setProperty('--dy', dy2.toFixed(1) + 'px');
+        chip.style.setProperty('--rot', ((Math.random() - 0.5) * 46).toFixed(0) + 'deg');
+        chip.style.setProperty('--peak', (0.30 + Math.random() * 0.24).toFixed(2));
+        chip.style.animationDuration = dur.toFixed(2) + 's';
+        chip.style.animationDelay = (-Math.random() * dur).toFixed(2) + 's';
+        dfrag.appendChild(chip);
+      }
+      field.appendChild(dfrag);
+    })();
+
     // Freeze the background sparkles during a card transition (the widget fires
     // these events) so they don't compete with the image swap for the main
     // thread. Resume once the new card has settled.

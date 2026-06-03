@@ -1930,10 +1930,17 @@ a:hover { color: var(--gold-pale); }
   grid-column: 3; grid-row: 2;
   z-index: 3;
   align-items: center;
+  /* The crossing card is rotated 90° via `transform`, which does NOT shrink its
+     layout/hit-test box — the wrapper stays a 110×183 rectangle sitting on top of
+     the significator (card 1) at z-index 3, so its transparent area swallowed every
+     click on card 1's exposed top/bottom edges (card 1 was 0% clickable). Let the
+     wrapper pass clicks through; the rotated card below re-enables its own. */
+  pointer-events: none;
 }
 .spread-celtic-cross .spread-card-wrap:nth-child(2) .spread-card {
   transform: rotate(90deg);
   transform-origin: center center;
+  pointer-events: auto;
 }
 .spread-celtic-cross .spread-card-wrap:nth-child(2) .spread-card:hover { transform: rotate(90deg) translateY(-6px); }
 /* Label floats above the crossed pair */

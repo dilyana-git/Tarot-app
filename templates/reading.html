@@ -238,7 +238,7 @@ function openCardPanel(index) {
       <h4>${card.reversed ? '↩ Reversed' : '☝ Upright'} Meaning</h4>
       <p>${meaning}</p>
     </div>
-    <a href="/card/${card.id}" class="btn btn-outline btn-sm" target="_blank">View Full Card →</a>
+    <a href="/card/${card.id}" class="btn btn-outline btn-sm" target="_self">View Full Card →</a>
   `;
 
   panel.style.display = 'flex';
