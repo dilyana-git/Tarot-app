@@ -7,7 +7,16 @@ from data.tarot_data import (
 )
 
 app = Flask(__name__)
-app.secret_key = os.environ.get('SECRET_KEY', os.urandom(24))
+_secret = os.environ.get('SECRET_KEY')
+if not _secret:
+    import warnings
+    warnings.warn(
+        "SECRET_KEY env var not set — sessions are not secure. "
+        "Set SECRET_KEY before deploying.",
+        stacklevel=1,
+    )
+    _secret = 'dev-only-insecure-key'
+app.secret_key = _secret
 
 # Mapping for minor card numbers to filename ranks
 MINOR_RANK_MAP = {
@@ -80,16 +89,6 @@ def get_card_video_url(card):
 app.jinja_env.globals['get_card_video_url'] = get_card_video_url
 
 
-def draw_cards(n):
-    drawn = random.sample(ALL_CARDS, n)
-    for card in drawn:
-        card = dict(card)
-        card['reversed'] = random.random() < 0.35
-    return [
-        {**c, 'reversed': random.random() < 0.35}
-        for c in drawn
-    ]
-
 
 _HERO_TEMPLATES = {
     'architectural': 'index.html',
@@ -102,17 +101,9 @@ def index():
     arcana = []
     for card in MAJOR_ARCANA:
         c = dict(card)
-        raw_img = card.get('image', '')
-        if raw_img:
-            img_path = raw_img if raw_img.startswith('images/') else f'images/{raw_img}'
-        else:
-            slug = card['name'].lower().replace("'", '').replace(' ', '_')
-            if slug.startswith('the_'):
-                slug = slug[4:]
-            img_path = f'images/major/{slug}.jpg'
-        resolved = get_card_image_path(img_path)
-        c['image_url'] = '' if resolved == 'images/card-placeholder.svg' else f'/static/{resolved}'
-        c['video_url'] = ''
+        img = get_card_image_filename(card)
+        c['image_url'] = '' if img == 'images/card-placeholder.svg' else f'/static/{img}'
+        c['video_url'] = get_card_video_url(card)
         arcana.append(c)
 
     hero = request.args.get('hero', 'architectural')
@@ -130,7 +121,7 @@ def _card_json(card):
         'suit':     card.get('suit'),
         'element':  card.get('element', ''),
         'symbol':   card.get('symbol', '✦'),
-        'keywords':    card.get('keywords_upright', [])[:3],
+        'keywords_upright': card.get('keywords_upright', [])[:3],
         'description': card.get('description', ''),
         'image_url': '' if img == 'images/card-placeholder.svg' else f'/static/{img}',
         'card_color':   card.get('card_color', '#162420'),
@@ -195,7 +186,7 @@ def reading():
 
 @app.route('/api/reading', methods=['POST'])
 def api_reading():
-    data = request.get_json()
+    data = request.get_json() or {}
     spread_key = data.get('spread', 'three_card')
 
     if spread_key not in SPREADS:
@@ -267,10 +258,7 @@ def arcana_card():
 
 @app.route('/api/cards')
 def api_cards():
-    return jsonify([
-        {k: v for k, v in c.items()}
-        for c in ALL_CARDS
-    ])
+    return jsonify([dict(c) for c in ALL_CARDS])
 
 
 if __name__ == '__main__':
