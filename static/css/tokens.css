@@ -34,6 +34,12 @@
   --suit-swords:    #A89968;  /* air   — pale tarnished gold */
   --suit-pentacles: #5A8060;  /* earth — muted verdigris */
 
+  /* — Font roles (consolidated — see F4). Each role is a one-line change. — */
+  --font-display: 'Cinzel', serif;               /* titles, labels, eyebrows, nav */
+  --font-body:    'EB Garamond', Georgia, serif; /* body copy & descriptions */
+  --font-accent:  'Cormorant Garamond', serif;   /* card names & small-caps labels */
+  --font-mono:    'JetBrains Mono', monospace;    /* technical meta */
+
   /* — Type scale (perfect-fourth) — */
   --step--1: 0.8rem;
   --step-0:  1rem;

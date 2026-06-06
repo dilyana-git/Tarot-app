@@ -1,8 +1,8 @@
 .arcana{
   --bg:var(--ink-900); --gold:var(--gold-300); --gold-bright:var(--gold-100); --gold-deep:var(--gold-400);
   --text:var(--parchment); --muted:var(--parchment-dim);
-  --display:'Cinzel','Trajan Pro','Times New Roman',serif;
-  --body:'EB Garamond','Cormorant Garamond','Georgia',serif;
+  --display: var(--font-display);
+  --body: var(--font-body);
   position:relative; min-height:900px; height:100%; width:100%;
   background:radial-gradient(120% 80% at 50% 12%, #11101c 0%, #08070f 45%, #050409 100%);
   color:var(--text); font-family:var(--body); overflow:hidden; isolation:isolate; box-sizing:border-box;

@@ -53,7 +53,7 @@
 html { scroll-behavior: smooth; }
 
 body {
-  font-family: 'IM Fell English', 'EB Garamond', Georgia, serif;
+  font-family: var(--font-body);
   background: radial-gradient(120% 80% at 50% 12%, #11101c 0%, #08070f 45%, #050409 100%);
   color: var(--text);
   min-height: 100vh;
@@ -75,7 +75,6 @@ a:hover { color: var(--gold-pale); }
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
   background-size: 300px 300px;
 }
-
 
 /* ---- Keyboard focus ring ---------------------------------- */
 :focus-visible {
@@ -123,7 +122,7 @@ a:hover { color: var(--gold-pale); }
   display: flex;
   align-items: center;
   gap: .75rem;
-  font-family: 'Cormorant SC', serif;
+  font-family: var(--font-accent);
   font-size: 1rem;
   font-weight: 500;
   letter-spacing: .28em;
@@ -143,7 +142,7 @@ a:hover { color: var(--gold-pale); }
 
 .nav-links { display: flex; gap: 2.5rem; list-style: none; }
 .nav-link {
-  font-family: 'Cormorant SC', serif;
+  font-family: var(--font-accent);
   font-size: .85rem;
   font-weight: 400;
   letter-spacing: .2em;
@@ -193,7 +192,7 @@ a:hover { color: var(--gold-pale); }
   display: inline-flex;
   align-items: center;
   gap: .5rem;
-  font-family: 'EB Garamond', 'Cormorant SC', serif;
+  font-family: var(--font-body);
   font-size: .72rem;
   font-weight: 400;
   letter-spacing: .2em;
@@ -235,6 +234,16 @@ a:hover { color: var(--gold-pale); }
 }
 .btn-large { font-size: .78rem; padding: .95rem 2.8rem; }
 .btn-sm    { font-size: .65rem; padding: .5rem 1.25rem; }
+/* Ghost: borderless secondary variant (the hero re-skins this for its
+   art-directed CTA via .arcana-hero .cta-row .btn-ghost). */
+.btn-ghost {
+  background: transparent;
+  color: var(--text-dim);
+  border-color: transparent;
+  font-size: .66rem;
+  padding: .8rem 1.4rem;
+}
+.btn-ghost:hover { color: var(--gold-dim); background: transparent; }
 
 /* ---- Art Nouveau botanical divider SVG -------------------- */
 .botanical-divider {
@@ -252,7 +261,7 @@ a:hover { color: var(--gold-pale); }
 
 /* ---- Section headings ------------------------------------- */
 .section-title {
-  font-family: 'Almendra Display', 'Cormorant Garamond', serif;
+  font-family: var(--font-display);
   font-size: clamp(1.5rem, 3vw, 2.3rem);
   font-weight: 400;
   color: var(--gold-pale);
@@ -311,121 +320,6 @@ a:hover { color: var(--gold-pale); }
   pointer-events: none;
 }
 
-.hero-crown { position: relative; }
-
-.hero-eyebrow {
-  font-family: 'EB Garamond', 'Cormorant SC', serif;
-  font-size: .7rem;
-  letter-spacing: .3em;
-  color: color-mix(in srgb, var(--gold-300) 50%, transparent);
-  text-transform: uppercase;
-  margin-bottom: 1.2rem;
-}
-.hero-title {
-  font-family: 'Almendra Display', 'Cormorant Garamond', serif;
-  font-size: clamp(3.2rem, 7vw, 6.5rem);
-  font-weight: 400;
-  color: var(--gold-pale);
-  line-height: .88;
-  letter-spacing: .05em;
-  margin-bottom: .8rem;
-  text-shadow:
-    0 0 60px color-mix(in srgb, var(--gold-300) 16%, transparent),
-    0 0 120px color-mix(in srgb, var(--gold-300) 6%, transparent);
-}
-.hero-subtitle {
-  font-family: 'IM Fell English', serif;
-  font-size: 1.1rem;
-  font-style: italic;
-  color: var(--text-dim);
-  line-height: 1.7;
-  max-width: 340px;
-}
-
-/* Horizontal rule divider */
-.hero-divider-line {
-  width: 50%;
-  height: 1px;
-  background: linear-gradient(to right, var(--gold-dim), transparent);
-  opacity: .5;
-}
-
-/* Dynamic card label */
-.hero-card-label { display: flex; flex-direction: column; gap: .5rem; }
-.hero-info-name {
-  font-family: 'Almendra Display', 'Cormorant Garamond', serif;
-  font-size: clamp(1.3rem, 2.8vw, 1.9rem);
-  color: var(--gold-pale);
-  letter-spacing: .05em;
-  line-height: 1;
-  transition: opacity .5s ease;
-}
-.hero-info-kw {
-  font-family: 'EB Garamond', serif;
-  font-size: 1.1rem;
-  font-style: italic;
-  color: color-mix(in srgb, var(--gold-300) 70%, transparent);
-  letter-spacing: .12em;
-  transition: opacity .5s ease;
-}
-.kw-rule {
-  width: 60px;
-  height: 1px;
-  background: color-mix(in srgb, var(--gold-300) 20%, transparent);
-}
-.hero-info-desc {
-  font-family: 'IM Fell English', serif;
-  font-size: .94rem;
-  font-style: italic;
-  color: var(--text-dim);
-  line-height: 1.72;
-  max-width: 32rem;
-  transition: opacity .35s ease;
-}
-
-/* Progress bar */
-.stage-progress-wrap {
-  width: 100%;
-  height: 1px;
-  background: color-mix(in srgb, var(--gold-300) 10%, transparent);
-  border-radius: 1px;
-  overflow: hidden;
-  margin-top: .4rem;
-}
-.stage-progress-bar {
-  height: 100%;
-  background: linear-gradient(to right, var(--gold-dim), var(--gold));
-  width: 0%;
-  transition: width 50ms linear;
-}
-
-.hero-cta { display: flex; gap: .75rem; flex-wrap: nowrap; }
-
-/* ── Right panel: three-circle journey ──────────────────────── */
-.hero-journey {
-  position: relative;
-  z-index: 2;
-  min-height: 100vh;
-  overflow: hidden;
-  perspective: 900px;
-}
-/* Warm atmospheric glow */
-.hero-journey::before {
-  content: '';
-  position: absolute; inset: 0;
-  background: radial-gradient(ellipse 85% 70% at 50% 50%,
-    color-mix(in srgb, var(--gold-300) 7%, transparent) 0%, transparent 68%);
-  pointer-events: none; z-index: 0;
-}
-/* Dark vignette at edges */
-.hero-journey::after {
-  content: '';
-  position: absolute; inset: 0;
-  background: radial-gradient(ellipse 120% 100% at 50% 50%,
-    transparent 38%, rgba(0,0,0,.5) 100%);
-  pointer-events: none; z-index: 0;
-}
-
 /* Journey node: circle + label stacked, absolutely placed */
 .journey-node {
   position: absolute;
@@ -438,11 +332,7 @@ a:hover { color: var(--gold-pale); }
 }
 
 #jNodePrev           { top: 8%;   left: 6%; }
-.journey-node-current { top: 50%;  left: 50%; transform: translate(-50%, -50%); }
 #jNodeNext           { bottom: 10%; right: 6%; }
-
-/* Connectors hidden — diagonal layout makes them obsolete */
-.journey-connector { display: none; }
 
 /* ── Base circle ─────────────────────────────────────────── */
 .journey-circle {
@@ -460,111 +350,6 @@ a:hover { color: var(--gold-pale); }
       color-mix(in srgb, var(--card-color, #161A26) 22%, var(--ink-900)) 65%,
       var(--bg) 100%);
 }
-
-/* ── Small side circles ──────────────────────────────────── */
-.journey-sm {
-  width: 160px; height: 160px;
-  border: 1px solid color-mix(in srgb, var(--gold-300) 24%, transparent);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--gold-300) 5%, transparent), 0 14px 44px rgba(0,0,0,.68);
-  transition: transform .4s ease, box-shadow .4s ease,
-              border-color .4s ease, opacity .5s ease;
-}
-.journey-sm:hover {
-  transform: scale(1.07);
-  border-color: color-mix(in srgb, var(--gold-300) 50%, transparent);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--gold-300) 12%, transparent), 0 20px 54px rgba(0,0,0,.78);
-}
-/* 3D receding perspective for side circles */
-#jNodePrev .journey-sm {
-  transform: perspective(900px) scale(0.72) rotateY(14deg) translateZ(-60px);
-  filter: brightness(0.6) blur(1.5px);
-}
-#jNodeNext .journey-sm {
-  transform: perspective(900px) scale(0.72) rotateY(-14deg) translateZ(-60px);
-  filter: brightness(0.6) blur(1.5px);
-}
-#jNodePrev .journey-sm:hover {
-  transform: perspective(900px) scale(0.80) rotateY(10deg) translateZ(-30px);
-  filter: brightness(0.78) blur(0.5px);
-  border-color: color-mix(in srgb, var(--gold-300) 50%, transparent);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--gold-300) 12%, transparent), 0 20px 54px rgba(0,0,0,.78);
-}
-#jNodeNext .journey-sm:hover {
-  transform: perspective(900px) scale(0.80) rotateY(-10deg) translateZ(-30px);
-  filter: brightness(0.78) blur(0.5px);
-  border-color: color-mix(in srgb, var(--gold-300) 50%, transparent);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--gold-300) 12%, transparent), 0 20px 54px rgba(0,0,0,.78);
-}
-/* Inner border ring */
-.journey-sm::before {
-  content: '';
-  position: absolute; inset: 8px;
-  border-radius: 50%;
-  border: 1px solid color-mix(in srgb, var(--gold-300) 13%, transparent);
-  pointer-events: none; z-index: 2;
-}
-
-/* ── Large central ellipse ("video") ────────────────────── */
-.journey-lg {
-  width: clamp(290px, 32vw, 390px);
-  height: clamp(420px, 47vw, 570px);
-  border: 1px solid color-mix(in srgb, var(--gold-300) 44%, transparent);
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--gold-300) 10%, transparent),
-    0 0 70px color-mix(in srgb, var(--gold-300) 15%, transparent),
-    0 28px 80px rgba(0,0,0,.82);
-  transition: opacity .5s ease;
-}
-/* Double inner rings */
-.journey-lg::before {
-  content: '';
-  position: absolute; inset: 10px;
-  border-radius: 50%;
-  border: 1px solid color-mix(in srgb, var(--gold-300) 22%, transparent);
-  pointer-events: none; z-index: 2;
-}
-.journey-lg::after {
-  content: '';
-  position: absolute; inset: 22px;
-  border-radius: 50%;
-  border: 1px solid color-mix(in srgb, var(--gold-300) 9%, transparent);
-  pointer-events: none; z-index: 2;
-}
-
-/* ── Content wrapper inside small circles ────────────────── */
-.jc-wrap {
-  position: absolute; inset: 0;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  gap: .35rem;
-  z-index: 3;
-}
-
-/* ── Symbols ─────────────────────────────────────────────── */
-.jc-sym {
-  font-size: 2.6rem;
-  color: var(--gold);
-  opacity: .72;
-  line-height: 1;
-  z-index: 3;
-  transition: opacity .5s ease;
-}
-.jc-sym.fading { opacity: 0; }
-/* Large animated symbol for the central circle */
-.jc-sym-lg {
-  display: none;
-  position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: clamp(3.8rem, 7vw, 5.5rem);
-  opacity: .92;
-  z-index: 3;
-  text-shadow:
-    0 0 22px color-mix(in srgb, var(--gold-300) 65%, transparent),
-    0 0 46px color-mix(in srgb, var(--gold-300) 28%, transparent),
-    0 0 86px color-mix(in srgb, var(--gold-300) 10%, transparent);
-  animation: sym-breathe 3.2s ease-in-out infinite;
-}
 @keyframes sym-breathe {
   0%, 100% {
     opacity: .88;
@@ -576,36 +361,6 @@ a:hover { color: var(--gold-pale); }
                  0 0 105px color-mix(in srgb, var(--gold-300) 14%, transparent);
   }
 }
-
-/* ── Halo medallion (central circle) ────────────────────── */
-.jc-halo {
-  position: absolute;
-  width: 56%; height: 56%;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-  background: radial-gradient(ellipse at center,
-    color-mix(in srgb, var(--gold-300) 30%, transparent) 0%,
-    rgba(45,27,94,.32)   32%,
-    rgba(45,27,94,.10)   58%,
-    transparent          80%);
-  pointer-events: none; z-index: 1;
-  animation: halo-pulse 3s ease-in-out infinite;
-}
-.jc-halo::before {
-  content: '';
-  position: absolute; inset: -28%;
-  border-radius: 50%;
-  border: 1px solid color-mix(in srgb, var(--gold-300) 14%, transparent);
-  animation: ring-spin 9s linear infinite;
-}
-.jc-halo::after {
-  content: '';
-  position: absolute; inset: -52%;
-  border-radius: 50%;
-  border: 1px solid color-mix(in srgb, var(--gold-300) 6%, transparent);
-  animation: ring-spin 15s linear infinite reverse;
-}
 @keyframes halo-pulse {
   0%, 100% { transform: translate(-50%,-50%) scale(1);    opacity: .6; }
   50%       { transform: translate(-50%,-50%) scale(1.12); opacity: 1.0; }
@@ -614,136 +369,13 @@ a:hover { color: var(--gold-pale); }
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }
 }
-
-/* ── Rotating dashed ring overlay (central circle) ───────── */
-.jc-ring {
-  position: absolute; inset: 14px;
-  border-radius: 50%;
-  border: 1px dashed color-mix(in srgb, var(--gold-300) 18%, transparent);
-  pointer-events: none; z-index: 1;
-  animation: slow-rotate 30s linear infinite;
-}
-.jc-ring::before {
-  content: '';
-  position: absolute; inset: 11px;
-  border-radius: 50%;
-  border: 1px dashed color-mix(in srgb, var(--gold-300) 9%, transparent);
-  animation: slow-rotate 20s linear infinite reverse;
-}
 @keyframes slow-rotate {
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }
 }
 
-/* ── Sacred geometry mandala rings (central circle) ──────── */
-.jc-mandala {
-  position: absolute; inset: 0;
-  border-radius: 50%;
-  pointer-events: none; z-index: 1;
-  background:
-    radial-gradient(ellipse 88% 88% at 50% 50%, transparent 86.5%, color-mix(in srgb, var(--gold-300) 10%, transparent) 87%, transparent 87.5%),
-    radial-gradient(ellipse 74% 74% at 50% 50%, transparent 72.5%, color-mix(in srgb, var(--gold-300) 9%, transparent) 73%, transparent 73.5%),
-    radial-gradient(ellipse 60% 60% at 50% 50%, transparent 58.5%, color-mix(in srgb, var(--gold-300) 9%, transparent) 59%, transparent 59.5%),
-    radial-gradient(ellipse 46% 46% at 50% 50%, transparent 44.5%, color-mix(in srgb, var(--gold-300) 10%, transparent) 45%, transparent 45.5%),
-    radial-gradient(ellipse 32% 32% at 50% 50%, transparent 30.5%, color-mix(in srgb, var(--gold-300) 11%, transparent) 31%, transparent 31.5%);
-}
-
-/* ── Card image inside circles ───────────────────────────── */
-.jc-img {
-  position: absolute;
-  top: 50%; left: 50%;
-  width: 102%; height: 102%;
-  transform: translate(-50%, -50%) scale(1.07);
-  object-fit: cover;
-  z-index: 0;
-  opacity: 0;
-  transition: opacity .95s ease, transform .95s ease;
-  pointer-events: none;
-}
-.jc-img.loaded {
-  opacity: 1;
-  transform: translate(-50%, -50%) scale(1);
-}
-#jNodePrev .jc-img.loaded { opacity: 0.42; }
-#jNodeNext .jc-img.loaded { opacity: 0.42; }
-
-/* Overlays fade when media is present */
-.journey-circle.has-media .jc-sym,
-.journey-circle.has-media .jc-sym-lg,
-.journey-circle.has-media .jc-halo,
-.journey-circle.has-media .jc-ring,
-.journey-circle.has-media .jc-mandala { opacity: 0; transition: opacity .8s ease; }
-
 /* Video active: suppress image, fade overlays */
 .journey-circle.has-video .jc-img { opacity: 0 !important; }
-.journey-circle.has-video .jc-sym-lg,
-.journey-circle.has-video .jc-halo,
-.journey-circle.has-video .jc-ring,
-.journey-circle.has-video .jc-mandala { opacity: 0; transition: opacity .8s ease; }
-
-/* ── Card video inside central circle ────────────────────── */
-.jc-video {
-  position: absolute; inset: 0;
-  width: 100%; height: 100%;
-  object-fit: cover;
-  border-radius: 50%;
-  z-index: 0;
-  opacity: 0;
-  transition: opacity .7s ease;
-  pointer-events: none;
-  display: none;
-}
-.jc-video.active { display: block; opacity: 1; }
-
-/* ── Floating particle canvas (central circle only) ──────── */
-.jc-canvas {
-  position: absolute; inset: 0;
-  width: 100%; height: 100%;
-  pointer-events: none; z-index: 2;
-}
-
-/* ── Transparent link overlay (central circle) ────────────── */
-.jc-link-overlay {
-  position: absolute; inset: 0;
-  border-radius: 50%;
-  z-index: 4;
-}
-
-/* ── Orbital ring system ─────────────────────────────────── */
-.orbit-shell {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-/* Static orbital path ring */
-.orbit-ring {
-  position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 1;
-}
-
-.or-1 {
-  width: calc(100% + 52px);  height: calc(100% + 52px);
-  border: 1px solid color-mix(in srgb, var(--gold-300) 42%, transparent);
-  box-shadow: 0 0 14px color-mix(in srgb, var(--gold-300) 9%, transparent) inset, 0 0 8px color-mix(in srgb, var(--gold-300) 7%, transparent);
-  animation: orbit-ring-rotate 80s linear infinite;
-}
-.or-2 {
-  width: calc(100% + 110px); height: calc(100% + 110px);
-  border: 1px solid color-mix(in srgb, var(--gold-300) 26%, transparent);
-  animation: orbit-ring-rotate 130s linear infinite reverse;
-}
-.or-3 {
-  width: calc(100% + 178px); height: calc(100% + 178px);
-  border: 1px solid color-mix(in srgb, var(--gold-300) 14%, transparent);
-  animation: orbit-ring-rotate 200s linear infinite;
-}
 
 /* Rotating container that carries the orb around the ring */
 .orbit-dot {
@@ -753,9 +385,6 @@ a:hover { color: var(--gold-pale); }
   border-radius: 50%;
   animation: orbit-spin linear infinite;
 }
-.or-1 .orbit-dot { animation-duration: 9s; }
-.or-2 .orbit-dot { animation-duration: 16s; animation-direction: reverse; }
-.or-3 .orbit-dot { animation-duration: 26s; }
 
 /* Delicate orb at the top of the rotating container */
 .orbit-dot::before {
@@ -769,18 +398,6 @@ a:hover { color: var(--gold-pale); }
   box-shadow: 0 0 7px 2px color-mix(in srgb, var(--gold-300) 28%, transparent);
 }
 
-/* Staggered start positions so no two orbs are in sync */
-#jNodePrev .or-1, #jNodeNext .or-1 { width: calc(100% + 18px); height: calc(100% + 18px); }
-#jNodePrev .or-2, #jNodeNext .or-2 { width: calc(100% + 38px); height: calc(100% + 38px); }
-#jNodePrev .or-1 .orbit-dot            { animation-delay: -2s; }
-#jNodePrev .or-2 .orbit-dot            { animation-delay: -9s; }
-.journey-node-current .or-1 .orbit-dot { animation-delay: -4s; }
-.journey-node-current .or-2 .orbit-dot { animation-delay: -11s; }
-.journey-node-current .or-3 .orbit-dot { animation-delay: -7s; }
-#jNodeNext .or-1 .orbit-dot            { animation-delay: -6s; }
-#jNodeNext .or-2 .orbit-dot            { animation-delay: -13s; }
-
-
 @keyframes orbit-spin {
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }
@@ -790,34 +407,6 @@ a:hover { color: var(--gold-pale); }
   from { transform: translate(-50%, -50%) rotate(0deg); }
   to   { transform: translate(-50%, -50%) rotate(360deg); }
 }
-
-/* ── Labels below circles ────────────────────────────────── */
-.journey-lbl {
-  font-family: 'EB Garamond', 'Cormorant SC', serif;
-  font-size: .52rem;
-  letter-spacing: .25em;
-  color: color-mix(in srgb, var(--gold-300) 60%, transparent);
-  text-transform: uppercase;
-  text-align: center;
-  white-space: nowrap;
-  transition: color .4s ease, opacity .5s ease;
-  text-shadow: 0 0 1px color-mix(in srgb, var(--gold-300) 60%, transparent);
-}
-.journey-lbl-current {
-  font-size: .58rem;
-  color: var(--gold-300);
-  letter-spacing: .26em;
-  text-shadow: 0 0 2px color-mix(in srgb, var(--gold-300) 50%, transparent);
-}
-
-/* ── Hidden legacy classes ─────────────────────────────────── */
-.hero-content   { display: none; }
-.hero-glow      { display: none; }
-.hero-info      { display: none; }
-.hero-stage     { display: none; }
-.hero-cards-display { display: none; }
-
-
 
 /* ============================================================
    HOME — FEATURES
@@ -855,7 +444,7 @@ a:hover { color: var(--gold-pale); }
 .feature-card:hover { background: var(--surface); color: var(--text); }
 .feature-card:hover::after { transform: scaleX(1); }
 .feature-icon {
-  font-family: 'Cormorant SC', serif;
+  font-family: var(--font-accent);
   font-size: .62rem;
   letter-spacing: .28em;
   text-transform: uppercase;
@@ -864,7 +453,7 @@ a:hover { color: var(--gold-pale); }
   display: block;
 }
 .feature-title {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: var(--font-accent);
   font-size: 1.3rem; font-weight: 400;
   color: var(--gold-pale);
   margin-bottom: .75rem; letter-spacing: .02em;
@@ -918,13 +507,13 @@ a:hover { color: var(--gold-pale); }
 }
 .suit-card:hover .suit-symbol { color: var(--gold); }
 .suit-name {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: var(--font-accent);
   font-size: 1.3rem; font-weight: 400;
   color: var(--gold-pale); margin-bottom: .2rem;
   letter-spacing: .03em;
 }
 .suit-element {
-  font-family: 'Cormorant SC', serif;
+  font-family: var(--font-accent);
   font-size: .75rem; letter-spacing: .22em;
   color: var(--gold-dim); text-transform: uppercase;
   margin-bottom: .85rem; display: block;
@@ -962,44 +551,12 @@ a:hover { color: var(--gold-pale); }
   border-radius: 12px 0 0 0;
 }
 .cta-title {
-  font-family: 'Almendra Display', 'Cormorant Garamond', serif;
+  font-family: var(--font-display);
   font-size: 2.1rem; font-weight: 400;
   color: var(--gold-pale); margin-bottom: 1rem;
   letter-spacing: .06em;
 }
 .cta-text { color: var(--text-dim); margin-bottom: 2.5rem; font-size: 1.2rem; font-style: italic; }
-
-/* ============================================================
-   PAGE HERO
-   ============================================================ */
-.page-hero {
-  padding: 5rem 3rem 2.5rem;
-  text-align: center;
-  border-bottom: 1px solid var(--rule);
-  position: relative;
-}
-/* Warm glow behind page headers */
-.page-hero::before {
-  content: '';
-  position: absolute;
-  bottom: 0; left: 50%; transform: translateX(-50%);
-  width: 50%; height: 80%;
-  background: radial-gradient(ellipse at 50% 100%,
-    color-mix(in srgb, var(--gold-300) 5%, transparent) 0%, transparent 65%);
-  pointer-events: none;
-}
-.page-title {
-  font-family: 'Almendra Display', 'Cormorant Garamond', serif;
-  font-size: clamp(2rem, 5vw, 3.2rem);
-  font-weight: 400; color: var(--gold-pale);
-  letter-spacing: .05em; margin-bottom: .5rem;
-  position: relative;
-}
-.page-subtitle {
-  font-family: 'Cormorant SC', serif;
-  font-size: .68rem; letter-spacing: .32em;
-  color: var(--gold-dim); text-transform: uppercase;
-}
 
 /* ============================================================
    ARCHITECTURAL PAGE HEADER — Cards & Reading pages
@@ -1039,12 +596,12 @@ a:hover { color: var(--gold-pale); }
   display: inline-block; opacity: .55;
 }
 .page-arch-label {
-  font-family: 'Cinzel', serif;
+  font-family: var(--font-display);
   font-size: 12px; letter-spacing: .45em;
   color: var(--gold); text-transform: uppercase;
 }
 .page-arch-title {
-  font-family: 'Cinzel', serif;
+  font-family: var(--font-display);
   font-weight: 500;
   font-size: clamp(2.4rem, 5.5vw, 4.5rem);
   color: transparent;
@@ -1056,55 +613,6 @@ a:hover { color: var(--gold-pale); }
   margin: 0 0 .5rem;
   position: relative; z-index: 1;
 }
-.page-arch-subtitle {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: .68rem; letter-spacing: .22em;
-  color: var(--gold-dim); text-transform: uppercase;
-  position: relative; z-index: 1;
-}
-
-/* ============================================================
-   CARDS — Filter bar
-   ============================================================ */
-.filters-bar {
-  position: sticky; top: 60px; z-index: 50;
-  background: color-mix(in srgb, var(--ink-900) 96%, transparent);
-  backdrop-filter: blur(18px);
-  border-bottom: 1px solid var(--rule);
-  padding: .65rem 2rem;
-}
-.filters-inner {
-  display: flex; gap: .5rem; align-items: center;
-  flex-wrap: wrap; max-width: 1400px; margin: 0 auto;
-}
-.filter-btn {
-  font-family: 'Cinzel', serif;
-  font-size: .58rem; letter-spacing: .2em;
-  text-transform: uppercase;
-  padding: .35rem .9rem;
-  border-radius: var(--radius); border: 1px solid transparent;
-  background: transparent; color: var(--text-dim);
-  cursor: pointer; transition: all var(--transition);
-}
-.filter-btn:hover { color: var(--gold); border-color: var(--rule); }
-.filter-btn.active { color: var(--gold); border-color: var(--gold-dim); background: var(--gold-faint); }
-.filter-dropdown { position: relative; }
-.filter-dropdown-menu {
-  display: none; position: absolute;
-  top: calc(100% + .5rem); left: 0;
-  background: var(--bg3); border: 1px solid var(--rule);
-  border-radius: var(--radius-md); padding: .4rem;
-  min-width: 160px; z-index: 200; box-shadow: var(--shadow);
-}
-.filter-dropdown:hover .filter-dropdown-menu { display: flex; flex-direction: column; }
-.filter-dropdown-item {
-  font-family: 'Cormorant SC', serif;
-  font-size: .64rem; letter-spacing: .15em;
-  text-transform: uppercase; padding: .5rem .75rem;
-  color: var(--text-dim); border-radius: var(--radius);
-  transition: all var(--transition);
-}
-.filter-dropdown-item:hover { background: var(--gold-faint); color: var(--gold); }
 
 /* ============================================================
    CARDS — Grid
@@ -1158,19 +666,13 @@ a:hover { color: var(--gold-pale); }
   justify-content: space-between; align-items: flex-start;
 }
 .card-tile-number {
-  font-family: 'Cormorant SC', serif;
+  font-family: var(--font-accent);
   font-size: .48rem; letter-spacing: .08em; color: var(--gold-dim);
 }
 .card-tile-suit, .card-tile-arcana { font-size: .58rem; color: var(--gold-dim); opacity: .55; }
-.card-tile-symbol {
-  font-size: 1.65rem; color: var(--gold); opacity: .65;
-  flex: 1; display: flex; align-items: center;
-  transition: opacity var(--transition);
-}
-.card-tile:hover .card-tile-symbol { opacity: .95; }
 .card-tile-footer { width: 100%; text-align: center; }
 .card-tile-name {
-  font-family: 'Cormorant SC', serif;
+  font-family: var(--font-accent);
   font-size: .52rem; letter-spacing: .06em;
   color: var(--text-dim); line-height: 1.3;
   text-transform: uppercase;
@@ -1189,7 +691,7 @@ a:hover { color: var(--gold-pale); }
 .card-tile-keywords {
   font-size: .82rem; color: var(--gold-pale); opacity: .85;
   text-align: center; width: 100%; line-height: 1.4;
-  font-style: italic; font-family: 'EB Garamond', serif;
+  font-style: italic; font-family: var(--font-body);
 }
 
 /* ============================================================
@@ -1232,7 +734,6 @@ a:hover { color: var(--gold-pale); }
   gap: 0;
 }
 
-
 /* thin rule between the hero identity block and body copy */
 .card-detail-spotlight-text .card-detail-info {
   margin-top: 2rem;
@@ -1257,7 +758,7 @@ a:hover { color: var(--gold-pale); }
   position: relative; z-index: 1;
 }
 .card-detail-title {
-  font-family: 'Cinzel', serif;
+  font-family: var(--font-display);
   font-weight: 500;
   font-size: clamp(1.8rem, 4vw, 3.2rem);
   color: var(--gold-pale);
@@ -1278,43 +779,35 @@ a:hover { color: var(--gold-pale); }
   flex-wrap: wrap;
 }
 .card-detail-hero-num {
-  font-family: 'Cinzel', serif;
+  font-family: var(--font-display);
   font-size: .68rem; letter-spacing: .38em;
   color: var(--gold); text-transform: uppercase;
 }
 .card-detail-hero-element {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   font-size: .75rem; letter-spacing: .2em;
   color: var(--gold-dim); text-transform: uppercase;
 }
 .card-detail-hero-symbol {
-  font-family: 'Cinzel', serif;
+  font-family: var(--font-display);
   font-size: .75rem; letter-spacing: .2em;
   color: var(--gold-dim);
 }
 .card-detail-hero-sep { color: var(--rule-hover); font-size: .9rem; font-weight: 200; opacity: .6; margin: 0 .05em; vertical-align: middle; }
 .card-detail-position {
-  font-family: 'Cinzel', serif;
+  font-family: var(--font-display);
   font-size: .75rem; letter-spacing: .3em;
   color: var(--gold); text-transform: uppercase;
 }
-
-.card-detail-page { max-width: 1100px; margin: 0 auto; padding: 0 2rem 5rem; }
 .breadcrumb { display: flex; align-items: center; gap: .5rem; margin-bottom: 3rem; }
 .breadcrumb-link {
-  font-family: 'Cinzel', serif; font-size: .75rem;
+  font-family: var(--font-display); font-size: .75rem;
   letter-spacing: .2em; color: var(--text-dim);
   text-transform: uppercase; transition: color var(--transition);
   min-height: 44px; display: inline-flex; align-items: center;
 }
 .breadcrumb-link:hover { color: var(--gold); }
 .breadcrumb-sep { color: var(--rule-hover); font-size: .7rem; }
-
-.card-detail-layout {
-  display: grid; grid-template-columns: 280px 1fr;
-  gap: 4rem; align-items: start;
-}
-@media (max-width: 768px) { .card-detail-layout { grid-template-columns: 1fr; } }
 
 /* The large card */
 .card-large {
@@ -1355,21 +848,15 @@ a:hover { color: var(--gold-pale); }
 
 .card-large-corner { display: flex; flex-direction: column; align-items: flex-start; gap: .15rem; z-index: 2; }
 .card-large-corner.bottom-right { align-items: flex-end; transform: rotate(180deg); }
-.cl-number { font-family: 'Cinzel', serif; font-size: .58rem; letter-spacing: .12em; color: var(--gold-dim); }
+.cl-number { font-family: var(--font-display); font-size: .58rem; letter-spacing: .12em; color: var(--gold-dim); }
 .cl-symbol-small { font-size: .78rem; color: var(--gold-dim); opacity: .65; }
 .card-large-center {
   flex: 1; display: flex; flex-direction: column;
   align-items: center; justify-content: center;
   gap: 1rem; z-index: 2;
 }
-.card-large-symbol { font-size: 4.5rem; color: var(--gold); opacity: .82; }
-.card-large-name {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: .95rem; font-weight: 400;
-  color: var(--gold-pale); text-align: center; letter-spacing: .06em;
-}
 .card-large-suit {
-  font-family: 'Cinzel', serif;
+  font-family: var(--font-display);
   font-size: .55rem; letter-spacing: .2em;
   color: var(--gold-dim); text-transform: uppercase;
 }
@@ -1399,7 +886,7 @@ a:hover { color: var(--gold-pale); }
   justify-content: flex-start; flex-wrap: wrap; margin-top: 1.25rem;
 }
 .meta-badge {
-  font-family: 'JetBrains Mono', monospace; font-size: .75rem;
+  font-family: var(--font-mono); font-size: .75rem;
   letter-spacing: .15em; padding: .3rem .85rem;
   border: 1px solid var(--rule); color: var(--gold-dim);
   text-transform: uppercase; border-radius: var(--radius);
@@ -1407,7 +894,7 @@ a:hover { color: var(--gold-pale); }
 
 .card-nav { display: flex; justify-content: space-between; margin-top: 1.5rem; gap: .5rem; }
 .card-nav-btn {
-  font-family: 'Cinzel', serif; font-size: .75rem;
+  font-family: var(--font-display); font-size: .75rem;
   letter-spacing: .14em; color: var(--text-dim);
   padding: .6rem 1rem; min-height: 44px;
   border: 1px solid var(--rule);
@@ -1420,24 +907,15 @@ a:hover { color: var(--gold-pale); }
 /* Detail info */
 .detail-desc {
   color: var(--text-dim); font-style: italic;
-  font-family: 'IM Fell English', serif;
+  font-family: var(--font-body);
   font-size: 1.05rem; line-height: 1.82;
   max-width: 58ch;
   margin-bottom: 2.5rem;
 }
 
-.detail-section { margin-bottom: 2.5rem; }
-.detail-section-title {
-  font-family: 'Cinzel', serif; font-size: .75rem;
-  letter-spacing: .32em; color: var(--gold-dim);
-  text-transform: uppercase; margin-bottom: 1.25rem;
-  padding-bottom: .6rem; border-bottom: 1px solid var(--rule);
-}
-
-
 .meanings-tabs { display: flex; border-bottom: 1px solid var(--rule); }
 .tab-btn {
-  font-family: 'Cinzel', serif; font-size: .8125rem;
+  font-family: var(--font-display); font-size: .8125rem;
   letter-spacing: .18em; text-transform: uppercase;
   padding: .75rem 1.5rem; min-height: 44px;
   background: transparent; border: none;
@@ -1458,8 +936,6 @@ a:hover { color: var(--gold-pale); }
 }
 .meaning-upright  { background: color-mix(in srgb, var(--gold-300) 3%, transparent); }
 .meaning-reversed { background: rgba(60,80,60,.05); }
-
-.detail-cta { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 2.5rem; }
 
 /* ============================================================
    READING — Two-column layout
@@ -1507,7 +983,7 @@ a:hover { color: var(--gold-pale); }
 .reading-eyebrow { justify-content: flex-start; margin-bottom: 1.25rem; }
 
 .reading-left-title {
-  font-family: 'Cinzel', serif;
+  font-family: var(--font-display);
   font-weight: 500;
   font-size: clamp(1.8rem, 2.8vw, 2.8rem);
   color: var(--gold-pale);
@@ -1516,49 +992,18 @@ a:hover { color: var(--gold-pale); }
   margin: 0 0 .75rem; line-height: .95;
 }
 .reading-left-sub {
-  font-family: 'IM Fell English', serif;
+  font-family: var(--font-body);
   font-style: italic; font-size: 1.1rem;
   color: var(--text-dim); line-height: 1.7;
   margin-bottom: 2rem;
 }
-
-/* Result info state */
-.reading-result-name {
-  font-family: 'Cinzel', serif;
-  font-size: clamp(1.8rem, 3.2vw, 3.2rem); font-weight: 500;
-  color: var(--gold-pale); letter-spacing: -.005em;
-  margin: 0 0 1rem; line-height: .9;
-  text-shadow: 0 0 80px color-mix(in srgb, var(--gold-100) 18%, transparent);
-}
 .reading-result-desc {
-  font-family: 'IM Fell English', serif;
+  font-family: var(--font-body);
   font-style: italic; font-size: 1.2rem;
   color: var(--text-dim); line-height: 1.65;
   margin-bottom: 1.5rem;
   padding-bottom: 1.25rem;
   border-bottom: 1px solid var(--rule);
-}
-
-/* Position list — fills in as cards reveal */
-.reading-positions { display: flex; flex-direction: column; gap: .55rem; margin-bottom: 2rem; }
-.reading-pos-row {
-  display: flex; flex-direction: column; gap: .15rem;
-  padding: .55rem .75rem;
-  border: 1px solid var(--rule);
-  border-radius: var(--radius);
-  background: color-mix(in srgb, var(--ink-800) 45%, transparent);
-  transition: border-color .25s;
-}
-.reading-pos-row:hover { border-color: color-mix(in srgb, var(--gold-300) 30%, transparent); }
-.reading-pos-label {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: .55rem; letter-spacing: .2em;
-  color: var(--gold-dim); text-transform: uppercase;
-}
-.reading-pos-name {
-  font-family: 'Cinzel', serif;
-  font-size: .75rem; letter-spacing: .05em;
-  color: var(--gold-pale);
 }
 .reading-new-btn { margin-bottom: 1.5rem; align-self: flex-start; }
 
@@ -1585,21 +1030,21 @@ a:hover { color: var(--gold-pale); }
   border-radius: 50%;
   border: 1px solid var(--gold-300);
   color: var(--gold-pale);
-  font-family: 'Cinzel', serif; font-size: .8rem; font-weight: 600;
+  font-family: var(--font-display); font-size: .8rem; font-weight: 600;
   background: color-mix(in srgb, var(--ink-900) 70%, transparent);
 }
 .legend-text { display: flex; flex-direction: column; gap: .12rem; min-width: 0; }
 .legend-pos {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   font-size: .55rem; letter-spacing: .18em; text-transform: uppercase;
   color: var(--gold-dim);
 }
 .legend-name {
-  font-family: 'Cinzel', serif; font-size: .82rem; letter-spacing: .03em;
+  font-family: var(--font-display); font-size: .82rem; letter-spacing: .03em;
   color: var(--gold-pale);
 }
 .legend-meaning {
-  font-family: 'EB Garamond', serif; font-size: .82rem; line-height: 1.45;
+  font-family: var(--font-body); font-size: .82rem; line-height: 1.45;
   color: var(--text-dim); margin: .15rem 0 0;
 }
 
@@ -1631,32 +1076,6 @@ a:hover { color: var(--gold-pale); }
   width: 70%; height: 50%;
   background: radial-gradient(ellipse, color-mix(in srgb, var(--gold-300) 5%, transparent) 0%, transparent 70%);
   pointer-events: none; z-index: 0;
-}
-
-/* Idle state (before first draw) */
-.reading-idle {
-  display: flex; flex-direction: column;
-  align-items: center; gap: 2rem;
-  margin-top: 6rem;
-  position: relative; z-index: 1;
-}
-.idle-deck { position: relative; width: 148px; height: 246px; }
-.idle-card {
-  position: absolute;
-  width: 148px; height: 246px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--rule);
-  background:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 36 36'%3E%3Ccircle cx='18' cy='18' r='8' fill='none' stroke='rgba(196%2C147%2C58%2C0.1)' stroke-width='0.6'/%3E%3C/svg%3E"),
-    var(--surface);
-}
-.idle-card.ic1 { transform: rotate(-6deg) translate(-10px, 4px); opacity: .35; }
-.idle-card.ic2 { transform: rotate(-2deg) translate(-2px, 2px); opacity: .55; }
-.idle-card.ic3 { transform: rotate(2deg); opacity: .75; }
-.idle-hint {
-  font-family: 'IM Fell English', serif;
-  font-style: italic; font-size: 1.05rem;
-  color: var(--text-dim); letter-spacing: .04em;
 }
 
 /* Spread selector — lives in the right column */
@@ -1700,58 +1119,6 @@ a:hover { color: var(--gold-pale); }
   .reading-left { position: static; height: auto; border-right: none; border-left: none; border-bottom: 1px solid var(--rule); }
   .reading-right { padding: 2rem 1.5rem 3rem; }
 }
-
-/* Legacy .reading-page (kept for any lingering references) */
-.reading-page { max-width: 1100px; margin: 0 auto; padding: 3rem 2rem 5rem; position: relative; }
-.reading-hero {
-  text-align: center; padding: 4.5rem 3rem 3rem;
-  border-bottom: 1px solid var(--rule);
-  position: relative; overflow: hidden;
-}
-.reading-hero::before {
-  content: '';
-  position: absolute; inset: 0;
-  pointer-events: none;
-  opacity: .08;
-}
-.reading-hero::after {
-  content: '';
-  position: absolute;
-  bottom: 0; left: 50%; transform: translateX(-50%);
-  width: 60%; height: 80%;
-  background: radial-gradient(ellipse at 50% 100%,
-    color-mix(in srgb, var(--gold-300) 7%, transparent) 0%, transparent 65%);
-  pointer-events: none;
-}
-.reading-title {
-  font-family: 'Cinzel', serif;
-  font-weight: 500;
-  font-size: clamp(1.6rem, 4vw, 2.8rem);
-  color: var(--gold-pale); letter-spacing: -.005em; margin-bottom: .75rem;
-  text-shadow: 0 0 60px color-mix(in srgb, var(--gold-100) 12%, transparent);
-  position: relative; z-index: 1;
-}
-.reading-subtitle {
-  color: var(--text-dim); font-size: 1.05rem;
-  font-style: italic; font-family: 'IM Fell English', serif;
-  position: relative; z-index: 1;
-}
-
-/* Spread selector */
-.spread-selector { margin-bottom: 3rem; position: relative; z-index: 1; }
-.spread-selector-title {
-  font-family: 'Cinzel', serif; font-size: .62rem;
-  letter-spacing: .42em; color: var(--gold);
-  text-transform: uppercase; text-align: center;
-  margin-bottom: 1.75rem;
-  display: flex; align-items: center;
-  justify-content: center; gap: 1.25rem;
-}
-.spread-selector-title::before,
-.spread-selector-title::after {
-  content: ''; display: block; width: 40px;
-  height: 1px; background: var(--gold); opacity: .35;
-}
 /*
 */
 .spread-options {
@@ -1787,20 +1154,19 @@ a:hover { color: var(--gold-pale); }
               inset 0 0 18px -8px color-mix(in srgb, var(--gold-300) 10%, transparent);
 }
 
-
 .spread-option-count {
-  font-family: 'Cinzel', serif;
+  font-family: var(--font-display);
   font-size: 2.2rem; font-weight: 600;
   color: var(--gold); line-height: 1; opacity: .5;
   transition: opacity var(--transition);
 }
 .spread-option.selected .spread-option-count { opacity: 1; }
 .spread-option-name {
-  font-family: 'Cinzel', serif; font-size: .82rem;
+  font-family: var(--font-display); font-size: .82rem;
   font-weight: 500; color: var(--gold-pale); letter-spacing: .04em;
 }
 .spread-option-desc {
-  font-family: 'IM Fell English', serif;
+  font-family: var(--font-body);
   font-size: .88rem; font-style: italic;
   color: var(--text-dim); line-height: 1.45;
 }
@@ -1826,20 +1192,9 @@ a:hover { color: var(--gold-pale); }
   50%       { opacity: .85; transform: scaleY(1); border-color: var(--gold-dim); }
 }
 .loading-text {
-  font-family: 'JetBrains Mono', monospace; font-size: .62rem;
+  font-family: var(--font-mono); font-size: .62rem;
   letter-spacing: .22em; color: var(--gold-dim); text-transform: uppercase;
 }
-
-/* Reading result */
-.reading-result { position: relative; z-index: 1; }
-.result-header { text-align: center; margin-bottom: 3rem; }
-.result-spread-name {
-  font-family: 'Cinzel', serif; font-size: 1.6rem;
-  font-weight: 500; color: var(--gold-pale);
-  margin-bottom: .4rem; letter-spacing: -.005em;
-  text-shadow: 0 0 40px color-mix(in srgb, var(--gold-100) 10%, transparent);
-}
-.result-spread-desc { color: var(--text-dim); font-style: italic; font-size: 1.1rem; font-family: 'IM Fell English', serif; }
 
 /* Spread layouts */
 .spread-layout {
@@ -1856,12 +1211,6 @@ a:hover { color: var(--gold-pale); }
 @keyframes card-appear {
   from { opacity: 0; transform: translateY(18px); }
   to   { opacity: 1; transform: translateY(0); }
-}
-.spread-position-label {
-  font-family: 'Cinzel', serif; font-size: .68rem;
-  letter-spacing: .14em; color: var(--gold-dim);
-  text-transform: uppercase; text-align: center;
-  max-width: 140px; line-height: 1.4;
 }
 
 .spread-card {
@@ -1906,10 +1255,8 @@ a:hover { color: var(--gold-pale); }
   object-fit: cover; border-radius: var(--radius-md);
   opacity: .82; pointer-events: none;
 }
-.sc-number { font-family: 'Cormorant SC', serif; font-size: .5rem; letter-spacing: .08em; color: var(--gold-dim); align-self: flex-start; }
-.sc-symbol { font-size: 1.75rem; color: var(--gold); opacity: .8; }
-.sc-name { font-family: 'Cormorant SC', serif; font-size: .49rem; letter-spacing: .06em; color: var(--gold-dim); text-align: center; line-height: 1.35; text-transform: uppercase; }
-.sc-reversed-badge { font-family: 'Cormorant SC', serif; font-size: .42rem; letter-spacing: .12em; color: #80a880; border: 1px solid rgba(80,120,80,.3); padding: .1rem .35rem; border-radius: var(--radius); text-transform: uppercase; }
+.sc-number { font-family: var(--font-accent); font-size: .5rem; letter-spacing: .08em; color: var(--gold-dim); align-self: flex-start; }
+.sc-reversed-badge { font-family: var(--font-accent); font-size: .42rem; letter-spacing: .12em; color: #80a880; border: 1px solid rgba(80,120,80,.3); padding: .1rem .35rem; border-radius: var(--radius); text-transform: uppercase; }
 
 /* Celtic cross */
 .spread-celtic-cross { display: grid; grid-template-columns: repeat(4, auto) 2.5rem repeat(1, auto); grid-template-rows: repeat(4, auto); gap: .75rem; justify-content: center; align-items: center; position: relative; }
@@ -1943,12 +1290,6 @@ a:hover { color: var(--gold-pale); }
   pointer-events: auto;
 }
 .spread-celtic-cross .spread-card-wrap:nth-child(2) .spread-card:hover { transform: rotate(90deg) translateY(-6px); }
-/* Label floats above the crossed pair */
-.spread-celtic-cross .spread-card-wrap:nth-child(2) .spread-position-label {
-  order: -1;
-  margin-bottom: calc(183px - .5rem);
-  white-space: nowrap;
-}
 .spread-celtic-cross .spread-card-wrap:nth-child(3)  { grid-column: 3; grid-row: 3; }
 .spread-celtic-cross .spread-card-wrap:nth-child(4)  { grid-column: 2; grid-row: 2; }
 .spread-celtic-cross .spread-card-wrap:nth-child(5)  { grid-column: 3; grid-row: 1; }
@@ -2003,16 +1344,6 @@ a:hover { color: var(--gold-pale); }
   display: flex; align-items: center; justify-content: flex-end;
   grid-column: 1 / -1; margin-bottom: 0;
 }
-.panel-back {
-  display: inline-flex; align-items: center; gap: .4rem;
-  background: none; border: 1px solid var(--rule);
-  color: var(--text-dim); padding: .35rem 1rem;
-  border-radius: var(--radius); cursor: pointer;
-  font-family: 'Cinzel', serif; font-size: .55rem;
-  letter-spacing: .15em; text-transform: uppercase;
-  transition: border-color var(--transition), color var(--transition);
-}
-.panel-back:hover { border-color: var(--gold-dim); color: var(--gold); }
 .panel-close {
   background: none; border: 1px solid var(--rule);
   color: var(--text-dim); width: 26px; height: 26px;
@@ -2040,19 +1371,15 @@ a:hover { color: var(--gold-pale); }
   opacity: .82; pointer-events: none;
 }
 .panel-card-inner { display: flex; flex-direction: column; align-items: center; gap: .75rem; padding: 1rem; position: relative; z-index: 1; }
-.panel-card-number { font-family: 'Cormorant SC', serif; font-size: .6rem; color: var(--gold-dim); letter-spacing: .1em; }
-.panel-card-symbol { font-size: 3rem; color: var(--gold); opacity: .82; }
-.panel-card-name { font-family: 'Cormorant Garamond', serif; font-size: .82rem; color: var(--gold-pale); text-align: center; letter-spacing: .04em; }
-.panel-card-suit { font-family: 'Cormorant SC', serif; font-size: .57rem; color: var(--gold-dim); letter-spacing: .15em; text-transform: uppercase; }
-.panel-position-top { font-family: 'Cinzel', serif; font-size: .72rem; font-weight: 600; letter-spacing: .26em; text-transform: uppercase; color: var(--gold-200); margin: 0 0 .5rem; }
-.panel-reversed-label { font-family: 'Cormorant SC', serif; font-size: .6rem; color: #80a880; text-align: center; letter-spacing: .1em; }
-.panel-card-title { font-family: 'Cinzel', serif; font-size: 1.3rem; font-weight: 500; color: var(--gold-pale); margin-bottom: .35rem; letter-spacing: -.005em; text-shadow: 0 0 40px color-mix(in srgb, var(--gold-100) 10%, transparent); }
-.panel-element { font-family: 'JetBrains Mono', monospace; font-size: .58rem; letter-spacing: .2em; color: var(--gold-dim); text-transform: uppercase; margin-bottom: 1rem; }
+.panel-card-number { font-family: var(--font-accent); font-size: .6rem; color: var(--gold-dim); letter-spacing: .1em; }
+.panel-card-suit { font-family: var(--font-accent); font-size: .57rem; color: var(--gold-dim); letter-spacing: .15em; text-transform: uppercase; }
+.panel-position-top { font-family: var(--font-display); font-size: .72rem; font-weight: 600; letter-spacing: .26em; text-transform: uppercase; color: var(--gold-200); margin: 0 0 .5rem; }
+.panel-reversed-label { font-family: var(--font-accent); font-size: .6rem; color: #80a880; text-align: center; letter-spacing: .1em; }
+.panel-card-title { font-family: var(--font-display); font-size: 1.3rem; font-weight: 500; color: var(--gold-pale); margin-bottom: .35rem; letter-spacing: -.005em; text-shadow: 0 0 40px color-mix(in srgb, var(--gold-100) 10%, transparent); }
+.panel-element { font-family: var(--font-mono); font-size: .58rem; letter-spacing: .2em; color: var(--gold-dim); text-transform: uppercase; margin-bottom: 1rem; }
 .panel-keywords { display: flex; flex-wrap: wrap; gap: .35rem; margin-bottom: 1.25rem; }
-.panel-meaning h4 { font-family: 'Cormorant SC', serif; font-size: .6rem; letter-spacing: .2em; color: var(--gold-dim); text-transform: uppercase; margin-bottom: .6rem; }
+.panel-meaning h4 { font-family: var(--font-accent); font-size: .6rem; letter-spacing: .2em; color: var(--gold-dim); text-transform: uppercase; margin-bottom: .6rem; }
 .panel-meaning p { font-size: 1.05rem; line-height: 1.82; color: var(--text); margin-bottom: 1rem; }
-.panel-description p { font-size: 1rem; color: var(--text-dim); font-style: italic; margin-bottom: 1.5rem; }
-.new-reading-wrap { text-align: center; margin-top: 1.5rem; }
 
 /* ── Hero without border (spread view) ───────────────────── */
 .page-hero-arch--spread {
@@ -2107,57 +1434,19 @@ a:hover { color: var(--gold-pale); }
   filter: drop-shadow(0 0 6px currentColor);
 }
 .suit-tile-name {
-  font-family: 'Cinzel', serif; font-size: .62rem; letter-spacing: var(--track-label);
+  font-family: var(--font-display); font-size: .62rem; letter-spacing: var(--track-label);
   text-transform: uppercase; color: var(--parchment-dim);
   transition: color .22s;
 }
 .suit-tile-el {
-  font-family: 'JetBrains Mono', monospace; font-size: .58rem; letter-spacing: .15em;
+  font-family: var(--font-mono); font-size: .58rem; letter-spacing: .15em;
   text-transform: uppercase; color: var(--parchment-dim); opacity: .8;
 }
 .suit-tile-count {
-  font-family: 'Cinzel', serif; font-size: .62rem; letter-spacing: .1em;
+  font-family: var(--font-display); font-size: .62rem; letter-spacing: .1em;
   color: var(--gold-dim); opacity: .7;
   margin-top: .1rem;
 }
-
-/* Active suit fan highlight */
-.st-suit--active {
-  border-color: var(--suit-accent, var(--gold));
-  box-shadow: 0 0 0 1px var(--suit-accent, var(--gold)),
-              inset 0 0 40px color-mix(in srgb, var(--suit-accent, var(--gold-300)) 10%, transparent);
-}
-
-/* ============================================================
-   CARDS MODE BAR (filter + view toggle)
-   ============================================================ */
-.cards-modebar {
-  position: sticky; top: 60px; z-index: 50;
-  background: color-mix(in srgb, var(--ink-900) 96%, transparent);
-  backdrop-filter: blur(18px);
-  border-bottom: 1px solid var(--rule);
-  padding: .65rem 2rem;
-}
-.cards-modebar-inner {
-  display: flex; align-items: center; justify-content: space-between;
-  max-width: 1400px; margin: 0 auto;
-}
-.view-toggle {
-  display: flex;
-  border: 1px solid color-mix(in srgb, var(--gold-300) 22%, transparent);
-  border-radius: 3px; overflow: hidden;
-}
-.view-btn {
-  background: transparent; border: none;
-  padding: .3rem .9rem;
-  font-family: 'Cinzel', serif; font-size: .55rem; letter-spacing: .22em;
-  text-transform: uppercase; color: var(--text-dim);
-  cursor: pointer; transition: all var(--transition);
-  border-right: 1px solid color-mix(in srgb, var(--gold-300) 12%, transparent);
-}
-.view-btn:last-child { border-right: none; }
-.view-btn:hover { color: var(--gold); }
-.view-btn-active { background: color-mix(in srgb, var(--gold-300) 12%, transparent); color: var(--gold) !important; }
 
 /* ============================================================
    SPREAD TABLE (Direction C)
@@ -2238,7 +1527,7 @@ a:hover { color: var(--gold-pale); }
   clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
 }
 .st-arc-label-inner span {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   font-size: .58rem; letter-spacing: .22em;
   color: var(--gold-400); text-transform: uppercase;
 }
@@ -2270,14 +1559,14 @@ a:hover { color: var(--gold-pale); }
               0 0 22px -2px color-mix(in srgb, var(--gold-300) 55%, transparent);
 }
 .st-suit-roman {
-  font-family: 'Cinzel', serif; font-style: normal;
+  font-family: var(--font-display); font-style: normal;
   font-size: 15px; letter-spacing: .06em; line-height: 1;
   color: var(--gold-pale);
   transition: color .25s;
 }
 .st-suit-nav:hover .st-suit-roman { color: var(--gold-100); }
 .st-suit-nav-label {
-  font-family: 'Cinzel', serif;
+  font-family: var(--font-display);
   font-size: 8px; letter-spacing: .3em; text-transform: uppercase;
   color: var(--gold-dim);
   transition: color .25s;
@@ -2336,7 +1625,7 @@ a:hover { color: var(--gold-pale); }
 .st-arc-num {
   position: absolute; bottom: 0; left: 0; right: 0;
   text-align: center;
-  font-family: 'Cinzel', serif; font-size: var(--step--1); letter-spacing: .18em;
+  font-family: var(--font-display); font-size: var(--step--1); letter-spacing: .18em;
   color: var(--gold-200);
   padding: 14px 0 3px;
   background: linear-gradient(to top, rgba(0,0,0,.92), transparent);
@@ -2375,15 +1664,9 @@ a:hover { color: var(--gold-pale); }
 }
 .st-ph span { font-size: 1.4rem; color: var(--gold); opacity: .7; }
 .st-ph b {
-  font-family: 'Cinzel', serif; font-weight: 400;
+  font-family: var(--font-display); font-weight: 400;
   font-size: .6rem; color: var(--gold-pale); letter-spacing: .18em;
 }
-.st-ph-large { width: 100%; height: 100%; display: flex; flex-direction: column;
-  align-items: center; justify-content: center; gap: 10px;
-  background: radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--gold-300) 18%, transparent), transparent 65%); }
-.st-ph-large span { font-size: 4.5rem; opacity: .85; }
-.st-ph-large b { font-family: 'Cinzel', serif; font-weight: 400;
-  font-size: 1.1rem; color: var(--gold-pale); letter-spacing: .2em; }
 
 /* ── Showcase — meta text only, card displayed in-arc ─────── */
 .st-showcase {
@@ -2391,15 +1674,6 @@ a:hover { color: var(--gold-pale); }
   display: block;
   padding: .75rem clamp(1.5rem, 4vw, 4rem) 1.25rem;
   max-width: 1100px; margin: 0 auto;
-}
-.st-showcase-frame { display: none; }
-.st-showcase-aura {
-  position: absolute; right: 0; top: -10%;
-  width: 55%; height: 120%;
-  pointer-events: none;
-  transition: background .38s;
-  z-index: 0;
-  filter: blur(60px);
 }
 
 /* RIGHT: large card — tall tarot proportions, bleeds toward right margin */
@@ -2419,42 +1693,11 @@ a:hover { color: var(--gold-pale); }
 .st-showcase-img-wrap {
   position: absolute; inset: 0;
 }
-.st-img-layer {
-  position: absolute; inset: 0;
-  overflow: hidden;
-  transition: opacity .28s ease;
-}
-.st-img-layer img {
-  width: 100%; height: 100%;
-  object-fit: cover; object-position: center top;
-  display: block;
-}
-
-/* Gold shimmer burst on swap */
-.st-showcase-shimmer {
-  position: absolute; inset: -8%;
-  border-radius: 50%;
-  pointer-events: none; z-index: 6;
-  background: radial-gradient(circle at center,
-    color-mix(in srgb, var(--gold-100) 40%, transparent) 0%,
-    color-mix(in srgb, var(--gold-100) 14%, transparent) 28%,
-    transparent 60%);
-  mix-blend-mode: screen;
-  animation: stShimmer .5s ease-out forwards;
-}
 @keyframes stShimmer {
   0%   { opacity: 0; transform: scale(.6); }
   30%  { opacity: 1; transform: scale(1); }
   100% { opacity: 0; transform: scale(1.1); }
 }
-.st-ornament {
-  position: absolute; color: var(--gold); opacity: .5;
-  font-size: .75rem; pointer-events: none; line-height: 1;
-}
-.st-ornament-tl { top: 5px; left: 6px; }
-.st-ornament-tr { top: 5px; right: 6px; }
-.st-ornament-bl { bottom: 5px; left: 6px; }
-.st-ornament-br { bottom: 5px; right: 6px; }
 
 /* Showcase meta — full-width strip below the arc */
 .st-showcase-meta {
@@ -2481,14 +1724,14 @@ a:hover { color: var(--gold-pale); }
   flex-shrink: 0;
 }
 .st-meta-eyebrow-label {
-  font-family: 'Cinzel', serif; font-size: .58rem; letter-spacing: .38em;
+  font-family: var(--font-display); font-size: .58rem; letter-spacing: .38em;
   color: var(--gold-dim); text-transform: uppercase;
   transition: color .25s;
 }
 
 /* Big card name — same Cinzel display treatment as home title */
 .st-meta-name {
-  font-family: 'Cinzel', serif;
+  font-family: var(--font-display);
   font-size: clamp(1.2rem, 2.2vw, 1.9rem);
   font-weight: 500;
   color: var(--gold-pale); letter-spacing: -.005em;
@@ -2507,7 +1750,7 @@ a:hover { color: var(--gold-pale); }
   justify-content: flex-end;
 }
 .st-kw {
-  font-family: 'Cinzel', serif; font-size: .58rem; letter-spacing: .2em;
+  font-family: var(--font-display); font-size: .58rem; letter-spacing: .2em;
   text-transform: uppercase; color: var(--gold-dim);
   white-space: nowrap;
 }
@@ -2530,80 +1773,14 @@ a:hover { color: var(--gold-pale); }
   border-color: color-mix(in srgb, var(--gold-200) 70%, transparent);
 }
 .st-cta-inner {
-  font-family: 'Cinzel', serif; font-size: .55rem; letter-spacing: .3em;
+  font-family: var(--font-display); font-size: .55rem; letter-spacing: .3em;
   text-transform: uppercase;
   color: var(--gold-dim);
   transition: color .25s;
 }
 .st-meta-cta:hover .st-cta-inner { color: var(--gold-pale); }
 
-/* ── Suit fans ────────────────────────────────────────────── */
-.st-suits-row {
-  display: grid; grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
-  padding: 0 1.5rem 2rem;
-  position: relative; z-index: 5;
-  max-width: 1400px; margin: 0 auto;
-}
-.st-suit {
-  position: relative;
-  background: color-mix(in srgb, var(--ink-800) 50%, transparent);
-  border: 1px solid color-mix(in srgb, var(--gold-300) 12%, transparent);
-  border-radius: 3px;
-  height: 220px; overflow: hidden;
-  background-image: radial-gradient(ellipse at 50% 110%, var(--suit-wash, color-mix(in srgb, var(--gold-300) 7%, transparent)), transparent 70%);
-}
-.st-suit-label {
-  position: absolute; top: 12px; left: 14px; right: 14px; z-index: 6;
-  display: flex; align-items: center; gap: 10px;
-}
-.st-suit-sigil {
-  font-size: 1.35rem; line-height: 1;
-  color: var(--suit-accent, var(--gold));
-  text-shadow: 0 0 12px currentColor;
-}
-.st-suit-name {
-  font-family: 'Cinzel', serif; font-size: .75rem;
-  color: var(--gold-pale); letter-spacing: .12em; text-transform: uppercase;
-  line-height: 1.1;
-}
-.st-suit-el {
-  font-family: 'JetBrains Mono', monospace; font-size: .52rem;
-  letter-spacing: .2em; color: var(--text-dim); text-transform: uppercase;
-  margin-top: 2px;
-}
-.st-fan {
-  position: relative; width: 100%; height: 100%;
-}
-.st-fan-card {
-  position: absolute; left: 50%; bottom: 10px;
-  width: 58px; height: 88px;
-  background: var(--bg2);
-  border: 1px solid color-mix(in srgb, var(--gold-300) 20%, transparent);
-  border-radius: 2px;
-  display: flex; align-items: center; justify-content: center;
-  transform-origin: 50% 100%;
-  box-shadow: 0 3px 10px rgba(0,0,0,.6);
-  transition: box-shadow .25s, border-color .2s;
-  cursor: pointer; overflow: hidden;
-  background-image: radial-gradient(ellipse at 50% 40%, var(--suit-wash, color-mix(in srgb, var(--gold-300) 6%, transparent)), transparent 70%);
-}
-.st-fan-card:hover { border-color: var(--suit-accent, var(--gold)); }
-.st-fan-card.lifted {
-  border-color: var(--suit-accent, var(--gold));
-  box-shadow: 0 12px 28px rgba(0,0,0,.82), 0 0 18px var(--suit-accent, color-mix(in srgb, var(--gold-300) 50%, transparent));
-}
-.st-fan-inner {
-  display: flex; flex-direction: column; align-items: center; gap: 4px;
-  padding: 6px 4px;
-}
-.st-fan-sigil { font-size: .85rem; line-height: 1; }
-.st-fan-num {
-  font-family: 'Cinzel', serif; font-size: .6rem; letter-spacing: .15em;
-}
-
 @media (max-width: 900px) {
-  .st-suits-row { grid-template-columns: repeat(2, 1fr); }
   .st-showcase-meta {
     grid-template-columns: 1fr;
     grid-template-rows: auto auto auto auto;
@@ -2612,10 +1789,6 @@ a:hover { color: var(--gold-pale); }
   .st-meta-name    { grid-column: 1; grid-row: 2; }
   .st-meta-kw-block { grid-column: 1; grid-row: 3; justify-content: flex-start; }
   .st-meta-cta     { grid-column: 1; grid-row: 4; justify-self: start; }
-}
-@media (max-width: 600px) {
-  .st-suits-row { grid-template-columns: 1fr 1fr; }
-  .cards-modebar-inner { flex-wrap: wrap; gap: .5rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -2643,7 +1816,7 @@ a:hover { color: var(--gold-pale); }
   background: var(--rule); margin: 0 auto .75rem;
 }
 .footer-text {
-  font-family: 'Cormorant SC', serif; font-size: .6rem;
+  font-family: var(--font-accent); font-size: .6rem;
   letter-spacing: .22em; color: var(--text-dim); text-transform: uppercase;
 }
 
@@ -2668,21 +1841,6 @@ a:hover { color: var(--gold-pale); }
     text-align: center;
     align-items: center;
   }
-  .hero-eyebrow { justify-content: center; }
-  .hero-subtitle { max-width: 100%; }
-  .hero-divider-line { width: 30%; }
-  .hero-cta { justify-content: center; }
-  .hero-cta .btn { padding: .7rem 1.2rem; font-size: .62rem; }
-  .hero-journey {
-    min-height: 55vh;
-  }
-  .journey-sm { width: 140px; height: 202px; }
-  .journey-lg {
-    width: clamp(210px, 44vw, 280px);
-    height: clamp(305px, 64vw, 410px);
-  }
-  .jc-sym { font-size: 2rem; }
-  .jc-sym-lg { font-size: clamp(2.8rem, 9vw, 4rem); }
 }
 @media (max-width: 768px) {
   .navbar { padding: 0 1.5rem; }

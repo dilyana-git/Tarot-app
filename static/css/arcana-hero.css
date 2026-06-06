@@ -51,7 +51,7 @@
      fixed navbar overlays the top transparently. */
   min-height: 100vh;
   overflow: hidden;
-  font-family: 'EB Garamond', Georgia, serif;
+  font-family: var(--font-body);
   color: var(--ah-text);
 
   /* No section-level background — inherits the body radial gradient */
@@ -82,7 +82,7 @@
   display: inline-block;
 }
 .arcana-hero .eyebrow {
-  font-family: 'Cinzel', serif;
+  font-family: var(--font-display);
   font-size: 12px; letter-spacing: .45em;
   color: var(--ah-gold-pale);
   text-transform: uppercase;
@@ -140,7 +140,7 @@
 }
 
 .arcana-hero .card-num {
-  font-family: 'Cinzel', serif;
+  font-family: var(--font-display);
   font-size: 12px; letter-spacing: .32em;
   /* Brighter than the shared mute token — small, wide-tracked caps need extra
      lift to read clearly. gold-200 (#E7C878) = 12.16:1 on the near-black bg. */
@@ -153,7 +153,7 @@
 }
 
 .arcana-hero .card-title {
-  font-family: 'Cinzel', serif;
+  font-family: var(--font-display);
   font-weight: 500;
   font-size: clamp(28px, 3.5vw, 52px);
   color: var(--ah-gold-pale);
@@ -169,7 +169,7 @@
 
 .arcana-hero .card-roman {
   margin-top: 10px;
-  font-family: 'Cinzel', serif;
+  font-family: var(--font-display);
   font-size: 20px; letter-spacing: .25em;
   color: var(--ah-gold-pale);
   opacity: .8;
@@ -192,7 +192,7 @@
   vertical-align: middle;
 }
 .arcana-hero .kw {
-  font-family: 'Cinzel', serif;
+  font-family: var(--font-display);
   /* Tighter tracking so a three-keyword line (e.g. THE HIEROPHANT) fits without
      orphaning the last word; each keyword also stays unbroken internally. */
   font-size: 11px; letter-spacing: .18em;
@@ -221,12 +221,12 @@
   display: flex; flex-direction: column; gap: 6px;
 }
 .arcana-hero .meta dt {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 12px; letter-spacing: .2em;
   color: var(--ah-text-mute);
 }
 .arcana-hero .meta dd {
-  font-family: 'Cinzel', serif;
+  font-family: var(--font-display);
   font-size: 12px; letter-spacing: .2em;
   color: var(--ah-gold-pale);
 }
@@ -265,7 +265,7 @@
     color-mix(in srgb, #C9A84C 72%, var(--gold-400)) 100%);
   border: 1px solid color-mix(in srgb, #C9A84C 78%, var(--gold-400));
   color: var(--ink-900);
-  font-family: 'Cinzel', serif;
+  font-family: var(--font-display);
   letter-spacing: .25em; font-size: 11px; font-weight: 700;
   text-transform: uppercase;
   text-decoration: none;
@@ -277,7 +277,7 @@
     /* outer ambient glow — burnished, not bright */
     0 0 22px color-mix(in srgb, #C9A84C 28%, transparent),
     0 4px 18px rgba(0,0,0,.45);
-  transition: background .25s ease, box-shadow .25s ease, border-color .25s ease;
+  transition: background var(--transition), box-shadow var(--transition), border-color var(--transition);
   position: relative;
   min-height: 44px;
 }
@@ -314,11 +314,11 @@
   background: transparent;
   border: 0;
   color: var(--ah-text-dim);
-  font-family: 'Cinzel', serif;
+  font-family: var(--font-display);
   letter-spacing: .25em; font-size: 11px;
   text-transform: uppercase;
   text-decoration: none;
-  transition: color .25s ease;
+  transition: color var(--transition);
 }
 .arcana-hero .cta-row .btn-ghost:hover { color: var(--ah-gold-pale); }
 
@@ -345,20 +345,20 @@
   display: flex; justify-content: space-between; align-items: center;
   margin-top: 10px;
   max-width: 480px;
-  font-family: 'Cinzel', serif;
+  font-family: var(--font-display);
   font-size: 11px; letter-spacing: .28em;
   /* Functional navigation — lifted to a clearly legible gold. gold-200
      (#E7C878) = 12.16:1 on the near-black bg, and the size is bumped from 10px. */
   color: var(--gold-200);
 }
 .arcana-hero .counter-hint {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   letter-spacing: .2em; font-size: 12px;
   color: var(--gold-200);
 }
 .arcana-hero .counter-arrow {
   background: none; border: 0;
-  font-family: 'Cinzel', serif;
+  font-family: var(--font-display);
   font-size: 13px;
   color: var(--ah-text-dim);
   padding: 4px 8px;
@@ -367,7 +367,7 @@
 }
 .arcana-hero .counter-arrow:hover { color: var(--ah-gold-pale); }
 .arcana-hero .counter-txt {
-  font-family: 'Cinzel', serif;
+  font-family: var(--font-display);
   font-size: 11px; letter-spacing: .25em;
   color: var(--ah-gold-pale);
   min-width: 28px;
@@ -671,7 +671,7 @@
   position: absolute;
   bottom: -48px; left: 50%;
   transform: translateX(-50%);
-  font-family: 'Cinzel', serif;
+  font-family: var(--font-display);
   font-size: 13px; letter-spacing: .5em;
   color: var(--ah-gold-pale);
   white-space: nowrap;
@@ -723,7 +723,7 @@
   transition: border-color .25s ease, box-shadow .3s ease, background .3s ease;
 }
 .arcana-hero .nav-roman {
-  font-family: 'Cinzel', serif;
+  font-family: var(--font-display);
   font-style: normal;
   font-size: 16px; letter-spacing: .1em; line-height: 1;
   color: var(--ah-gold-pale);
@@ -744,7 +744,7 @@
   color: var(--gold-100);
 }
 .arcana-hero .nav-btn-label {
-  font-family: 'Cinzel', serif;
+  font-family: var(--font-display);
   font-size: 9px; letter-spacing: .3em;
   color: var(--ah-text-mute);
   width: 100px; text-align: center;
