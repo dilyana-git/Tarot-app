@@ -1,6 +1,6 @@
 .arcana{
-  --bg:#06060c; --gold:#d7b45a; --gold-bright:#f4e2a8; --gold-deep:#9a7b34;
-  --text:#ece3cb; --muted:#9c906f;
+  --bg:var(--ink-900); --gold:var(--gold-300); --gold-bright:var(--gold-100); --gold-deep:var(--gold-400);
+  --text:var(--parchment); --muted:var(--parchment-dim);
   --display:'Cinzel','Trajan Pro','Times New Roman',serif;
   --body:'EB Garamond','Cormorant Garamond','Georgia',serif;
   position:relative; min-height:900px; height:100%; width:100%;
@@ -125,7 +125,7 @@
 .arcana .ac-front.has-image .plate,
 .arcana .ac-front.has-image .scrim-b { display:none; }
 
-.arcana .plate .name{font-family:var(--display); font-weight:500; font-size:26px; letter-spacing:.12em; color:#f7eccb; text-shadow:0 2px 10px rgba(0,0,0,.7);}
+.arcana .plate .name{font-family:var(--display); font-weight:500; font-size:26px; letter-spacing:.12em; color:var(--gold-bright); text-shadow:0 2px 10px rgba(0,0,0,.7);}
 
 .arcana .plate .kw{margin-top:7px; font-size:9px; letter-spacing:.32em; color:var(--gold); text-indent:.32em; text-shadow:0 1px 6px rgba(0,0,0,.8);}
 
@@ -142,7 +142,7 @@
 
 .arcana .b-eyebrow{font-size:10px; letter-spacing:.42em; color:var(--gold); text-indent:.42em;}
 
-.arcana .b-name{font-family:var(--display); font-size:25px; letter-spacing:.1em; color:#f7eccb; margin-top:12px;}
+.arcana .b-name{font-family:var(--display); font-size:25px; letter-spacing:.1em; color:var(--gold-bright); margin-top:12px;}
 
 .arcana .b-div{display:flex; align-items:center; gap:10px; margin:16px 0 18px; color:var(--gold-deep); width:62%;}
 
@@ -281,7 +281,7 @@
 .arcana .ac-rail .bead{position:absolute; top:50%; width:7px; height:7px; border-radius:50%; transform:translate(-50%,-50%); background:var(--gold-bright); box-shadow:0 0 12px 2px rgba(244,226,168,.55); transition:left .5s cubic-bezier(.6,.05,.2,1);}
 
 .arcana .ac-cta{font-family:var(--display); font-size:12px; letter-spacing:.26em; color:#16120a; cursor:pointer; padding:14px 30px; border:none; text-indent:.26em;
-  background:linear-gradient(180deg,#f4e2a8,#cda14e); border-radius:2px; box-shadow:0 10px 30px -10px rgba(215,180,90,.6); transition:transform .2s, box-shadow .2s;}
+  background:linear-gradient(180deg,var(--gold-bright),var(--gold)); border-radius:2px; box-shadow:0 10px 30px -10px rgba(215,180,90,.6); transition:transform .2s, box-shadow .2s;}
 
 .arcana .ac-cta:hover{transform:translateY(-2px); box-shadow:0 16px 38px -10px rgba(215,180,90,.75);}
 
