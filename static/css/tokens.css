@@ -25,6 +25,15 @@
   --oxblood:   #7C262B;
   --verdigris: #357D6E;
 
+  /* — Suit accents (canonical; consumed by .suit-tile + cards.js) —
+     Values match what the tiles render today, so adopting these is a
+     no-op visually. The two golds mirror the gold ramp on purpose. */
+  --suit-major:     #C8A24C;  /* gold  — mirrors --gold-300 */
+  --suit-wands:     #9A7B36;  /* fire  — mirrors --gold-400 */
+  --suit-cups:      #5D8AA8;  /* water — muted lapis */
+  --suit-swords:    #A89968;  /* air   — pale tarnished gold */
+  --suit-pentacles: #5A8060;  /* earth — muted verdigris */
+
   /* — Type scale (perfect-fourth) — */
   --step--1: 0.8rem;
   --step-0:  1rem;

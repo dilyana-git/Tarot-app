@@ -9,7 +9,7 @@
   <h1 class="page-arch-title">{{ title }}</h1>
   {% if filter_type == 'all' %}
   <div class="suit-tiles" id="suitTiles">
-    <button class="suit-tile suit-tile--active" data-suit="major" style="--tile-accent:var(--gold-300)">
+    <button class="suit-tile suit-tile--active" data-suit="major" style="--tile-accent:var(--suit-major)">
       <span class="suit-tile-sigil"><svg class="sigil-svg" viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <path d="M12 2.5L14 10.2L21.5 12L14 13.8L12 21.5L10 13.8L2.5 12L10 10.2Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
       </svg></span>
@@ -17,7 +17,7 @@
       <span class="suit-tile-el">0 — XXI</span>
       <span class="suit-tile-count">22</span>
     </button>
-    <button class="suit-tile" data-suit="wands"     style="--tile-accent:var(--gold-400)">
+    <button class="suit-tile" data-suit="wands"     style="--tile-accent:var(--suit-wands)">
       <span class="suit-tile-sigil"><svg class="sigil-svg" viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <polygon points="12,3 22,21 2,21" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
       </svg></span>
@@ -25,7 +25,7 @@
       <span class="suit-tile-el">Fire</span>
       <span class="suit-tile-count">14</span>
     </button>
-    <button class="suit-tile" data-suit="cups"      style="--tile-accent:#5d8aa8">
+    <button class="suit-tile" data-suit="cups"      style="--tile-accent:var(--suit-cups)">
       <span class="suit-tile-sigil"><svg class="sigil-svg" viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <polygon points="12,21 22,3 2,3" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
       </svg></span>
@@ -33,7 +33,7 @@
       <span class="suit-tile-el">Water</span>
       <span class="suit-tile-count">14</span>
     </button>
-    <button class="suit-tile" data-suit="swords"    style="--tile-accent:#a89968">
+    <button class="suit-tile" data-suit="swords"    style="--tile-accent:var(--suit-swords)">
       <span class="suit-tile-sigil"><svg class="sigil-svg" viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <polygon points="12,3 22,21 2,21" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
         <line x1="9" y1="9" x2="15" y2="9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
@@ -42,7 +42,7 @@
       <span class="suit-tile-el">Air</span>
       <span class="suit-tile-count">14</span>
     </button>
-    <button class="suit-tile" data-suit="pentacles" style="--tile-accent:#5a8060">
+    <button class="suit-tile" data-suit="pentacles" style="--tile-accent:var(--suit-pentacles)">
       <span class="suit-tile-sigil"><svg class="sigil-svg" viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <polygon points="12,21 22,3 2,3" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
         <line x1="9" y1="15" x2="15" y2="15" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
@@ -150,16 +150,21 @@
   /* ── Data injected by Flask ─────────────────────────────── */
   const SPREAD = {{ spread | tojson }};
 
+  /* Suit accent colours — single source of truth is tokens.css (--suit-*).
+     Read them here so the arc/JS can never drift from the tiles again. */
+  const _rootStyle = getComputedStyle(document.documentElement);
+  const suitColor  = (suit) => _rootStyle.getPropertyValue('--suit-' + suit).trim() || '#C8A24C';
+
   let hoverTimer = null;
   let cooldownUntil = 0;
 
   /* ── Major Arcana Arc ───────────────────────────────────── */
   const arcContainer = document.getElementById('majorArc');
   const arcLabel     = document.getElementById('arcLabel');
-  let   currentArcAccent = '#c4933a';
+  let   currentArcAccent = suitColor('major');
 
   function buildArc(cards, accent) {
-    accent = accent || '#C8A24C';
+    accent = accent || suitColor('major');
     currentArcAccent = accent;
     arcContainer.innerHTML = '';
     const n = cards.length;
@@ -327,10 +332,10 @@
 
   /* ── Suit Fans ──────────────────────────────────────────── */
   const SUIT_META = {
-    wands:     { sigil:'△', color:'#b07820' },
-    cups:      { sigil:'▽', color:'#5d8aa8' },
-    swords:    { sigil:'✕', color:'#a89968' },
-    pentacles: { sigil:'⊕', color:'#5a8060' },
+    wands:     { sigil:'△', color: suitColor('wands') },
+    cups:      { sigil:'▽', color: suitColor('cups') },
+    swords:    { sigil:'✕', color: suitColor('swords') },
+    pentacles: { sigil:'⊕', color: suitColor('pentacles') },
   };
 
   /* ── Suit tile interactivity ────────────────────────────── */
@@ -374,8 +379,8 @@
 
     if (suit === 'major') {
       arcLabel.textContent = 'The Major Arcana · 0 — XXI';
-      buildArc(SPREAD.major, '#c4933a');
-      if (SPREAD.major.length) updateShowcase(SPREAD.major[0], '#c4933a');
+      buildArc(SPREAD.major, suitColor('major'));
+      if (SPREAD.major.length) updateShowcase(SPREAD.major[0], suitColor('major'));
     } else {
       const meta = SUIT_META[suit];
       arcLabel.textContent = SUIT_LABELS[suit];
@@ -425,7 +430,7 @@
     resizeTimer = setTimeout(() => {
       const suit = document.querySelector('.suit-tile--active')?.dataset.suit || 'major';
       if (suit === 'major') {
-        buildArc(SPREAD.major, '#c4933a');
+        buildArc(SPREAD.major, suitColor('major'));
       } else {
         const meta = SUIT_META[suit];
         buildArc(SPREAD[suit], meta.color);
