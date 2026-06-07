@@ -390,8 +390,16 @@
     document.querySelectorAll('.st-arc-card')[0]?.classList.add('lifted');
   }
 
+  const spreadView = document.getElementById('spreadView');
   document.querySelectorAll('.suit-tile').forEach(btn => {
-    btn.addEventListener('click', () => activateTile(btn.dataset.suit));
+    btn.addEventListener('click', () => {
+      activateTile(btn.dataset.suit);
+      // Tiles sit at the top of the page — scroll the freshly-rebuilt arc into
+      // view so the filtered cards don't swap in below the fold. The
+      // scroll-margin-top on #spreadView (style.css) keeps it clear of the
+      // fixed navbar.
+      spreadView?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
   });
   suitNavPrev?.addEventListener('click', () => activateTile(suitNavPrev.dataset.suit));
   suitNavNext?.addEventListener('click', () => activateTile(suitNavNext.dataset.suit));

@@ -10,13 +10,6 @@
   <!-- breadcrumb spans full width above the two-column spotlight -->
   <div class="breadcrumb card-detail-breadcrumb">
     <a href="{{ url_for('cards') }}" class="breadcrumb-link">← The Cards</a>
-    {% if card.suit %}
-    <span class="breadcrumb-sep">/</span>
-    <a href="{{ url_for('cards') }}?filter=minor&suit={{ card.suit }}" class="breadcrumb-link">{{ card.suit }}</a>
-    {% else %}
-    <span class="breadcrumb-sep">/</span>
-    <a href="{{ url_for('cards') }}?filter=major" class="breadcrumb-link">Major Arcana</a>
-    {% endif %}
   </div>
 
   <div class="card-detail-spotlight">
@@ -97,17 +90,6 @@
         <span class="card-detail-hero-symbol">{{ card.symbol }}</span>
         {% endif %}
       </div>
-
-      <!-- Meta badges
-      <div class="card-meta-badges">
-        <span class="meta-badge">{{ card.element }}</span>
-        {% if card.arcana == 'major' %}
-        <span class="meta-badge">Major Arcana</span>
-        {% else %}
-        <span class="meta-badge">{{ card.suit }}</span>
-        {% endif %}
-      </div> -->
-
   
       <div class="card-detail-info">
       <p class="detail-desc">{{ card.description }}</p>

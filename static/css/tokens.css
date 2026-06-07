@@ -25,6 +25,16 @@
   --oxblood:   #7C262B;
   --verdigris: #357D6E;
 
+  /* — Reversed-state accent (canonical) —
+     The upright/reversed duality is gold vs verdigris across the app.
+     Derived from --verdigris so all four stay in one hue family;
+     replaces the ad-hoc greens (#80a880, rgba(60,80,60,…)) the reading
+     and card-detail pages each improvised. */
+  --reversed:      var(--verdigris);                                           /* base hue */
+  --reversed-pale: color-mix(in srgb, var(--verdigris) 55%, var(--parchment)); /* labels on dark */
+  --reversed-tint: color-mix(in srgb, var(--verdigris) 9%, transparent);       /* box fills */
+  --reversed-line: color-mix(in srgb, var(--verdigris) 38%, transparent);      /* borders */
+
   /* — Suit accents (canonical; consumed by .suit-tile + cards.js) —
      Values match what the tiles render today, so adopting these is a
      no-op visually. The two golds mirror the gold ramp on purpose. */

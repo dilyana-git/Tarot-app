@@ -927,15 +927,52 @@ a:hover { color: var(--gold-pale); }
 .tab-btn:hover { color: var(--gold); }
 .tab-btn.active { color: var(--gold); border-bottom-color: var(--gold); gap: .5rem; }
 .tab-btn.active::before { content: ''; display: inline-block; width: 4px; height: 4px; border-radius: 50%; background: var(--gold); opacity: .85; flex-shrink: 0; }
+/* Reversed side wears the verdigris half of the upright/reversed duality */
+.tab-btn[data-tab="reversed"]:hover { color: var(--reversed-pale); }
+.tab-btn[data-tab="reversed"].active { color: var(--reversed-pale); border-bottom-color: var(--reversed); }
+.tab-btn[data-tab="reversed"].active::before { background: var(--reversed); }
 .tab-content { display: none; }
-.tab-content.active { display: block; }
-.meaning-box {
-  padding: 1.5rem; line-height: 1.88; font-size: 1.1rem;
-  max-width: 58ch;
-  color: var(--text); border: 1px solid var(--rule); border-top: none;
+/* Crossfade the freshly-activated meaning in instead of a hard display swap */
+.tab-content.active { display: block; animation: tab-fade .42s ease; }
+@keyframes tab-fade {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
-.meaning-upright  { background: color-mix(in srgb, var(--gold-300) 3%, transparent); }
-.meaning-reversed { background: rgba(60,80,60,.05); }
+.meaning-box {
+  padding: 1.5rem 1.5rem 1.5rem 1.65rem; line-height: 1.88; font-size: 1.1rem;
+  max-width: 58ch;
+  color: var(--text);
+  border: 1px solid var(--rule); border-top: none;
+  border-left-width: 2px;   /* state-coloured accent rule */
+}
+.meaning-upright  {
+  background: color-mix(in srgb, var(--gold-300) 4%, transparent);
+  border-left-color: color-mix(in srgb, var(--gold-300) 45%, transparent);
+}
+.meaning-reversed {
+  background: var(--reversed-tint);
+  border-left-color: var(--reversed-line);
+}
+
+/* ── Card-detail entrance — one orchestrated reveal on load ──
+   The eyebrow and the card art FADE ONLY (no translate): the lockEyebrow
+   script measures their getBoundingClientRect tops to align the eyebrow
+   cap to the card's border, and a vertical transform would poison that
+   measurement. Everything the script doesn't measure rises as it fades. */
+@keyframes detail-rise {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes detail-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.card-detail-breadcrumb              { animation: detail-fade .6s ease both; }
+.card-detail-visual                  { animation: detail-fade .9s ease both; animation-delay: .1s; }
+.card-detail-spotlight-text .page-arch-eyebrow { animation: detail-fade .7s ease both; animation-delay: .16s; }
+.card-detail-title                   { animation: detail-rise .7s ease both; animation-delay: .24s; }
+.card-detail-hero-meta               { animation: detail-rise .7s ease both; animation-delay: .34s; }
+.card-detail-spotlight-text .card-detail-info { animation: detail-rise .75s ease both; animation-delay: .44s; }
 
 /* ============================================================
    READING — Two-column layout
@@ -1217,23 +1254,36 @@ a:hover { color: var(--gold-pale); }
   width: 175px; height: 292px;
   border-radius: var(--radius-md); position: relative;
   cursor: pointer; transition: transform .28s ease, box-shadow .28s ease;
+  perspective: 1200px;   /* depth for the flip; coexists with the 2D transforms below */
 }
 .spread-card.reversed { transform: rotate(180deg); }
 .spread-card:hover { transform: translateY(-6px); box-shadow: var(--shadow); }
 .spread-card.reversed:hover { transform: translateY(-6px) rotate(180deg); }
+/* The flipper: holds both faces and rotates from cover (0deg) to art (180deg).
+   preserve-3d keeps the two faces in the card's depth so backface-visibility
+   can hide whichever one is turned away. */
+.spread-card-flip {
+  position: absolute; inset: 0;
+  transform-style: preserve-3d;
+  transform: rotateY(0);
+  transition: transform .72s cubic-bezier(.2,.75,.2,1);
+}
+.spread-card.revealed .spread-card-flip { transform: rotateY(180deg); }
 .spread-card-back, .spread-card-face {
   position: absolute; inset: 0;
   border-radius: var(--radius-md); border: 1px solid var(--rule);
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
   gap: .3rem; padding: .55rem;
-  transition: opacity .55s ease;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  overflow: hidden;
 }
 .spread-card-back {
   background:
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 36 36'%3E%3Ccircle cx='18' cy='18' r='8' fill='none' stroke='rgba(196%2C147%2C58%2C0.1)' stroke-width='0.6'/%3E%3Ccircle cx='18' cy='18' r='3' fill='none' stroke='rgba(196%2C147%2C58%2C0.08)' stroke-width='0.5'/%3E%3Cpath d='M18 10 Q20 14 18 18 Q16 14 18 10Z' fill='rgba(196%2C147%2C58%2C0.07)'/%3E%3Cpath d='M18 26 Q20 22 18 18 Q16 22 18 26Z' fill='rgba(196%2C147%2C58%2C0.07)'/%3E%3Cpath d='M10 18 Q14 20 18 18 Q14 16 10 18Z' fill='rgba(196%2C147%2C58%2C0.07)'/%3E%3Cpath d='M26 18 Q22 20 18 18 Q22 16 26 18Z' fill='rgba(196%2C147%2C58%2C0.07)'/%3E%3Ccircle cx='18' cy='18' r='1.2' fill='rgba(196%2C147%2C58%2C0.12)'/%3E%3C/svg%3E"),
     var(--surface);
-  opacity: 1; z-index: 1;
+  transform: rotateY(0);   /* cover faces the viewer first */
 }
 .spread-card-back::before {
   content: ''; position: absolute; inset: 5px;
@@ -1245,10 +1295,9 @@ a:hover { color: var(--gold-pale); }
   background: linear-gradient(170deg,
     color-mix(in srgb, var(--card-color, #161A26) 68%, var(--ink-900)),
     var(--bg));
-  opacity: 0; z-index: 0;
+  transform: rotateY(180deg);   /* pre-rotated so it lands un-mirrored after the flip */
+  border-color: var(--rule-hover);
 }
-.spread-card.revealed .spread-card-back { opacity: 0; z-index: 0; }
-.spread-card.revealed .spread-card-face { opacity: 1; z-index: 1; border-color: var(--rule-hover); }
 
 .spread-card-img {
   position: absolute; inset: 0; width: 100%; height: 100%;
@@ -1256,7 +1305,7 @@ a:hover { color: var(--gold-pale); }
   opacity: .82; pointer-events: none;
 }
 .sc-number { font-family: var(--font-accent); font-size: .5rem; letter-spacing: .08em; color: var(--gold-dim); align-self: flex-start; }
-.sc-reversed-badge { font-family: var(--font-accent); font-size: .42rem; letter-spacing: .12em; color: #80a880; border: 1px solid rgba(80,120,80,.3); padding: .1rem .35rem; border-radius: var(--radius); text-transform: uppercase; }
+.sc-reversed-badge { font-family: var(--font-accent); font-size: .42rem; letter-spacing: .12em; color: var(--reversed-pale); border: 1px solid var(--reversed-line); padding: .1rem .35rem; border-radius: var(--radius); text-transform: uppercase; }
 
 /* Celtic cross */
 .spread-celtic-cross { display: grid; grid-template-columns: repeat(4, auto) 2.5rem repeat(1, auto); grid-template-rows: repeat(4, auto); gap: .75rem; justify-content: center; align-items: center; position: relative; }
@@ -1374,10 +1423,33 @@ a:hover { color: var(--gold-pale); }
 .panel-card-number { font-family: var(--font-accent); font-size: .6rem; color: var(--gold-dim); letter-spacing: .1em; }
 .panel-card-suit { font-family: var(--font-accent); font-size: .57rem; color: var(--gold-dim); letter-spacing: .15em; text-transform: uppercase; }
 .panel-position-top { font-family: var(--font-display); font-size: .72rem; font-weight: 600; letter-spacing: .26em; text-transform: uppercase; color: var(--gold-200); margin: 0 0 .5rem; }
-.panel-reversed-label { font-family: var(--font-accent); font-size: .6rem; color: #80a880; text-align: center; letter-spacing: .1em; }
+.panel-reversed-label { font-family: var(--font-accent); font-size: .6rem; color: var(--reversed-pale); text-align: center; letter-spacing: .1em; }
 .panel-card-title { font-family: var(--font-display); font-size: 1.3rem; font-weight: 500; color: var(--gold-pale); margin-bottom: .35rem; letter-spacing: -.005em; text-shadow: 0 0 40px color-mix(in srgb, var(--gold-100) 10%, transparent); }
 .panel-element { font-family: var(--font-mono); font-size: .58rem; letter-spacing: .2em; color: var(--gold-dim); text-transform: uppercase; margin-bottom: 1rem; }
-.panel-keywords { display: flex; flex-wrap: wrap; gap: .35rem; margin-bottom: 1.25rem; }
+.panel-keywords { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: 1.25rem; }
+/* Keyword pills — these classes were emitted by reading.js but had no CSS,
+   so the tags rendered as naked inline text. Gilt for upright, verdigris
+   for reversed, mirroring the card-detail meaning duality. */
+.keyword-tag {
+  font-family: var(--font-accent);
+  font-size: .82rem; letter-spacing: .03em; line-height: 1.2;
+  padding: .26rem .72rem;
+  border-radius: 999px;
+  border: 1px solid var(--rule);
+  background: color-mix(in srgb, var(--ink-800) 50%, transparent);
+  color: var(--text-dim);
+  transition: border-color var(--transition), color var(--transition), background var(--transition);
+}
+.keyword-upright {
+  border-color: color-mix(in srgb, var(--gold-300) 38%, transparent);
+  background: color-mix(in srgb, var(--gold-300) 8%, transparent);
+  color: var(--gold-pale);
+}
+.keyword-reversed {
+  border-color: var(--reversed-line);
+  background: var(--reversed-tint);
+  color: var(--reversed-pale);
+}
 .panel-meaning h4 { font-family: var(--font-accent); font-size: .6rem; letter-spacing: .2em; color: var(--gold-dim); text-transform: uppercase; margin-bottom: .6rem; }
 .panel-meaning p { font-size: 1.05rem; line-height: 1.82; color: var(--text); margin-bottom: 1rem; }
 
@@ -1456,6 +1528,9 @@ a:hover { color: var(--gold-pale); }
   width: 100%;
   overflow: visible;
   color: var(--text);
+  /* When a suit tile scrolls the arc into view, keep it clear of the fixed
+     60px navbar (+16px breathing gap). See the .suit-tile click handler. */
+  scroll-margin-top: 76px;
   padding-bottom: .5rem;
 }
 
@@ -1801,6 +1876,20 @@ a:hover { color: var(--gold-pale); }
     filter: brightness(1.06);
   }
   .suit-tile { transition: none; }
+
+  /* Reading + card-detail polish: drop the entrance, flip, and tab-crossfade
+     motion. `animation: none` reverts the staggered reveals to their resting
+     state (opacity 1, no transform) thanks to the `both` fill-mode. The flip
+     still resolves to the card face — it just snaps instead of rotating. */
+  .card-detail-breadcrumb,
+  .card-detail-visual,
+  .card-detail-spotlight-text .page-arch-eyebrow,
+  .card-detail-title,
+  .card-detail-hero-meta,
+  .card-detail-spotlight-text .card-detail-info,
+  .tab-content.active { animation: none; }
+  .spread-card-wrap { animation: none; opacity: 1; }
+  .spread-card-flip { transition: none; }
 }
 
 /* ============================================================

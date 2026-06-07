@@ -64,10 +64,10 @@
 </div><!-- /reading-layout -->
 
 <!-- Card detail panel (fixed overlay) -->
-<div class="card-panel" id="cardPanel" style="display:none">
+<div class="card-panel" id="cardPanel" style="display:none" role="dialog" aria-modal="true" aria-label="Card details">
   <div class="panel-inner">
     <div class="panel-nav">
-      <button class="panel-close" id="panelClose">✕</button>
+      <button class="panel-close" id="panelClose" aria-label="Close card details">✕</button>
     </div>
     <div class="panel-card-visual" id="panelCardVisual"></div>
     <div class="panel-card-info" id="panelCardInfo"></div>
@@ -81,6 +81,7 @@
 const spreads = {{ spreads | tojson }};
 let currentSpread = 'three_card';
 let drawnCards = [];
+let panelLastFocus = null;   // element to restore focus to when the panel closes
 
 /* ── Spread selection → immediate draw ──────────────────── */
 async function drawSpread(key) {
@@ -115,10 +116,21 @@ document.getElementById('newReadingBtn').addEventListener('click', () => {
   setState('selector');
 });
 
-function closePanel() { document.getElementById('cardPanel').style.display = 'none'; }
+function closePanel() {
+  const panel = document.getElementById('cardPanel');
+  if (panel.style.display === 'none') return;
+  panel.style.display = 'none';
+  // Return focus to whatever opened the panel (the clicked card)
+  if (panelLastFocus && document.contains(panelLastFocus)) panelLastFocus.focus();
+  panelLastFocus = null;
+}
 document.getElementById('panelClose').addEventListener('click', closePanel);
 document.getElementById('cardPanel').addEventListener('click', e => {
   if (e.target === document.getElementById('cardPanel')) closePanel();
+});
+// Escape closes the panel from anywhere
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closePanel();
 });
 
 /* ── State machine ──────────────────────────────────────── */
@@ -152,17 +164,25 @@ function renderReading(data) {
     cardEl.innerHTML = `
       <div class="spread-card ${card.reversed ? 'reversed' : ''}"
            style="--card-color: ${card.card_color}; --accent-color: ${card.accent_color}"
-           data-index="${i}">
+           data-index="${i}"
+           role="button" tabindex="0"
+           aria-label="${card.position} — view ${card.name}${card.reversed ? ', reversed' : ''} details">
         <span class="spread-card-num">${i + 1}</span>
-        <div class="spread-card-back"><span class="card-back-symbol">✦</span></div>
-        <div class="spread-card-face">
-          ${card.image_url ? `<img class="spread-card-img" src="${card.image_url}" alt="${card.name}">` : ''}
-          <div class="sc-number">${card.number}</div>
-          ${card.reversed ? '<div class="sc-reversed-badge">Reversed</div>' : ''}
+        <div class="spread-card-flip">
+          <div class="spread-card-back"><span class="card-back-symbol">✦</span></div>
+          <div class="spread-card-face">
+            ${card.image_url ? `<img class="spread-card-img" src="${card.image_url}" alt="${card.name}">` : ''}
+            <div class="sc-number">${card.number}</div>
+            ${card.reversed ? '<div class="sc-reversed-badge">Reversed</div>' : ''}
+          </div>
         </div>
       </div>
     `;
-    cardEl.querySelector('.spread-card').addEventListener('click', () => openCardPanel(i));
+    const sc = cardEl.querySelector('.spread-card');
+    sc.addEventListener('click', () => openCardPanel(i));
+    sc.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openCardPanel(i); }
+    });
     layout.appendChild(cardEl);
   });
 
@@ -242,7 +262,9 @@ function openCardPanel(index) {
     <a href="/card/${card.id}" class="btn btn-outline btn-sm" target="_self">View Full Card →</a>
   `;
 
+  panelLastFocus = document.activeElement;   // remember the card to restore later
   panel.style.display = 'flex';
+  document.getElementById('panelClose').focus();   // move focus into the dialog
 }
 </script>
 {% endblock %}
