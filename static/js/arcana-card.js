@@ -386,7 +386,11 @@ function buildMosaic(cw, ch) {
   function imgFor(card) { return card.image ? 'url("' + card.image + '")' : dataUrl(artSVG(card.id || "fool")); }
 
   /* ---------- timing for the dissolve ---------- */
-  var T1 = 90; // half the image cross-fade (fade out, swap, fade in); tiles stay put
+  var T1 = 90; // legacy image cross-fade timing (kept for reference)
+  // Stardust dissolve: out / reform durations (ms) and the per-frame flying-chip
+  // cap. The cap keeps cost bounded — the bulk of the band rides one cached-bitmap
+  // blit; only EMBER_CAP chips are drawn individually each frame.
+  var DUR_OUT = 240, DUR_IN = 340, EMBER_CAP = 460;
 
   var SCAFFOLD =
     '<canvas class="ac-stars"></canvas>' +
@@ -566,6 +570,10 @@ function buildMosaic(cw, ch) {
     var bandList = [];        // the drawable band tiles for the current size
     var twinkleList = [];     // sparkle subset only (cheap per-frame loop)
     var staticBitmap = null;  // offscreen canvas holding the static mosaic frame
+    var staticBitmapIndex = -1;   // which card index staticBitmap currently holds
+    var embers = [];          // capped flying-chip subset for the stardust dissolve
+    var stardustRaf = null;   // rAF handle for the dissolve loop
+    var inTransition = false; // while true the dissolve owns the canvas (no idle blit)
     var twRaf = null, twRunning = false;
 
     // Decoded-image cache keyed by image URL (covers real art AND the generated
@@ -617,7 +625,19 @@ function buildMosaic(cw, ch) {
         bandList.push(t);
         if (t.tw) twinkleList.push(t);
       }
+      buildEmbers();
       drawMosaic();
+    }
+
+    // Capped, evenly-sampled subset of the band used as the flying "stardust" chips
+    // during navigation. Even sampling spreads them across the whole band so the
+    // disintegration reads everywhere; the bulk is covered by the cached-bitmap
+    // blit. Tile geometry is card-independent, so this is built once per size.
+    function buildEmbers() {
+      embers = [];
+      if (!bandList.length) return;
+      var step = Math.max(1, Math.floor(bandList.length / EMBER_CAP));
+      for (var i = 0; i < bandList.length; i += step) embers.push(bandList[i]);
     }
 
     // Paint the static mosaic frame (all band tesserae) into an offscreen bitmap,
@@ -664,14 +684,16 @@ function buildMosaic(cw, ch) {
           octx.restore();
         }
         staticBitmap = off;
+        staticBitmapIndex = index;
         // Sample sparkle colours straight from the SOURCE image at each tile's
         // position — independent of the rendered tile's alpha/bleed — so the glint
         // is the true local art colour on every card, including narrow-aspect art
         // (the rendered-bitmap read picked up the dark bleed/transparent gaps and
         // produced wrong colours, worst on the most-stretched images).
         sampleSparkColors(img);
-        blitFrame(0);                  // show static frame immediately
-        startTwinkle();
+        // While a stardust dissolve is running it owns the canvas — don't blit the
+        // settled frame or restart the idle twinkle underneath it.
+        if (!inTransition) { blitFrame(0); startTwinkle(); }
       });
     }
 
@@ -871,40 +893,141 @@ function buildMosaic(cw, ch) {
       } catch (e) { /* CustomEvent unsupported — non-fatal */ }
     }
 
-    // Navigation: the tiles stay STATIC — only the picture beneath them swaps.
-    // The front face cross-fades down while the next card's art decodes, then
-    // fades back up once it's ready, so the image appears whole in one frame.
-    // No flying tesserae, no overlay — cheap and smooth.
+    function nowMs() { return (global.performance && global.performance.now) ? global.performance.now() : Date.now(); }
+    function easeOut(p)  { return 1 - Math.pow(1 - p, 3); }
+    function easeInOut(p) { return p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2; }
+
+    // Render one frame of the stardust dissolve onto the mosaic canvas. The bulk
+    // band rides a single cached-bitmap blit (faded + gently scaled); a capped set
+    // of art "embers" are drawn individually, flinging out along their precomputed
+    // scatter vectors (radx/rady + tangential swirl) on the way OUT and converging
+    // back to rest on the way IN. `img` is the source art for the chips.
+    function renderStardust(img, p, phase) {
+      if (!mosaicCanvas) return;
+      var ctx = mosaicCanvas.getContext("2d");
+      var dpr = Math.min(global.devicePixelRatio || 1, 2);
+      var W = mosaicCanvas.width, H = mosaicCanvas.height;
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, W, H);
+
+      var out = phase === "out";
+      // 1) bulk band: the cached static frame, fading + drifting in scale
+      if (staticBitmap && (out || staticBitmapIndex === index)) {
+        var bA = out ? (1 - easeInOut(p)) : easeInOut(p);
+        var bS = out ? (1 + 0.06 * easeOut(p)) : (1 - 0.05 * (1 - easeOut(p)));
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, Math.min(1, bA));
+        ctx.translate(W / 2, H / 2); ctx.scale(bS, bS);
+        ctx.drawImage(staticBitmap, -W / 2, -H / 2);
+        ctx.restore();
+      }
+      // 2) flying art-chips ("stardust")
+      if (img && img.width && embers.length) {
+        var aw = mosaicData.artW, ah = mosaicData.artH, mx = mosaicData.marginX, my = mosaicData.marginY;
+        var sx = img.width / aw, sy = img.height / ah;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        for (var i = 0; i < embers.length; i++) {
+          var t = embers[i];
+          var dly = (out ? t.do : t.di) / 240;               // staggered start (0..~0.5)
+          var lp = Math.max(0, Math.min(1, (p - dly) / (1 - dly)));
+          var le = easeOut(lp);
+          var travel = out ? le : (1 - le);                  // out: rest→scatter; in: scatter→rest
+          var a = t.ho * (out ? (1 - lp) : le);
+          if (a <= 0.01) continue;
+          var ox = (t.radx + t.tanx * 0.4) * travel;
+          var oy = (t.rady + t.tany * 0.4) * travel - 12 * travel;   // a touch of upward rise
+          var sc = 1 - (1 - t.ds) * travel;                  // shrink as it drifts
+          var rot = (t.hr + t.rotJit * 0.5 * travel) * Math.PI / 180;
+          var srcX = (t.left + t.hx - mx) * sx, srcY = (t.top + t.hy - my) * sy;
+          var srcW = t.w * sx, srcH = t.h * sy;
+          if (srcW <= 0 || srcH <= 0) continue;
+          ctx.save();
+          ctx.globalAlpha = Math.max(0, Math.min(1, a));
+          ctx.translate(t.left + t.hx + t.w / 2 + ox, t.top + t.hy + t.h / 2 + oy);
+          ctx.rotate(rot); ctx.scale(sc, sc);
+          ctx.drawImage(img, Math.max(0, srcX), Math.max(0, srcY), srcW, srcH, -t.w / 2, -t.h / 2, t.w, t.h);
+          ctx.restore();
+        }
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    // Navigation: STARDUST DISSOLVE & REFORM. The edge band breaks into drifting
+    // tesserae and the continuous centre cross-fades out; then the incoming card's
+    // band reassembles from scattered chips while its centre fades in. Canvas-only
+    // and bounded to EMBER_CAP chips/frame, so it stays smooth.
     function dissolve(target, dir) {
       if (busy || target === index) return;
       if (reduce || !size.cw) { setCard(target); flipped = false; updateFlip(); updateHint(); return; }
       busy = true; flipped = false; updateFlip(); setDisabled();
       clearTimers();
+      if (stardustRaf) { cancelAnimationFrame(stardustRaf); stardustRaf = null; }
+      inTransition = true;
+      setAnimPaused(true);                            // stop idle twinkle; our rAF owns the canvas
 
-      setAnimPaused(true);                            // freeze sparkles for the swap
-      flipEl.style.transition = "opacity " + T1 + "ms ease";
-      flipEl.style.opacity = "0";
-
-      var finished = false;
-      function finish() {
-        if (finished) return;
-        finished = true;
-        setCard(target);                              // swaps --img on core + tiles
-        flipEl.style.opacity = "1";
-        preloadCard(nextI()); preloadCard(prevI());   // warm the neighbours
-        timers.push(setTimeout(function () {
-          flipEl.style.transition = "";
-          busy = false; setDisabled(); applyTilt();
-          setAnimPaused(false);                       // resume sparkles once settled
-        }, T1 + 20));
+      // Centre (continuous art) cross-fades out beneath the shattering band.
+      if (coreEl) {
+        coreEl.style.transition = "opacity " + DUR_OUT + "ms ease, transform " + DUR_OUT + "ms ease";
+        coreEl.style.opacity = "0";
+        coreEl.style.transform = "scale(1.05)";
       }
 
-      var ready = preloadCard(target);
-      var faded = new Promise(function (res) { timers.push(setTimeout(res, T1)); });
-      Promise.all([ready, faded]).then(finish);
-      // Safety net: never let `busy` get stuck if the image decode stalls/rejects
-      // (a hung promise would otherwise freeze all navigation permanently).
-      timers.push(setTimeout(finish, T1 + 400));
+      var outImg = null;
+      currentImg().then(function (im) { outImg = im; });
+
+      var t0 = nowMs();
+      (function outFrame() {
+        var p = Math.min(1, (nowMs() - t0) / DUR_OUT);
+        renderStardust(outImg, p, "out");
+        if (p < 1 && busy) stardustRaf = requestAnimationFrame(outFrame);
+        else phaseIn();
+      })();
+
+      function phaseIn() {
+        setCard(target);                              // swaps --img + rebuilds staticBitmap (silently)
+        preloadCard(nextI()); preloadCard(prevI());   // warm neighbour decode (nav cache)
+        // Warm the decoded-image cache for neighbours so their stardust is instant too.
+        var nc = cards[nextI()], pc = cards[prevI()];
+        if (nc && nc.image) getDecodedImg(nc.image);
+        if (pc && pc.image) getDecodedImg(pc.image);
+
+        if (coreEl) {
+          coreEl.style.transition = "none";
+          coreEl.style.opacity = "0";
+          coreEl.style.transform = "scale(0.97)";
+          void coreEl.offsetWidth;                    // commit the reset before animating in
+          coreEl.style.transition = "opacity " + DUR_IN + "ms ease, transform " + DUR_IN + "ms ease";
+          coreEl.style.opacity = "1";
+          coreEl.style.transform = "scale(1)";
+        }
+
+        var inImg = null;
+        currentImg().then(function (im) { inImg = im; });
+
+        var t1 = nowMs();
+        (function inFrame() {
+          var p = Math.min(1, (nowMs() - t1) / DUR_IN);
+          renderStardust(inImg, p, "in");
+          if (p < 1 && busy) stardustRaf = requestAnimationFrame(inFrame);
+          else finish();
+        })();
+      }
+
+      function finish() {
+        if (stardustRaf) { cancelAnimationFrame(stardustRaf); stardustRaf = null; }
+        if (coreEl) { coreEl.style.transition = ""; coreEl.style.transform = ""; coreEl.style.opacity = ""; }
+        inTransition = false;
+        busy = false; setDisabled(); applyTilt();
+        setAnimPaused(false);                         // resume idle twinkle on the settled card
+      }
+
+      // Safety net: never strand busy/inTransition if a decode stalls.
+      timers.push(setTimeout(function () {
+        if (!busy) return;
+        if (stardustRaf) { cancelAnimationFrame(stardustRaf); stardustRaf = null; }
+        setCard(target);
+        finish();
+      }, DUR_OUT + DUR_IN + 800));
     }
 
     function initStars() {
@@ -977,6 +1100,14 @@ function buildMosaic(cw, ch) {
     // first paint
     setCard(index); applySize(); buildRest(); applyTilt(); updateHint();
     initStars(); observeSize();
+
+    // Warm the DECODED-image cache for the immediate neighbours (separate from the
+    // nav preload cache) so the very first stardust dissolve has its chips ready.
+    (function () {
+      var nc = cards[nextI()], pc = cards[prevI()];
+      if (nc && nc.image) getDecodedImg(nc.image);
+      if (pc && pc.image) getDecodedImg(pc.image);
+    })();
 
     // Warm the cache: decode the immediate neighbours now (so the first nav is
     // instant), then lazily decode the rest of the deck in the background.

@@ -1,6 +1,6 @@
 import os
 import random
-from flask import Flask, render_template, jsonify, request, abort
+from flask import Flask, render_template, jsonify, request, abort, url_for
 from data.tarot_data import (
     ALL_CARDS, MAJOR_ARCANA, SPREADS,
     get_card_by_id, get_cards_by_suit, get_major_arcana, get_minor_arcana,
@@ -87,8 +87,6 @@ def get_card_video_url(card):
     return ''
 
 app.jinja_env.globals['get_card_video_url'] = get_card_video_url
-
-
 
 # Homepage hero variants. 'architectural' (index.html) is the canonical,
 # production design. 'cardfirst' / 'editorial' are dev-only experiments that are
@@ -208,6 +206,7 @@ def api_reading():
     for i, card in enumerate(drawn):
         img_filename = get_card_image_filename(card)
         image_url = '' if img_filename == 'images/card-placeholder.svg' else f'/static/{img_filename}'
+        pos = spread['positions'][i]
         result_cards.append({
             'id': card['id'],
             'name': card['name'],
@@ -224,7 +223,8 @@ def api_reading():
             'card_color': card['card_color'],
             'accent_color': card['accent_color'],
             'reversed': random.random() < 0.35,
-            'position': spread['positions'][i],
+            'position': pos['name'],
+            'position_meaning': pos['meaning'],
             'image_url': image_url,
         })
 

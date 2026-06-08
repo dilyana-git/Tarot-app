@@ -1319,37 +1319,65 @@ PENTACLES = [
 MINOR_ARCANA = WANDS + CUPS + SWORDS + PENTACLES
 
 # ── SPREADS ───────────────────────────────────────────────────────────────────
+# Each spread's `positions` is an ordered list of {name, meaning} dicts. The ORDER
+# is load-bearing: app.py indexes positions[i] for the i-th drawn card, and the
+# CSS geometry (.spread-<key> in style.css) maps each card to a board cell by its
+# nth-child index. Reordering here silently reshuffles the on-screen layout.
 SPREADS = {
     'single': {
         'name': 'Single Card',
         'description': 'A single card drawn for daily guidance or a quick answer.',
-        'positions': ['The Message']
+        'positions': [
+            {'name': 'The Message', 'meaning': 'The single insight the cards offer for your question right now.'},
+        ]
     },
     'three_card': {
         'name': 'Three Card Spread',
         'description': 'Illuminates the past influences, present situation, and future potential.',
-        'positions': ['Past', 'Present', 'Future']
+        'positions': [
+            {'name': 'Past', 'meaning': 'Influences and events that shaped the present situation.'},
+            {'name': 'Present', 'meaning': 'The heart of the matter as it stands today.'},
+            {'name': 'Future', 'meaning': 'The likely direction if the present course holds.'},
+        ]
     },
     'celtic_cross': {
         'name': 'Celtic Cross',
         'description': 'A comprehensive 10-card spread offering deep insight into any situation.',
         'positions': [
-            'The Present', 'The Challenge', 'The Foundation', 'The Recent Past',
-            'The Crown', 'The Near Future', 'Your Influence', 'External Influences',
-            'Hopes & Fears', 'The Outcome'
+            {'name': 'The Present', 'meaning': 'The heart of the matter — where you stand now.'},
+            {'name': 'The Challenge', 'meaning': 'The obstacle or tension crossing your path.'},
+            {'name': 'The Foundation', 'meaning': 'The root cause lying beneath the situation.'},
+            {'name': 'The Recent Past', 'meaning': 'Events just behind you, now receding.'},
+            {'name': 'The Crown', 'meaning': 'What you aspire to, or what may come to light.'},
+            {'name': 'The Near Future', 'meaning': 'What approaches in the coming days or weeks.'},
+            {'name': 'Your Influence', 'meaning': 'How you see yourself and your role here.'},
+            {'name': 'External Influences', 'meaning': 'People and forces around you shaping events.'},
+            {'name': 'Hopes & Fears', 'meaning': 'What you most wish for — and most dread.'},
+            {'name': 'The Outcome', 'meaning': 'Where the present path ultimately leads.'},
         ]
     },
     'five_card': {
         'name': 'Five Card Cross',
         'description': 'Explores the core situation, obstacles, advice, foundation, and likely outcome.',
-        'positions': ['The Situation', 'The Challenge', 'The Foundation', 'The Advice', 'The Outcome']
+        'positions': [
+            {'name': 'The Situation', 'meaning': 'The core of the matter, at its center.'},
+            {'name': 'The Challenge', 'meaning': 'What stands in your way or must be reckoned with.'},
+            {'name': 'The Foundation', 'meaning': 'What underpins and supports the situation.'},
+            {'name': 'The Advice', 'meaning': 'The counsel the cards offer for moving forward.'},
+            {'name': 'The Outcome', 'meaning': 'The most likely result of the present path.'},
+        ]
     },
     'horseshoe': {
         'name': 'Horseshoe Spread',
         'description': 'A seven-card spread examining a situation from multiple angles.',
         'positions': [
-            'The Past', 'The Present', 'Hidden Influences', 'Obstacles',
-            'The Querent', 'Best Course of Action', 'The Outcome'
+            {'name': 'The Past', 'meaning': 'Past influences still echoing in the present.'},
+            {'name': 'The Present', 'meaning': 'Your current circumstances and state of mind.'},
+            {'name': 'Hidden Influences', 'meaning': 'Unseen forces working beneath the surface.'},
+            {'name': 'Obstacles', 'meaning': 'The challenges standing in your way.'},
+            {'name': 'The Querent', 'meaning': 'You — your attitude and role in the matter.'},
+            {'name': 'Best Course of Action', 'meaning': 'The wisest path the cards recommend.'},
+            {'name': 'The Outcome', 'meaning': 'The probable resolution if you heed the cards.'},
         ]
     }
 }

@@ -11,13 +11,20 @@
     <!-- Persistent header -->
     <h1 class="reading-left-title" id="readingLeftTitle">Your Reading</h1>
 
-    <!-- Before draw: subtitle -->
+    <!-- select state: subtitle -->
     <div class="reading-left-panel" id="leftSelector">
       <p class="reading-left-sub">Still your mind, hold your question, and let the cards speak.</p>
     </div>
 
-    <!-- After draw: spread description, new reading button, card legend -->
-    <div class="reading-left-panel" id="leftResult" style="display:none">
+    <!-- intention / loading state: spread description + position preview -->
+    <div class="reading-left-panel" id="leftIntention" hidden>
+      <p class="reading-result-desc" id="intentSpreadDesc"></p>
+      <ol class="reading-positions-preview" id="intentPositions"></ol>
+    </div>
+
+    <!-- result state: question echo, description, new reading button, legend -->
+    <div class="reading-left-panel" id="leftResult" hidden>
+      <p class="reading-asked" id="readingAsked" hidden></p>
       <p class="reading-result-desc" id="resultSpreadDesc"></p>
       <button class="btn btn-outline reading-new-btn" id="newReadingBtn">✦ New Reading</button>
       <div class="reading-legend" id="readingLegend"></div>
@@ -25,11 +32,11 @@
 
   </aside>
 
-  <!-- ── RIGHT: spread selector → cards ────────────────────── -->
+  <!-- ── RIGHT: stage (select → intention → shuffle → board) ── -->
   <main class="reading-right">
 
-    <!-- SELECTOR: spread options + shuffle -->
-    <div class="reading-right-selector" id="rightSelector">
+    <!-- SELECT: spread options -->
+    <div class="reading-right-selector" id="stageSelect">
       <div class="page-arch-eyebrow reading-eyebrow reading-selector-eyebrow">
         <span class="page-arch-rule"></span>
         <span class="page-arch-label">Choose Your Spread</span>
@@ -37,7 +44,10 @@
       </div>
       <div class="spread-options">
         {% for key, spread in spreads.items() %}
-        <button class="spread-option {% if key == 'three_card' %}selected{% endif %}" data-spread="{{ key }}">
+        <button class="spread-option {% if key == 'three_card' %}selected{% endif %}"
+                data-spread="{{ key }}"
+                aria-label="{{ spread.name }}, {{ spread.positions | length }} cards">
+          <span class="spread-glyph spread-glyph-{{ key }}" aria-hidden="true"></span>
           <span class="spread-option-count">{{ spread.positions | length }}</span>
           <span class="spread-option-name">{{ spread.name }}</span>
           <span class="spread-option-desc">{{ spread.description }}</span>
@@ -46,18 +56,56 @@
       </div>
     </div>
 
-    <!-- LOADING -->
-    <div class="reading-loading" id="readingLoading" style="display:none">
-      <div class="loading-cards">
+    <!-- INTENTION: set a question, then shuffle -->
+    <div class="reading-intention" id="stageIntention" hidden>
+      <div class="page-arch-eyebrow reading-eyebrow reading-selector-eyebrow">
+        <span class="page-arch-rule"></span>
+        <span class="page-arch-label">Set Your Intention</span>
+        <span class="page-arch-rule"></span>
+      </div>
+      <p class="intention-spread-name" id="intentionSpreadName"></p>
+
+      <div class="intention-deck" aria-hidden="true">
+        <span class="intention-deck-card"></span>
+        <span class="intention-deck-card"></span>
+        <span class="intention-deck-card"></span>
+      </div>
+
+      <label class="intention-label" for="intentionInput">
+        What would you like guidance on? <span class="intention-optional">optional</span>
+      </label>
+      <textarea class="intention-input" id="intentionInput" rows="2" maxlength="160"
+                placeholder="Hold your question in mind…"></textarea>
+
+      <div class="intention-actions">
+        <button class="btn btn-ghost intention-back" id="intentionBack" type="button">← Choose another spread</button>
+        <button class="btn btn-primary intention-draw" id="intentionDraw" type="button">Shuffle &amp; Reveal ✦</button>
+      </div>
+    </div>
+
+    <!-- SHUFFLE / loading -->
+    <div class="reading-loading" id="readingLoading" hidden>
+      <div class="loading-cards shuffling">
         <div class="loading-card lc1"></div>
         <div class="loading-card lc2"></div>
         <div class="loading-card lc3"></div>
       </div>
-      <p class="loading-text">The cards are being drawn...</p>
+      <p class="loading-text">Shuffling the deck…</p>
     </div>
 
-    <!-- RESULT: cards appear here -->
-    <div class="spread-layout" id="spreadLayout"></div>
+    <!-- ERROR -->
+    <div class="reading-error" id="readingError" hidden>
+      <p class="reading-error-text">The cards could not be drawn just now.</p>
+      <button class="btn btn-outline" id="errorRetry" type="button">↻ Try Again</button>
+    </div>
+
+    <!-- BOARD: cards appear here, face-down -->
+    <div class="reading-board" id="stageBoard" hidden>
+      <div class="board-toolbar">
+        <p class="board-hint" id="boardHint">The cards are turning…</p>
+      </div>
+      <div class="spread-layout" id="spreadLayout"></div>
+    </div>
 
   </main>
 
@@ -77,194 +125,6 @@
 {% endblock %}
 
 {% block scripts %}
-<script>
-const spreads = {{ spreads | tojson }};
-let currentSpread = 'three_card';
-let drawnCards = [];
-let panelLastFocus = null;   // element to restore focus to when the panel closes
-
-/* ── Spread selection → immediate draw ──────────────────── */
-async function drawSpread(key) {
-  currentSpread = key;
-  setState('loading');
-  try {
-    const res = await fetch('/api/reading', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ spread: key }),
-    });
-    if (!res.ok) throw new Error(`Server error ${res.status}`);
-    const data = await res.json();
-    drawnCards = data.cards;
-    renderReading(data);
-  } catch (e) {
-    console.error(e);
-    setState('selector');
-  }
-}
-
-document.querySelectorAll('.spread-option').forEach(opt => {
-  opt.addEventListener('click', () => drawSpread(opt.dataset.spread));
-});
-
-/* ── New Reading ────────────────────────────────────────── */
-document.getElementById('newReadingBtn').addEventListener('click', () => {
-  document.getElementById('spreadLayout').innerHTML = '';
-  document.getElementById('readingLegend').innerHTML = '';
-  document.getElementById('cardPanel').style.display = 'none';
-  document.getElementById('readingLeftTitle').textContent = 'Your Reading';
-  setState('selector');
-});
-
-function closePanel() {
-  const panel = document.getElementById('cardPanel');
-  if (panel.style.display === 'none') return;
-  panel.style.display = 'none';
-  // Return focus to whatever opened the panel (the clicked card)
-  if (panelLastFocus && document.contains(panelLastFocus)) panelLastFocus.focus();
-  panelLastFocus = null;
-}
-document.getElementById('panelClose').addEventListener('click', closePanel);
-document.getElementById('cardPanel').addEventListener('click', e => {
-  if (e.target === document.getElementById('cardPanel')) closePanel();
-});
-// Escape closes the panel from anywhere
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') closePanel();
-});
-
-/* ── State machine ──────────────────────────────────────── */
-function setState(state) {
-  document.getElementById('leftSelector').style.display   = state === 'selector' ? '' : 'none';
-  document.getElementById('leftResult').style.display     = state === 'result'   ? '' : 'none';
-  document.getElementById('rightSelector').style.display  = state === 'selector' ? '' : 'none';
-  document.getElementById('readingLoading').style.display = state === 'loading'  ? 'flex' : 'none';
-}
-
-/* First sentence only — keeps each legend entry to one compact line of meaning */
-function firstSentence(text) {
-  const s = String(text || '').trim();
-  const m = s.match(/^.*?[.!?](?=\s|$)/);
-  return m ? m[0] : s;
-}
-
-/* ── Render reading ─────────────────────────────────────── */
-function renderReading(data) {
-  document.getElementById('readingLeftTitle').textContent = data.spread.name;
-  document.getElementById('resultSpreadDesc').textContent = data.spread.description;
-
-  const layout = document.getElementById('spreadLayout');
-  layout.innerHTML = '';
-  layout.className = 'spread-layout spread-' + currentSpread.replace('_', '-');
-
-  data.cards.forEach((card, i) => {
-    const cardEl = document.createElement('div');
-    cardEl.className = 'spread-card-wrap';
-    cardEl.style.setProperty('--delay', (i * 0.15) + 's');
-    cardEl.innerHTML = `
-      <div class="spread-card ${card.reversed ? 'reversed' : ''}"
-           style="--card-color: ${card.card_color}; --accent-color: ${card.accent_color}"
-           data-index="${i}"
-           role="button" tabindex="0"
-           aria-label="${card.position} — view ${card.name}${card.reversed ? ', reversed' : ''} details">
-        <span class="spread-card-num">${i + 1}</span>
-        <div class="spread-card-flip">
-          <div class="spread-card-back"><span class="card-back-symbol">✦</span></div>
-          <div class="spread-card-face">
-            ${card.image_url ? `<img class="spread-card-img" src="${card.image_url}" alt="${card.name}">` : ''}
-            <div class="sc-number">${card.number}</div>
-            ${card.reversed ? '<div class="sc-reversed-badge">Reversed</div>' : ''}
-          </div>
-        </div>
-      </div>
-    `;
-    const sc = cardEl.querySelector('.spread-card');
-    sc.addEventListener('click', () => openCardPanel(i));
-    sc.addEventListener('keydown', e => {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openCardPanel(i); }
-    });
-    layout.appendChild(cardEl);
-  });
-
-  /* ── Build the numbered legend in the left sidebar ──────── */
-  const legend = document.getElementById('readingLegend');
-  legend.innerHTML = data.cards.map((card, i) => {
-    const meaning = firstSentence(card.reversed ? card.reversed_meaning : card.upright_meaning);
-    const name = card.name + (card.reversed ? ' · Reversed' : '');
-    return `
-      <div class="legend-item" data-index="${i}">
-        <span class="legend-num">${i + 1}</span>
-        <div class="legend-text">
-          <span class="legend-pos">${card.position}</span>
-          <span class="legend-name">${name}</span>
-          <p class="legend-meaning">${meaning}</p>
-        </div>
-      </div>`;
-  }).join('');
-
-  /* Link each legend entry to its card — hovering either highlights the match */
-  legend.querySelectorAll('.legend-item').forEach(item => {
-    const card = layout.querySelector('.spread-card[data-index="' + item.dataset.index + '"]');
-    const on  = () => { item.classList.add('is-linked'); if (card) card.classList.add('is-linked'); };
-    const off = () => { item.classList.remove('is-linked'); if (card) card.classList.remove('is-linked'); };
-    item.addEventListener('mouseenter', on);
-    item.addEventListener('mouseleave', off);
-    if (card) {
-      card.addEventListener('mouseenter', on);
-      card.addEventListener('mouseleave', off);
-    }
-  });
-
-  setState('result');
-
-  setTimeout(() => {
-    document.querySelectorAll('.spread-card').forEach((c, i) => {
-      setTimeout(() => c.classList.add('revealed'), i * 150);
-    });
-  }, 100);
-}
-
-/* ── Card panel ─────────────────────────────────────────── */
-function openCardPanel(index) {
-  const card   = drawnCards[index];
-  const panel  = document.getElementById('cardPanel');
-  const visual = document.getElementById('panelCardVisual');
-  const info   = document.getElementById('panelCardInfo');
-
-  const suitSymbol  = { Wands: '△', Cups: '▽', Swords: '✕', Pentacles: '⊕' };
-  const suitDisplay = card.suit ? (suitSymbol[card.suit] + ' ' + card.suit) : 'Major Arcana';
-  const meaning     = card.reversed ? card.reversed_meaning : card.upright_meaning;
-  const keywords    = card.reversed ? card.keywords_reversed : card.keywords_upright;
-
-  visual.innerHTML = `
-    <div class="panel-card ${card.reversed ? 'reversed' : ''}"
-         style="--card-color: ${card.card_color}; --accent-color: ${card.accent_color}">
-      ${card.image_url ? `<img class="panel-card-img" src="${card.image_url}" alt="${card.name}">` : ''}
-      <div class="panel-card-inner">
-        <div class="panel-card-number">${card.number}</div>
-        <div class="panel-card-suit">${suitDisplay}</div>
-      </div>
-    </div>
-    ${card.reversed ? '<p class="panel-reversed-label">↩ Reversed</p>' : ''}
-  `;
-
-  info.innerHTML = `
-    <p class="panel-position-top">${card.position}</p>
-    <h3 class="panel-card-title">${card.name}</h3>
-    <p class="panel-element">✦ ${card.element} · ${card.arcana === 'major' ? 'Major Arcana' : card.suit}</p>
-    <div class="panel-keywords">
-      ${keywords.map(k => `<span class="keyword-tag ${card.reversed ? 'keyword-reversed' : 'keyword-upright'}">${k}</span>`).join('')}
-    </div>
-    <div class="panel-meaning">
-      <h4>${card.reversed ? '↩ Reversed' : '☝ Upright'} Meaning</h4>
-      <p>${meaning}</p>
-    </div>
-    <a href="/card/${card.id}" class="btn btn-outline btn-sm" target="_self">View Full Card →</a>
-  `;
-
-  panelLastFocus = document.activeElement;   // remember the card to restore later
-  panel.style.display = 'flex';
-  document.getElementById('panelClose').focus();   // move focus into the dialog
-}
-</script>
+<script>window.SPREADS = {{ spreads | tojson }};</script>
+<script src="{{ url_for('static', filename='js/reading.js') }}"></script>
 {% endblock %}
