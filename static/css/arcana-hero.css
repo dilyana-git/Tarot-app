@@ -1,7 +1,7 @@
 /* ============================================================
    ARCANA — Architectural Hero (Direction A)
    Drop-in stylesheet for index.html's <section class="arcana-hero">.
-   Pairs with static/js/arcana-hero.js.
+   Pairs with static/js/arcana-hero-mosaic.js.
 
    Scoped under .arcana-hero so it composes cleanly with the
    sitewide style.css (which already provides the page chrome,

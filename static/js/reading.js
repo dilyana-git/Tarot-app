@@ -53,7 +53,6 @@
   let currentSpread = 'three_card';
   let question = '';
   let drawnCards = [];
-  let revealedCount = 0;
   let panelLastFocus = null;
 
   /* ── helpers ─────────────────────────────────────────────── */
@@ -144,7 +143,6 @@
   /* ── 3 · render the board (all cards start face-down) ─────── */
   function renderReading(data) {
     drawnCards = data.cards;
-    revealedCount = 0;
 
     els.leftTitle.textContent = data.spread.name;
     els.resultDesc.textContent = data.spread.description;
@@ -210,7 +208,6 @@
   function revealCard(i, sc) {
     if (sc.classList.contains('revealed')) return;
     sc.classList.add('revealed');
-    revealedCount++;
 
     const card = drawnCards[i];
     sc.setAttribute('aria-label',
@@ -335,7 +332,7 @@
 
   /* ── 7 · new reading (back to the start) ─────────────────── */
   function newReading() {
-    drawnCards = []; revealedCount = 0; question = '';
+    drawnCards = []; question = '';
     els.layout.innerHTML = '';
     els.legend.innerHTML = '';
     els.panel.style.display = 'none';
