@@ -952,82 +952,43 @@ function buildMosaic(cw, ch) {
       ctx.globalAlpha = 1;
     }
 
-    // Navigation: STARDUST DISSOLVE & REFORM. The edge band breaks into drifting
-    // tesserae and the continuous centre cross-fades out; then the incoming card's
-    // band reassembles from scattered chips while its centre fades in. Canvas-only
-    // and bounded to EMBER_CAP chips/frame, so it stays smooth.
+    // Navigation: a clean opacity CROSS-FADE. The card fades out, the next card's
+    // art + mosaic are swapped in beneath the fade, then it fades back up — no
+    // flying tesserae, no edge-to-centre reform. `dir` is unused (the fade is
+    // symmetric). The stardust helpers above (renderStardust/buildEmbers) are now
+    // unused; left in place so the effect can be revived without rewriting it.
     function dissolve(target, dir) {
       if (busy || target === index) return;
       if (reduce || !size.cw) { setCard(target); flipped = false; updateFlip(); updateHint(); return; }
       busy = true; flipped = false; updateFlip(); setDisabled();
       clearTimers();
-      if (stardustRaf) { cancelAnimationFrame(stardustRaf); stardustRaf = null; }
-      inTransition = true;
-      setAnimPaused(true);                            // stop idle twinkle; our rAF owns the canvas
 
-      // Centre (continuous art) cross-fades out beneath the shattering band.
-      if (coreEl) {
-        coreEl.style.transition = "opacity " + DUR_OUT + "ms ease, transform " + DUR_OUT + "ms ease";
-        coreEl.style.opacity = "0";
-        coreEl.style.transform = "scale(1.05)";
-      }
+      var FADE = 200;                                 // cross-fade duration (ms)
+      setAnimPaused(true);                            // freeze idle twinkle for the swap
+      flipEl.style.transition = "opacity " + FADE + "ms ease";
+      flipEl.style.opacity = "0";
 
-      var outImg = null;
-      currentImg().then(function (im) { outImg = im; });
-
-      var t0 = nowMs();
-      (function outFrame() {
-        var p = Math.min(1, (nowMs() - t0) / DUR_OUT);
-        renderStardust(outImg, p, "out");
-        if (p < 1 && busy) stardustRaf = requestAnimationFrame(outFrame);
-        else phaseIn();
-      })();
-
-      function phaseIn() {
-        setCard(target);                              // swaps --img + rebuilds staticBitmap (silently)
-        preloadCard(nextI()); preloadCard(prevI());   // warm neighbour decode (nav cache)
-        // Warm the decoded-image cache for neighbours so their stardust is instant too.
-        var nc = cards[nextI()], pc = cards[prevI()];
-        if (nc && nc.image) getDecodedImg(nc.image);
-        if (pc && pc.image) getDecodedImg(pc.image);
-
-        if (coreEl) {
-          coreEl.style.transition = "none";
-          coreEl.style.opacity = "0";
-          coreEl.style.transform = "scale(0.97)";
-          void coreEl.offsetWidth;                    // commit the reset before animating in
-          coreEl.style.transition = "opacity " + DUR_IN + "ms ease, transform " + DUR_IN + "ms ease";
-          coreEl.style.opacity = "1";
-          coreEl.style.transform = "scale(1)";
-        }
-
-        var inImg = null;
-        currentImg().then(function (im) { inImg = im; });
-
-        var t1 = nowMs();
-        (function inFrame() {
-          var p = Math.min(1, (nowMs() - t1) / DUR_IN);
-          renderStardust(inImg, p, "in");
-          if (p < 1 && busy) stardustRaf = requestAnimationFrame(inFrame);
-          else finish();
-        })();
-      }
-
+      var finished = false;
       function finish() {
-        if (stardustRaf) { cancelAnimationFrame(stardustRaf); stardustRaf = null; }
-        if (coreEl) { coreEl.style.transition = ""; coreEl.style.transform = ""; coreEl.style.opacity = ""; }
-        inTransition = false;
-        busy = false; setDisabled(); applyTilt();
-        setAnimPaused(false);                         // resume idle twinkle on the settled card
+        if (finished) return;
+        finished = true;
+        setCard(target);                              // swap the card art + mosaic beneath the fade
+        flipEl.style.opacity = "1";
+        preloadCard(nextI()); preloadCard(prevI());   // warm the neighbours
+        timers.push(setTimeout(function () {
+          flipEl.style.transition = "";
+          busy = false; setDisabled(); applyTilt();
+          setAnimPaused(false);                       // resume idle twinkle once settled
+        }, FADE + 20));
       }
 
-      // Safety net: never strand busy/inTransition if a decode stalls.
-      timers.push(setTimeout(function () {
-        if (!busy) return;
-        if (stardustRaf) { cancelAnimationFrame(stardustRaf); stardustRaf = null; }
-        setCard(target);
-        finish();
-      }, DUR_OUT + DUR_IN + 800));
+      // Swap only once BOTH the fade-out has played AND the target art is decoded,
+      // so the new card appears whole in one frame instead of streaming in.
+      var ready = preloadCard(target);
+      var faded = new Promise(function (res) { timers.push(setTimeout(res, FADE)); });
+      Promise.all([ready, faded]).then(finish);
+      // Safety net: never strand `busy` if a decode stalls or rejects.
+      timers.push(setTimeout(finish, FADE + 500));
     }
 
     function initStars() {
