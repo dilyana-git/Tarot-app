@@ -131,6 +131,11 @@
 
 .arcana .edge{position:absolute; inset:6px; border:1px solid rgba(215,180,90,.32); border-radius:9px; pointer-events:none; z-index:6; box-shadow:inset 0 0 0 1px rgba(0,0,0,.4), inset 0 0 36px rgba(0,0,0,.5);}
 
+/* During a card swap (.is-shifting, toggled by JS) the card's own text plates
+   fade out and back in with the cross-fade. */
+.arcana .numeral,.arcana .plate{transition:opacity .24s ease;}
+.arcana.is-shifting .numeral,.arcana.is-shifting .plate{opacity:0;}
+
 
 .arcana .back-glow{position:absolute; inset:0; pointer-events:none; background:radial-gradient(80% 60% at 50% 28%, rgba(215,180,90,.10), transparent 70%);}
 
@@ -197,10 +202,9 @@
      tile (×~1500) was a real compositing/memory drain. */
   box-shadow:inset 0 0 0 .5px rgba(0,0,0,.1);}
 
-/* Slight brightness lift on the central image so it matches the mosaic band
-   (the band tiles aren't edge-masked, so they read marginally brighter). Kept
-   small now that the core feather is tied to the actual band depth. */
-.arcana.arcana-bare .art-core{filter:brightness(1.06);}
+/* No brightness lift on the core: the inner band tiles are now pixel-aligned,
+   fully-opaque continuations of the image, so any core/tile brightness delta
+   would draw a visible seam where the band begins. */
 
 /* Catch-light per tile removed for performance: with ~2000 tiles, a `::before`
    with mix-blend-mode:screen on each forces the whole mosaic layer to repaint and

@@ -499,6 +499,12 @@
   opacity: 0;
 }
 
+/* While the card dissolves, the text column dips out so the copy swap happens
+   invisibly inside the transition (class toggled by the same widget events
+   that pause the sparkles). */
+.arcana-hero .text-stack { transition: opacity .32s ease; }
+.arcana-hero.is-transitioning .text-stack { opacity: 0; }
+
 @media (prefers-reduced-motion: reduce) {
   .arcana-hero .hero-spark,
   .arcana-hero .hero-drift { animation: none; opacity: 0; }

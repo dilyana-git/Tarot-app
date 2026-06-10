@@ -213,12 +213,16 @@
 
     // Freeze the background sparkles during a card transition (the widget fires
     // these events) so they don't compete with the image swap for the main
-    // thread. Resume once the new card has settled.
+    // thread, and dip the text column out so its copy swap hides inside the
+    // dissolve. Resume / restore once the new card has settled.
+    var heroRoot = document.querySelector('.arcana-hero');
     document.addEventListener('arcana:transition-start', function () {
       field.classList.add('is-paused');
+      if (heroRoot) heroRoot.classList.add('is-transitioning');
     });
     document.addEventListener('arcana:transition-end', function () {
       field.classList.remove('is-paused');
+      if (heroRoot) heroRoot.classList.remove('is-transitioning');
     });
   })();
 

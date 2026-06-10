@@ -194,14 +194,31 @@ const dataUrl = (svg) => `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
 // stays intact; the dissolve band lives in the margin and the art's edge, never
 // eating into the centre. EDGE_RINGS is how deep (past the margin) the crumble
 // reaches back toward the solid core.
-// PERFORMANCE: EDGE_RINGS is the crumble band DEPTH in cells. Keep it small — a
-// large value turns nearly the whole card into "band" (thousands of drawn tiles
-// at rest + thousands of animated DOM nodes per nav), which is what caused the
-// slowdown. A thin rim (≈5 cells) reads as an edge dissolve and stays cheap.
-const COLS = 125, ROWS = 184, GAP = 0.25, MARGIN_RINGS = 10, EDGE_RINGS = 28;
+// PERFORMANCE: EDGE_RINGS is the crumble band DEPTH in cells. The band renders
+// to a cached offscreen bitmap (renderBand), so the tile count costs raster
+// time at idle/prime, not per frame — but keep growth in check: COLS×ROWS
+// scales the render quadratically. The grid is deliberately FINE so the edge
+// crumbles into small, numerous fragments; MARGIN/EDGE ring counts are scaled
+// with it to keep the same physical margin and band depth.
+const COLS = 145, ROWS = 213, GAP = 0.25, MARGIN_RINGS = 12, EDGE_RINGS = 32;
 // Background tone the eroding edge fragments bleed toward (matches the page's
 // deep ink radial), so the rim dissolves into the scene's colour.
 const BLEED_BG = "#08070f";
+// Coherent value-noise (shared by the rest-state band AND the dissolve
+// transition grid): a smooth, clumpy field in [0,1] for organic variation.
+function hash2(ix, iy) {
+  let h = (ix * 374761393 + iy * 668265263) >>> 0;
+  h = (h ^ (h >>> 13)) * 1274126177 >>> 0;
+  return (h >>> 0) / 4294967296;
+}
+function vnoise(x, y) {
+  const x0 = Math.floor(x), y0 = Math.floor(y), fx = x - x0, fy = y - y0;
+  const sx = fx * fx * (3 - 2 * fx), sy = fy * fy * (3 - 2 * fy);
+  const n00 = hash2(x0, y0), n10 = hash2(x0 + 1, y0);
+  const n01 = hash2(x0, y0 + 1), n11 = hash2(x0 + 1, y0 + 1);
+  const nx0 = n00 + (n10 - n00) * sx, nx1 = n01 + (n11 - n01) * sx;
+  return nx0 + (nx1 - nx0) * sy;
+}
 function buildMosaic(cw, ch) {
   if (!cw || !ch) return { tiles: [], cellW: 0, cellH: 0, marginX: 0, marginY: 0, artW: 0, artH: 0 };
   const cellW = cw / COLS, cellH = ch / ROWS;
@@ -217,23 +234,8 @@ function buildMosaic(cw, ch) {
   const cx = cw / 2, cy = ch / 2, maxD = Math.hypot(cw, ch) / 2;
   const r = rng(2025);
 
-  // Coherent value-noise over the grid: a smooth, clumpy field in [0,1] so the
-  // dissolve gets ORGANIC density variation — dense patches, thin ragged gaps —
-  // instead of a uniform border. Two octaves at different scales add detail.
-  function hash2(ix, iy) {
-    let h = (ix * 374761393 + iy * 668265263) >>> 0;
-    h = (h ^ (h >>> 13)) * 1274126177 >>> 0;
-    return (h >>> 0) / 4294967296;
-  }
-  function vnoise(x, y) {
-    const x0 = Math.floor(x), y0 = Math.floor(y), fx = x - x0, fy = y - y0;
-    const sx = fx * fx * (3 - 2 * fx), sy = fy * fy * (3 - 2 * fy);
-    const n00 = hash2(x0, y0), n10 = hash2(x0 + 1, y0);
-    const n01 = hash2(x0, y0 + 1), n11 = hash2(x0 + 1, y0 + 1);
-    const nx0 = n00 + (n10 - n00) * sx, nx1 = n01 + (n11 - n01) * sx;
-    return nx0 + (nx1 - nx0) * sy;
-  }
-  // patchy density field: big soft clumps + finer grain
+  // patchy density field over the grid (two noise octaves): dense patches and
+  // thin ragged gaps so the band erodes organically instead of uniformly
   function densityNoise(col, row) {
     return 0.65 * vnoise(col / 7.5, row / 7.5) + 0.35 * vnoise(col / 2.6, row / 2.6);
   }
@@ -257,50 +259,56 @@ function buildMosaic(cw, ch) {
       const warp = (n - 0.5) * 0.95;                 // ± shifts the band edge in/out (raised for a more ragged, dramatic crumble)
       const t = tRaw - warp;                         // warped depth; >1 ⇒ solid core
       const inBand = t < 1, inBridge = t >= 1 && t < 1.1;
+      const tC = Math.max(0, Math.min(1, t));        // clamped band depth
+      // DISORDER IS EARNED BY DEPTH: tiles over the still-solid core must be
+      // pixel-aligned, full-size and opaque — indistinguishable continuations
+      // of the artwork — or they read as a SEPARATE LAYER floating on the
+      // image. Rotation, jitter, gaps and mottling ramp in (smoothstepped)
+      // only as the core fades away beneath, so the picture itself appears to
+      // loosen, granulate and crumble the further out it goes.
+      const dis = 1 - tC;
+      const disT = dis * dis * (3 - 2 * dis);        // smoothstep: calm inside, wild at the rim
       let omit = false, ho = 1, hx = 0, hy = 0, hr = 0, ringBand = inBand || inBridge;
       if (inBand) {
         // Survival blends band-depth with the noise patch: dense clumps (high n)
         // stay packed, thin patches (low n) shed many tiles → ragged, varied edge
-        // that erodes organically instead of fading like a clean frame.
-        const pSurv = Math.min(1, 0.32 + Math.pow(Math.max(0, t), 0.8) * 1.0 + (n - 0.5) * 0.55);
+        // that erodes organically instead of fading like a clean frame. The base
+        // is raised so the finer grid keeps a DENSE, populous rim.
+        const pSurv = Math.min(1, 0.58 + Math.pow(Math.max(0, t), 0.8) * 1.0 + (n - 0.5) * 0.55);
         omit = r() > pSurv;
-        // Opacity varies with depth AND patch + per-tile noise, so brightness is
-        // mottled across the band rather than a uniform sheet.
-        ho = Math.max(0.08, Math.min(1, 0.2 + Math.pow(Math.max(0, t), 0.8) * 0.72 + (n - 0.5) * 0.4 + (r() - 0.5) * 0.22));
-        const j = 1 - Math.max(0, Math.min(1, t));   // outer fragments drift more
-        // ORGANIC #2: stronger, varied rotation so chips read as hand-laid tesserae.
-        // A baseline tilt for ALL band tiles + extra for the drifting outer ones.
-        hx = (r() - 0.5) * 8 * j; hy = (r() - 0.5) * 8 * j;
-        hr = (r() - 0.5) * 14 + (r() - 0.5) * 34 * j;
+        // Opacity mottling (depth + patch + per-tile noise) fades to NONE on the
+        // solid side — inner tiles are fully opaque image, not a darkened sheet.
+        const hoRaw = Math.max(0.08, Math.min(1, 0.2 + Math.pow(Math.max(0, t), 0.8) * 0.72 + (n - 0.5) * 0.4 + (r() - 0.5) * 0.22));
+        ho = 1 - (1 - hoRaw) * disT;
+        // Drift and rotation grow with disorder only — no baseline tilt over the
+        // intact image; outer fragments tumble freely as the core lets go.
+        hx = (r() - 0.5) * 8 * disT; hy = (r() - 0.5) * 8 * disT;
+        hr = ((r() - 0.5) * 14 + (r() - 0.5) * 34) * disT;
       } else if (inBridge) {
-        // ragged bridge: mostly present but noise-thinned, tucking under the crumble
+        // bridge: noise-thinned seam-fillers tucked under the crumble — perfectly
+        // aligned and opaque (any gap shows the identical solid core beneath)
         omit = r() > 0.7 + (n - 0.5) * 0.4;
-        ho = Math.min(1, 0.85 + (r() - 0.5) * 0.22);
-        hx = (r() - 0.5) * 0.8; hy = (r() - 0.5) * 0.8; hr = (r() - 0.5) * 8;
       } else {
-        ho = 1; r(); r(); r(); // keep the sequence aligned for deterministic scatter
+        r(); r(); r(); // keep the sequence aligned for deterministic scatter
       }
       // scatter for the dissolve (direction applied at render)
       const tx = col * cellW + cellW / 2, ty = row * cellH + cellH / 2;
       const vx = tx - cx, vy = ty - cy, dist = Math.max(1, Math.hypot(vx, vy)), dn = dist / maxD;
       const ux = vx / dist, uy = vy / dist, pX = -uy, pY = ux;
       const R = 55 + dn * 80 + r() * 40, Sw = 42 + dn * 66;
-      // VARIABLE TILE SIZE: chips are LARGER toward the inside (t→1) and SMALLER
-      // toward the outer edge (t→0), plus per-tile randomness, so the mosaic
-      // coarsens inward and crumbles into fine fragments at the rim. The chip is
-      // shrunk centred within its cell; bg-position shifts by the same inset so
-      // the art slice it shows stays correctly aligned.
-      const tC = Math.max(0, Math.min(1, t));
-      // Chip size: larger toward the inner band, smaller at the rim. Dialed down a
-      // touch so the tesserae read slightly finer (range ~0.42 at the rim → ~1.05
-      // toward the inner band).
-      const sizeScale = Math.max(0.38, Math.min(1.55, (0.52 + tC * 0.55) + (r() - 0.5) * 0.9));
+      // VARIABLE TILE SIZE: chips fill their cell EXACTLY on the solid side (a
+      // seamless continuation of the image) and crumble into small, varied
+      // fragments toward the rim — size randomness, like every other disorder,
+      // is scaled by disT so it only appears where the core has faded. The chip
+      // is shrunk centred within its cell; bg-position shifts by the same inset
+      // so the art slice it shows stays correctly aligned.
+      const sizeScale = Math.max(0.16, Math.min(1.4, (0.24 + tC * 0.76) + (r() - 0.5) * 0.55 * disT));
       const baseW = cellW - GAP, baseH = cellH - GAP;
-      // ── ORGANIC #2: NON-SQUARE chips. Vary width and height INDEPENDENTLY so the
-      // tesserae aren't all uniform squares — they read as hand-cut chips. The
-      // source slice scales to fill, so a little aspect variance is just character.
-      const arW = 1 + (r() - 0.5) * 0.9;   // ±45% width
-      const arH = 1 + (r() - 0.5) * 0.9;   // ±45% height
+      // ── ORGANIC #2: NON-SQUARE chips. Vary width and height INDEPENDENTLY so
+      // rim tesserae read as hand-cut chips; aligned inner tiles stay square so
+      // they tile the image invisibly.
+      const arW = 1 + (r() - 0.5) * 0.9 * disT;   // up to ±45% width at the rim
+      const arH = 1 + (r() - 0.5) * 0.9 * disT;   // up to ±45% height at the rim
       const tileW = baseW * sizeScale * arW, tileH = baseH * sizeScale * arH;
       const insetX = (baseW - tileW) / 2, insetY = (baseH - tileH) / 2;
       // ── ORGANIC #1: BREAK THE SQUARE LATTICE with 2D positional jitter only.
@@ -310,7 +318,7 @@ function buildMosaic(cw, ch) {
       // dissolve looks the same top, bottom, left and right. The jitter is applied
       // to tileLeft/tileTop AND bg-position derives from them, so the image slice
       // stays aligned to where the chip sits — no smearing.
-      const jAmt = 0.55 * (1 - tC * 0.5);    // rim jitters more than the inner band
+      const jAmt = 0.55 * disT;              // zero over the intact image → rim max
       const jx = (r() - 0.5) * cellW * jAmt;
       const jy = (r() - 0.5) * cellH * jAmt;
       const tileLeft = col * cellW + GAP / 2 + insetX + jx;
@@ -326,6 +334,9 @@ function buildMosaic(cw, ch) {
         // where the chip sits (including the size-inset shift).
         bgx: +(marginX - tileLeft).toFixed(2), bgy: +(marginY - tileTop).toFixed(2),
         ho: +ho.toFixed(2), hx: +hx.toFixed(1), hy: +hy.toFixed(1), hr: +hr.toFixed(1),
+        // clamped band depth (0 = card rim → 1 = inner band): used to pick the
+        // idle "shedding" rim tiles and scale their drift
+        bandT: +tC.toFixed(3),
         // ORGANIC #6: edge colour BLEED — the outermost fragments (t→0) get tinted
         // toward the dark background so they dissolve into the scene's colour, not
         // just fade alpha. 0 at the inner band → up to ~0.6 at the very rim.
@@ -563,7 +574,9 @@ function buildMosaic(cw, ch) {
     // glint squares over the (cached) static frame — pausable during transitions.
     var bandList = [];        // the drawable band tiles for the current size
     var twinkleList = [];     // sparkle subset only (cheap per-frame loop)
+    var shedList = [];        // rim tiles drawn DYNAMICALLY: the idle dissolve
     var staticBitmap = null;  // offscreen canvas holding the static mosaic frame
+    var curArtImg = null;     // decoded art for the current card (shed slices)
     var twRaf = null, twRunning = false;
 
     // Decoded-image cache keyed by image URL (covers real art AND the generated
@@ -587,12 +600,13 @@ function buildMosaic(cw, ch) {
       mosaicImgCache[url] = p;
       return p;
     }
-    function currentImg() {
-      // imgFor() returns the card art URL, or a data: URL for the placeholder.
-      var raw = imgFor(cards[index]);            // e.g.  url("....")
+    function cardImgUrl(card) {
+      // imgFor() returns css url(...) — for real art OR the generated placeholder.
+      var raw = imgFor(card);
       var m = /url\(["']?([^"')]+)["']?\)/.exec(raw);
-      return getDecodedImg(m ? m[1] : raw);
+      return m ? m[1] : raw;
     }
+    function currentImg() { return getDecodedImg(cardImgUrl(cards[index])); }
 
     function sizeCanvas() {
       if (!mosaicCanvas) return 1;
@@ -606,20 +620,120 @@ function buildMosaic(cw, ch) {
 
     // Collect the band tiles once per (size) build. `twinkleList` is the small
     // sparkle subset so the per-frame loop iterates ~hundreds, not ~thousands.
+    // A sparse, evenly-spread subset of RIM tiles becomes `shedList`: excluded
+    // from the static frame and drawn dynamically instead — each slowly
+    // detaches, drifts a few px outward and fades before re-forming, so the
+    // showcased card is PERPETUALLY dissolving at its edge. Selection uses
+    // existing per-tile randoms (rotJit) so the rng sequence stays untouched.
+    var SHED_MAX = 1400;
     function buildRest() {
       bandList = [];
       twinkleList = [];
-      for (var i = 0; i < mosaicData.tiles.length; i++) {
-        var t = mosaicData.tiles[i];
-        if (t.omit || !t.band) continue;
+      shedList = [];
+      var all = mosaicData.tiles, cand = [], i, t;
+      if (!reduce) {
+        for (i = 0; i < all.length; i++) {
+          t = all[i];
+          t.isShed = false;
+          if (t.omit || !t.band) continue;
+          if (t.bandT < 0.55 && Math.abs(t.rotJit) < 20) cand.push(t);
+        }
+        // stride-pick so the shed tiles spread around the whole rim instead of
+        // exhausting the cap in the first rows
+        var stride = Math.max(1, Math.floor(cand.length / SHED_MAX));
+        for (i = 0; i < cand.length && shedList.length < SHED_MAX; i += stride) {
+          t = cand[i];
+          t.isShed = true;
+          // outward drift direction + reach (rim tiles travel a touch farther),
+          // with a faint upward "ember" bias; phase/period from existing randoms
+          var cxp = t.left + t.hx + t.w / 2, cyp = t.top + t.hy + t.h / 2;
+          var vx = cxp - size.cw / 2, vy = cyp - size.ch / 2;
+          var d = Math.max(1, Math.hypot(vx, vy));
+          var reach = 8 + (1 - t.bandT) * 34;
+          t.shDx = (vx / d) * reach;
+          t.shDy = (vy / d) * reach - 4;
+          t.shPhase = -t.lt / 5;                                  // 0..1
+          t.shPeriod = 7000 + ((t.ds - 0.3) / 0.22) * 5000;       // 7–12s
+          shedList.push(t);
+        }
+      }
+      for (i = 0; i < all.length; i++) {
+        t = all[i];
+        if (t.omit || !t.band || t.isShed) continue;
         bandList.push(t);
         if (t.tw) twinkleList.push(t);
       }
       drawMosaic();
     }
 
-    // Paint the static mosaic frame (all band tesserae) into an offscreen bitmap,
-    // then blit it to the visible canvas. Called on size/card change.
+    // Paint one band tessera (a slice of `img`) onto `octx` at its rest slot.
+    function paintBandTile(octx, img, t, sx, sy, mx, my) {
+      // source slice in the decoded image (tile maps to art rect at mx,my)
+      var srcX = (t.left + t.hx - mx) * sx, srcY = (t.top + t.hy - my) * sy;
+      var srcW = t.w * sx, srcH = t.h * sy;
+      if (srcW <= 0 || srcH <= 0) return;
+      octx.save();
+      octx.globalAlpha = t.ho;
+      // tiny rotation about tile centre
+      var cxp = t.left + t.hx + t.w / 2, cyp = t.top + t.hy + t.h / 2;
+      octx.translate(cxp, cyp); octx.rotate(t.hr * Math.PI / 180);
+      octx.drawImage(img,
+        Math.max(0, srcX), Math.max(0, srcY), srcW, srcH,
+        -t.w / 2, -t.h / 2, t.w, t.h);
+      // ORGANIC #6: bleed the outermost fragments toward the background colour
+      // so they dissolve into the scene rather than ending as crisp chips.
+      if (t.bleed > 0.02) {
+        octx.globalAlpha = t.ho * t.bleed;
+        octx.fillStyle = BLEED_BG;
+        octx.fillRect(-t.w / 2, -t.h / 2, t.w, t.h);
+      }
+      octx.restore();
+    }
+
+    // Paint all band tesserae for `img` into an offscreen bitmap — the resting
+    // mosaic frame (the dynamic shed chips stay out; they're drawn per-frame).
+    // EXPENSIVE: thousands of queued draws ≈ hundreds of ms of raster, so the
+    // results are cached per image+size and the neighbours are pre-rendered
+    // during idle (primeBand) — a nav swap then reuses a ready bitmap.
+    var bandCache = {};            // url -> {w, h, bmp}
+    var BAND_CACHE_MAX = 5;
+    function renderBand(img, dpr) {
+      var off = document.createElement("canvas");
+      off.width = mosaicCanvas.width; off.height = mosaicCanvas.height;
+      var octx = off.getContext("2d");
+      octx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      var aw = mosaicData.artW, ah = mosaicData.artH, mx = mosaicData.marginX, my = mosaicData.marginY;
+      var sx = img.width / aw, sy = img.height / ah;   // art-rect → source px scale
+      for (var i = 0; i < bandList.length; i++) paintBandTile(octx, img, bandList[i], sx, sy, mx, my);
+      return off;
+    }
+    function cachedBand(url, img, dpr) {
+      var hit = bandCache[url];
+      if (hit && hit.w === mosaicCanvas.width && hit.h === mosaicCanvas.height) return hit.bmp;
+      var bmp = renderBand(img, dpr);
+      // Canvas raster is lazy: force it NOW (at render/prime time) with a tiny
+      // readback, so the ~15k-draw bill is never deferred into the animation.
+      try { bmp.getContext("2d").getImageData(0, 0, 1, 1); } catch (e) {}
+      var keys = Object.keys(bandCache);
+      if (keys.length >= BAND_CACHE_MAX) delete bandCache[keys[0]];
+      bandCache[url] = { w: mosaicCanvas.width, h: mosaicCanvas.height, bmp: bmp };
+      return bmp;
+    }
+    // Pre-render a card's band bitmap during idle so a nav swap only assembles
+    // ready bitmaps.
+    function primeBand(i) {
+      var url = cardImgUrl(cards[i]);
+      if (!url) return;
+      var hit = bandCache[url];
+      if (hit && hit.w === mosaicCanvas.width && hit.h === mosaicCanvas.height) return;
+      getDecodedImg(url).then(function (img) {
+        if (!img || !img.width) return;
+        cachedBand(url, img, mosaicCanvas.width / Math.max(1, size.cw));
+      });
+    }
+
+    // Render the static mosaic frame for the CURRENT card and blit it to the
+    // visible canvas. Called on size/card change.
     function drawMosaic() {
       if (!mosaicCanvas) return;
       var dpr = sizeCanvas();
@@ -631,37 +745,8 @@ function buildMosaic(cw, ch) {
       if (!imgP) { staticBitmap = null; return; }   // not decoded yet — draw on settle
       imgP.then(function (img) {
         if (!img || !img.width) return;
-        // build offscreen static frame
-        var off = document.createElement("canvas");
-        off.width = mosaicCanvas.width; off.height = mosaicCanvas.height;
-        var octx = off.getContext("2d");
-        octx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        var aw = mosaicData.artW, ah = mosaicData.artH, mx = mosaicData.marginX, my = mosaicData.marginY;
-        var sx = img.width / aw, sy = img.height / ah;   // art-rect → source px scale
-        for (var i = 0; i < bandList.length; i++) {
-          var t = bandList[i];
-          // source slice in the decoded image (tile maps to art rect at mx,my)
-          var srcX = (t.left + t.hx - mx) * sx, srcY = (t.top + t.hy - my) * sy;
-          var srcW = t.w * sx, srcH = t.h * sy;
-          if (srcW <= 0 || srcH <= 0) continue;
-          octx.save();
-          octx.globalAlpha = t.ho;
-          // tiny rotation about tile centre
-          var cxp = t.left + t.hx + t.w / 2, cyp = t.top + t.hy + t.h / 2;
-          octx.translate(cxp, cyp); octx.rotate(t.hr * Math.PI / 180);
-          octx.drawImage(img,
-            Math.max(0, srcX), Math.max(0, srcY), srcW, srcH,
-            -t.w / 2, -t.h / 2, t.w, t.h);
-          // ORGANIC #6: bleed the outermost fragments toward the background colour
-          // so they dissolve into the scene rather than ending as crisp chips.
-          if (t.bleed > 0.02) {
-            octx.globalAlpha = t.ho * t.bleed;
-            octx.fillStyle = BLEED_BG;
-            octx.fillRect(-t.w / 2, -t.h / 2, t.w, t.h);
-          }
-          octx.restore();
-        }
-        staticBitmap = off;
+        curArtImg = img;                       // shed chips slice from this
+        staticBitmap = cachedBand(cardImgUrl(cards[index]), img, dpr);
         // Sample sparkle colours straight from the SOURCE image at each tile's
         // position — independent of the rendered tile's alpha/bleed — so the glint
         // is the true local art colour on every card, including narrow-aspect art
@@ -725,9 +810,60 @@ function buildMosaic(cw, ch) {
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.clearRect(0, 0, mosaicCanvas.width, mosaicCanvas.height);
       ctx.drawImage(staticBitmap, 0, 0);
-      // sparkle overlay — only the .tw subset, opacity driven by a 5s cycle
       var dpr = Math.min(global.devicePixelRatio || 1, 2);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      // ── IDLE DISSOLVE: the shed rim chips. Each cycles slowly: re-materialises
+      // at its slot, drifts outward with a faint rise, WARMS INTO A GOLD EMBER
+      // (so the dissolve reads even where dark art meets the dark page), and
+      // finally EXPIRES AS A SPARKLE — a sharp glint that peaks exactly as the
+      // chip dies, so the card's sparkles are born from the dissolve itself
+      // rather than living on a separate layer. Runs inside the loop that
+      // already drives the twinkle; cost is negligible.
+      if (shedList.length && curArtImg) {
+        var aw = mosaicData.artW, ah = mosaicData.artH;
+        var mx = mosaicData.marginX, my = mosaicData.marginY;
+        var ssx = curArtImg.width / aw, ssy = curArtImg.height / ah;
+        for (var k = 0; k < shedList.length; k++) {
+          var st = shedList[k];
+          var ph = ((ts / st.shPeriod) + st.shPhase) % 1;
+          // envelope: quick fade-in at the slot, long fade-out while drifting
+          var a = st.ho * Math.min(1, ph / 0.12) *
+                  (ph > 0.5 ? Math.max(0, 1 - (ph - 0.5) / 0.45) : 1);
+          // dying glint: peaks at ph≈0.86, just as the art chip expires
+          var g = 1 - Math.abs(ph - 0.86) / 0.12;
+          if (a <= 0.01 && g <= 0) continue;
+          var srcX = (st.left + st.hx - mx) * ssx, srcY = (st.top + st.hy - my) * ssy;
+          var srcW = st.w * ssx, srcH = st.h * ssy;
+          if (srcW <= 0 || srcH <= 0) continue;
+          ctx.translate(st.left + st.hx + st.w / 2 + st.shDx * ph,
+                        st.top + st.hy + st.h / 2 + st.shDy * ph);
+          ctx.rotate(st.hr * Math.PI / 180);
+          var grow = 1 + ph * 0.2;          // the freed chip loosens only slightly
+          if (a > 0.01) {
+            ctx.globalAlpha = a;
+            ctx.drawImage(curArtImg,
+              Math.max(0, srcX), Math.max(0, srcY), srcW, srcH,
+              -st.w * grow / 2, -st.h * grow / 2, st.w * grow, st.h * grow);
+            // ember: a gentle warm lift as the chip drifts free — enough to read
+            // on dark art without turning the rim into bright gold confetti
+            var ember = Math.max(0, (ph - 0.18) / 0.82);
+            if (ember > 0) {
+              ctx.globalAlpha = a * ember * 0.45;
+              ctx.fillStyle = "#d9b25f";
+              ctx.fillRect(-st.w * grow / 2, -st.h * grow / 2, st.w * grow, st.h * grow);
+            }
+          }
+          if (g > 0) {
+            var gs = Math.max(1.5, Math.min(st.w, st.h) * 0.65);
+            ctx.globalAlpha = Math.min(0.8, g * st.lb * 0.75);
+            ctx.fillStyle = "#ffe9bd";
+            ctx.fillRect(-gs / 2, -gs / 2, gs, gs);
+          }
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        }
+        ctx.globalAlpha = 1;
+      }
+      // sparkle overlay — only the .tw subset, opacity driven by a 5s cycle
       var CYCLE = 5000;
       // The whole TILE shimmers in its own image colour: a `lighten` blend lifts
       // each twinkling tessera with its sampled (brightened) hue over the cycle,
@@ -868,20 +1004,15 @@ function buildMosaic(cw, ch) {
       } catch (e) { /* CustomEvent unsupported — non-fatal */ }
     }
 
-    // Navigation: a clean opacity CROSS-FADE. The card fades out, the next card's
-    // art + mosaic are swapped in beneath the fade, then it fades back up — no
-    // flying tesserae, no edge-to-centre reform. `dir` is unused (the fade is symmetric).
-    function dissolve(target, dir) {
-      if (busy || target === index) return;
-      if (reduce || !size.cw) { setCard(target); flipped = false; updateFlip(); updateHint(); return; }
-      busy = true; flipped = false; updateFlip(); setDisabled();
-      clearTimers();
-
-      var FADE = 200;                                 // cross-fade duration (ms)
-      setAnimPaused(true);                            // freeze idle twinkle for the swap
+    // Navigation swap: a plain opacity cross-fade. The card fades out, the next
+    // card's art + mosaic swap in beneath the fade, then it fades back up.
+    // (A tessera-dissolve transition was tried here and removed: the dissolve
+    // belongs to the card's RESTING state, not to navigation.)
+    // Assumes `busy` is already set by dissolve().
+    function fadeSwap(target) {
+      var FADE = 200;
       flipEl.style.transition = "opacity " + FADE + "ms ease";
       flipEl.style.opacity = "0";
-
       var finished = false;
       function finish() {
         if (finished) return;
@@ -891,11 +1022,13 @@ function buildMosaic(cw, ch) {
         preloadCard(nextI()); preloadCard(prevI());   // warm the neighbours
         timers.push(setTimeout(function () {
           flipEl.style.transition = "";
+          container.classList.remove("is-shifting");
           busy = false; setDisabled(); applyTilt();
           setAnimPaused(false);                       // resume idle twinkle once settled
+          // pre-render the new neighbours' band bitmaps off the critical path
+          timers.push(setTimeout(function () { primeBand(nextI()); primeBand(prevI()); }, 300));
         }, FADE + 20));
       }
-
       // Swap only once BOTH the fade-out has played AND the target art is decoded,
       // so the new card appears whole in one frame instead of streaming in.
       var ready = preloadCard(target);
@@ -903,6 +1036,16 @@ function buildMosaic(cw, ch) {
       Promise.all([ready, faded]).then(finish);
       // Safety net: never strand `busy` if a decode stalls or rejects.
       timers.push(setTimeout(finish, FADE + 500));
+    }
+
+    function dissolve(target, dir) {
+      if (busy || target === index) return;
+      if (reduce || !size.cw) { setCard(target); flipped = false; updateFlip(); updateHint(); return; }
+      busy = true; flipped = false; updateFlip(); setDisabled();
+      clearTimers();
+      setAnimPaused(true);                    // freeze idle twinkle for the swap
+      container.classList.add("is-shifting"); // fades the card's own text plates (CSS)
+      fadeSwap(target);
     }
 
     function initStars() {
@@ -977,11 +1120,13 @@ function buildMosaic(cw, ch) {
     initStars(); observeSize();
 
     // Warm the DECODED-image cache for the immediate neighbours (separate from the
-    // nav preload cache) so the very first stardust dissolve has its chips ready.
+    // nav preload cache) so the very first stardust dissolve has its chips ready,
+    // then pre-render their band bitmaps once the first paint has settled.
     (function () {
       var nc = cards[nextI()], pc = cards[prevI()];
       if (nc && nc.image) getDecodedImg(nc.image);
       if (pc && pc.image) getDecodedImg(pc.image);
+      timers.push(setTimeout(function () { primeBand(nextI()); primeBand(prevI()); }, 700));
     })();
 
     // Warm the cache: decode the immediate neighbours now (so the first nav is
