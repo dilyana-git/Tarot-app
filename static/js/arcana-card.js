@@ -621,11 +621,14 @@ function buildMosaic(cw, ch) {
     // Collect the band tiles once per (size) build. `twinkleList` is the small
     // sparkle subset so the per-frame loop iterates ~hundreds, not ~thousands.
     // A sparse, evenly-spread subset of RIM tiles becomes `shedList`: excluded
-    // from the static frame and drawn dynamically instead — each slowly
-    // detaches, drifts a few px outward and fades before re-forming, so the
-    // showcased card is PERPETUALLY dissolving at its edge. Selection uses
-    // existing per-tile randoms (rotJit) so the rng sequence stays untouched.
-    var SHED_MAX = 1400;
+    // from the static frame and drawn dynamically instead. Each slot spends
+    // most of its cycle dormant, then detaches for a 2–4s flight — drifting
+    // outward with a slight rise and gentle turbulence, shrinking and fading
+    // to nothing — so at any moment only a few dozen particles are airborne:
+    // quiet erosion, not a snowstorm. Selection uses existing per-tile randoms
+    // (rotJit) so the rng sequence stays untouched.
+    // SHED_MAX × the ~0.3–0.45 airborne duty cycle ≈ 50–75 concurrent chips.
+    var SHED_MAX = 170;
     function buildRest() {
       bandList = [];
       twinkleList = [];
@@ -645,15 +648,22 @@ function buildMosaic(cw, ch) {
           t = cand[i];
           t.isShed = true;
           // outward drift direction + reach (rim tiles travel a touch farther),
-          // with a faint upward "ember" bias; phase/period from existing randoms
+          // with a slight upward bias; all flight parameters derive from the
+          // tile's existing per-tile randoms so the rng sequence stays aligned
           var cxp = t.left + t.hx + t.w / 2, cyp = t.top + t.hy + t.h / 2;
           var vx = cxp - size.cw / 2, vy = cyp - size.ch / 2;
           var d = Math.max(1, Math.hypot(vx, vy));
-          var reach = 8 + (1 - t.bandT) * 34;
-          t.shDx = (vx / d) * reach;
-          t.shDy = (vy / d) * reach - 4;
-          t.shPhase = -t.lt / 5;                                  // 0..1
-          t.shPeriod = 7000 + ((t.ds - 0.3) / 0.22) * 5000;       // 7–12s
+          var ux = vx / d, uy = vy / d;
+          var reach = 12 + (1 - t.bandT) * 26;
+          t.shDx = ux * reach;
+          t.shDy = uy * reach - (5 + (t.ly % 8));                 // slight rise
+          t.shPx = -uy; t.shPy = ux;                              // turbulence axis
+          t.shPhase = -t.lt / 5;                                  // 0..1 stagger
+          t.shPeriod = 6000 + ((t.ds - 0.3) / 0.22) * 4000;       // 6–10s cycle
+          t.shLife = 0.30 + ((t.lb - 0.7) / 0.85) * 0.15;         // airborne 2–4s
+          t.shWobA = 1.5 + (t.lx % 8) * 0.3;                      // wobble px
+          t.shWobF = 1 + (t.ly % 3) * 0.5;                        // wobble cycles
+          t.shWobP = (t.lx + t.ly) * 0.13;                        // wobble phase
           shedList.push(t);
         }
       }
@@ -812,12 +822,14 @@ function buildMosaic(cw, ch) {
       ctx.drawImage(staticBitmap, 0, 0);
       var dpr = Math.min(global.devicePixelRatio || 1, 2);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      // ── IDLE DISSOLVE: the shed rim chips. Each cycles slowly: re-materialises
-      // at its slot, drifts outward with a faint rise, WARMS INTO A GOLD EMBER
-      // (so the dissolve reads even where dark art meets the dark page), and
-      // finally EXPIRES AS A SPARKLE — a sharp glint that peaks exactly as the
-      // chip dies, so the card's sparkles are born from the dissolve itself
-      // rather than living on a separate layer. Runs inside the loop that
+      // ── IDLE DISSOLVE: the shed rim chips. Each slot is dormant for most of
+      // its cycle, then its tessera detaches from the artwork's perimeter and
+      // takes a slow 2–4s flight: drifting outward with a slight rise and a
+      // gentle perpendicular wobble (no straight lines), SHRINKING and fading
+      // to nothing. The chip is a slice of the art itself, so every particle
+      // carries the true local colour of the pixels it detached from — no
+      // fixed tint, no glint dot. Sparse by design: ~50–75 airborne at once,
+      // quiet erosion rather than a snowstorm. Runs inside the loop that
       // already drives the twinkle; cost is negligible.
       if (shedList.length && curArtImg) {
         var aw = mosaicData.artW, ah = mosaicData.artH;
@@ -826,39 +838,27 @@ function buildMosaic(cw, ch) {
         for (var k = 0; k < shedList.length; k++) {
           var st = shedList[k];
           var ph = ((ts / st.shPeriod) + st.shPhase) % 1;
-          // envelope: quick fade-in at the slot, long fade-out while drifting
-          var a = st.ho * Math.min(1, ph / 0.12) *
-                  (ph > 0.5 ? Math.max(0, 1 - (ph - 0.5) / 0.45) : 1);
-          // dying glint: peaks at ph≈0.86, just as the art chip expires
-          var g = 1 - Math.abs(ph - 0.86) / 0.12;
-          if (a <= 0.01 && g <= 0) continue;
+          if (ph >= st.shLife) continue;        // dormant — slot sits empty
+          var lp = ph / st.shLife;              // 0..1 over the particle's life
+          // envelope: quick detach fade-in, then a long fade to nothing
+          var a = st.ho * Math.min(1, lp / 0.12) *
+                  (lp > 0.35 ? Math.max(0, 1 - (lp - 0.35) / 0.62) : 1);
+          if (a <= 0.01) continue;
           var srcX = (st.left + st.hx - mx) * ssx, srcY = (st.top + st.hy - my) * ssy;
           var srcW = st.w * ssx, srcH = st.h * ssy;
           if (srcW <= 0 || srcH <= 0) continue;
-          ctx.translate(st.left + st.hx + st.w / 2 + st.shDx * ph,
-                        st.top + st.hy + st.h / 2 + st.shDy * ph);
-          ctx.rotate(st.hr * Math.PI / 180);
-          var grow = 1 + ph * 0.2;          // the freed chip loosens only slightly
-          if (a > 0.01) {
-            ctx.globalAlpha = a;
-            ctx.drawImage(curArtImg,
-              Math.max(0, srcX), Math.max(0, srcY), srcW, srcH,
-              -st.w * grow / 2, -st.h * grow / 2, st.w * grow, st.h * grow);
-            // ember: a gentle warm lift as the chip drifts free — enough to read
-            // on dark art without turning the rim into bright gold confetti
-            var ember = Math.max(0, (ph - 0.18) / 0.82);
-            if (ember > 0) {
-              ctx.globalAlpha = a * ember * 0.45;
-              ctx.fillStyle = "#d9b25f";
-              ctx.fillRect(-st.w * grow / 2, -st.h * grow / 2, st.w * grow, st.h * grow);
-            }
-          }
-          if (g > 0) {
-            var gs = Math.max(1.5, Math.min(st.w, st.h) * 0.65);
-            ctx.globalAlpha = Math.min(0.8, g * st.lb * 0.75);
-            ctx.fillStyle = "#ffe9bd";
-            ctx.fillRect(-gs / 2, -gs / 2, gs, gs);
-          }
+          // ease-out drift away from the rim + gentle turbulence across it
+          var mv = 1 - (1 - lp) * (1 - lp);
+          var wob = Math.sin(lp * st.shWobF * 6.2832 + st.shWobP) * st.shWobA * lp;
+          ctx.translate(st.left + st.hx + st.w / 2 + st.shDx * mv + st.shPx * wob,
+                        st.top + st.hy + st.h / 2 + st.shDy * mv + st.shPy * wob);
+          ctx.rotate((st.hr + st.rotJit * lp) * Math.PI / 180);
+          // the freed tessera shrinks away as it dies
+          var sc = 1.6 * (1 - 0.72 * lp);
+          ctx.globalAlpha = a;
+          ctx.drawImage(curArtImg,
+            Math.max(0, srcX), Math.max(0, srcY), srcW, srcH,
+            -st.w * sc / 2, -st.h * sc / 2, st.w * sc, st.h * sc);
           ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         }
         ctx.globalAlpha = 1;

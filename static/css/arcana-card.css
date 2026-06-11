@@ -318,6 +318,8 @@
 
   .arcana .tile.tw::after{animation:none; opacity:0;}
 
+  .arcana.arcana-bare .ac-neb{animation:none;}
+
 }
 
 
@@ -353,19 +355,25 @@
   margin:0 auto;
 }
 
-/* the neb glow sits behind the card, scaled to the container. Dimmed on the
-   home page so the title card reads against the dark scene without a strong
-   golden wash around it. */
+/* THE ONE LIGHT: a single soft radial backlight behind the card, very low
+   intensity, slowly breathing (opacity + a whisper of scale on a ~7.5s loop).
+   Its job is to motivate the edge-dissolve particles — they read brightest
+   near it and dim as they drift away. It is ambient backlight only: no orbs,
+   no flare dots, no bokeh. The standalone `scale` property is used so the
+   pulse survives the JS parallax that rewrites `transform` on tilt. */
 .arcana.arcana-bare .ac-neb{
   width:95%; height:95%;
-  background:radial-gradient(closest-side, rgba(215,180,90,.035), rgba(215,180,90,.01) 32%, transparent 52%);
+  background:radial-gradient(closest-side, rgba(215,180,90,.05), rgba(215,180,90,.015) 36%, transparent 56%);
+  animation:acNebBreathe 7.5s ease-in-out infinite;
+}
+@keyframes acNebBreathe{
+  0%,100%{opacity:.6; scale:1;}
+  50%{opacity:1; scale:1.04;}
 }
 
-/* Soften the warm halo hugging the card edge too — pulled in tighter so the
-   background light doesn't reach as far past the card. */
-.arcana.arcana-bare .front-light{
-  background:radial-gradient(ellipse at 50% 47%, rgba(255,226,150,.06), rgba(232,180,92,.025) 34%, rgba(176,128,58,.008) 52%, transparent 66%);
-}
+/* Single-light rule: the front-face halo was a second glow layer hugging the
+   card edge — dropped in bare mode so the breathing neb is the only light. */
+.arcana.arcana-bare .front-light{display:none;}
 
 /* In bare mode the host hero shows its own title / keywords, so the card's own
    text overlays are redundant — and the bottom scrim drew a dark band with a
