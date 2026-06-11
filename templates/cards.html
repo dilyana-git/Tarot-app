@@ -86,6 +86,15 @@
     </div>
   </div>
 
+  <!-- Back-to-filter button — the reverse of the suit-tile click handler's
+       scroll-into-view: jumps back up to the suit-tile filters once the
+       arc has scrolled them out of view. -->
+  <button class="st-back-top" id="backToFilter" aria-label="Back to filters" title="Back to filters">
+    <svg class="sigil-svg" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M5 15L12 8L19 15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </button>
+
   <!-- Showcase meta strip — updated when a card is lifted
   <div class="st-showcase" id="stShowcase">
     <div class="st-showcase-meta" id="stShowcaseMeta">
@@ -403,6 +412,22 @@
   });
   suitNavPrev?.addEventListener('click', () => activateTile(suitNavPrev.dataset.suit));
   suitNavNext?.addEventListener('click', () => activateTile(suitNavNext.dataset.suit));
+
+  /* ── Back-to-filter button ──────────────────────────────── */
+  // Shows once the suit-tile filters scroll out of view (above the fixed
+  // navbar) and scrolls the page back to the top, where they live.
+  const backToFilter = document.getElementById('backToFilter');
+  const suitTiles    = document.getElementById('suitTiles');
+  if (backToFilter && suitTiles) {
+    const filterObserver = new IntersectionObserver((entries) => {
+      backToFilter.classList.toggle('is-visible', !entries[0].isIntersecting);
+    }, { rootMargin: '-60px 0px 0px 0px' });
+    filterObserver.observe(suitTiles);
+
+    backToFilter.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
 
   /* ── Showcase strip ─────────────────────────────────────── */
   const stMetaEyebrow = document.getElementById('stMetaEyebrow');

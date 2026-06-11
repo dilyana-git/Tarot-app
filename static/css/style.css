@@ -2039,6 +2039,43 @@ a:hover { color: var(--gold-pale); }
 }
 .st-meta-cta:hover .st-cta-inner { color: var(--gold-pale); }
 
+/* Floating "back to filter" button — the reverse of the suit-tile click
+   handler's scroll-into-view; mirrors the .st-suit-disc nav look. */
+.st-back-top {
+  position: fixed;
+  right: 28px; bottom: 28px;
+  z-index: 50;
+  display: flex; align-items: center; justify-content: center;
+  width: 46px; height: 46px;
+  border-radius: 50%;
+  border: 1.5px solid color-mix(in srgb, var(--gold-300) 65%, transparent);
+  background: radial-gradient(circle at 50% 35%,
+    color-mix(in srgb, var(--gold-300) 16%, transparent), rgba(8,7,14,.7));
+  box-shadow: 0 0 0 1px rgba(0,0,0,.4), 0 6px 18px -8px rgba(0,0,0,.8);
+  color: var(--gold-pale);
+  cursor: pointer;
+  opacity: 0; visibility: hidden; pointer-events: none;
+  transform: translateY(8px);
+  transition: opacity .25s ease, transform .25s ease, visibility 0s linear .25s,
+              border-color .25s, box-shadow .25s, background .25s, color .25s;
+}
+.st-back-top.is-visible {
+  opacity: 1; visibility: visible; pointer-events: auto;
+  transform: translateY(0);
+  transition: opacity .25s ease, transform .25s ease, visibility 0s,
+              border-color .25s, box-shadow .25s, background .25s, color .25s;
+}
+.st-back-top:hover,
+.st-back-top:focus-visible {
+  border-color: var(--gold-200);
+  background: radial-gradient(circle at 50% 35%,
+    color-mix(in srgb, var(--gold-200) 28%, transparent), rgba(8,7,14,.65));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--gold-200) 45%, transparent),
+              0 0 22px -2px color-mix(in srgb, var(--gold-300) 55%, transparent);
+  color: var(--gold-100);
+}
+.st-back-top .sigil-svg { width: 18px; height: 18px; }
+
 @media (max-width: 900px) {
   .st-showcase-meta {
     grid-template-columns: 1fr;
@@ -2060,6 +2097,11 @@ a:hover { color: var(--gold-pale); }
     filter: brightness(1.06);
   }
   .suit-tile { transition: none; }
+  .st-back-top,
+  .st-back-top.is-visible {
+    transition: opacity .15s linear, visibility 0s;
+    transform: none;
+  }
 
   /* Reading + card-detail polish: drop the entrance, flip, and tab-crossfade
      motion. `animation: none` reverts the staggered reveals to their resting
