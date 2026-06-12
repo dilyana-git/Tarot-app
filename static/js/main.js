@@ -96,11 +96,4 @@ if (typeof IntersectionObserver !== 'undefined') {
     tile.style.transition = `opacity .4s ease ${(i % 24) * 0.033}s, transform .4s ease ${(i % 24) * 0.033}s`;
     obs.observe(tile);
   });
-
-  document.querySelectorAll('.feature-card, .suit-card').forEach((el, i) => {
-    el.style.opacity = '0';
-    el.style.transform = 'translateY(14px)';
-    el.style.transition = `opacity .5s ease ${i * 0.09}s, transform .5s ease ${i * 0.09}s`;
-    obs.observe(el);
-  });
 }

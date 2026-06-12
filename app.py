@@ -88,15 +88,6 @@ def get_card_video_url(card):
 
 app.jinja_env.globals['get_card_video_url'] = get_card_video_url
 
-# Homepage hero variants. 'architectural' (index.html) is the canonical,
-# production design. 'cardfirst' / 'editorial' are dev-only experiments that are
-# ONLY routable under debug — production always serves index.html (see index()).
-_HERO_TEMPLATES = {
-    'architectural': 'index.html',
-    'cardfirst':     'index_cardfirst.html',
-    'editorial':     'index_editorial.html',
-}
-
 @app.route('/')
 def index():
     arcana = []
@@ -107,14 +98,7 @@ def index():
         c['video_url'] = get_card_video_url(card)
         arcana.append(c)
 
-    # Hero variants are dev-only experiments: only honour ?hero= under debug so a
-    # production visitor (or crawler) can never land on a non-canonical homepage.
-    hero = request.args.get('hero', 'architectural')
-    if app.debug and hero in _HERO_TEMPLATES:
-        template = _HERO_TEMPLATES[hero]
-    else:
-        template = 'index.html'
-    return render_template(template, major_arcana=arcana, cards=_arcana_widget_cards())
+    return render_template('index.html', major_arcana=arcana, cards=_arcana_widget_cards())
 
 
 def _card_json(card):
