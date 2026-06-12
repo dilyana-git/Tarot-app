@@ -403,11 +403,29 @@
   document.querySelectorAll('.suit-tile').forEach(btn => {
     btn.addEventListener('click', () => {
       activateTile(btn.dataset.suit);
-      // Tiles sit at the top of the page — scroll the freshly-rebuilt arc into
-      // view so the filtered cards don't swap in below the fold. The
-      // scroll-margin-top on #spreadView (style.css) keeps it clear of the
-      // fixed navbar.
-      spreadView?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // Scroll the freshly-rebuilt arc into view. Two competing needs:
+      //  • land with the suit-tile filter row visible below the fixed navbar
+      //    (a plain scrollIntoView once parked the tiles ~92% under it — the
+      //    navbar swallowed their clicks and the back-to-filter button never
+      //    appeared, stranding the user);
+      //  • the SHOWCASE card at the arc's bottom must be fully visible.
+      // So: prefer the filters-visible landing, but if the spread table is
+      // taller than the space below the filters, bias downward just enough
+      // that its bottom edge (the lifted display card + suit nav) clears the
+      // viewport. When that pushes the tiles mostly under the navbar, the
+      // back-to-filter button (threshold .5) appears, so the filters stay
+      // one click away. Measured AFTER activateTile — buildArc has already
+      // set the container height synchronously.
+      if (!spreadView) return;
+      const tiles  = document.getElementById('suitTiles');
+      const tilesH = tiles ? tiles.getBoundingClientRect().height : 0;
+      const svRect = spreadView.getBoundingClientRect();
+      const filtersTop  = svRect.top + window.scrollY - 60 - tilesH - 18;
+      // 84px pad below the spread: 22px bottom offset + 44px disc + 18px gap
+      // reserves a clear strip for the bottom-CENTRED back-to-filter button,
+      // so it never sits on the showcase card's caption at the landing.
+      const showcaseTop = svRect.bottom + window.scrollY + 84 - window.innerHeight;
+      window.scrollTo({ top: Math.max(0, filtersTop, showcaseTop), behavior: 'smooth' });
     });
   });
   suitNavPrev?.addEventListener('click', () => activateTile(suitNavPrev.dataset.suit));
@@ -419,9 +437,11 @@
   const backToFilter = document.getElementById('backToFilter');
   const suitTiles    = document.getElementById('suitTiles');
   if (backToFilter && suitTiles) {
+    // threshold .5: a row MOSTLY hidden under the navbar counts as gone, so
+    // the button can't get stuck hidden while a last sliver still intersects.
     const filterObserver = new IntersectionObserver((entries) => {
       backToFilter.classList.toggle('is-visible', !entries[0].isIntersecting);
-    }, { rootMargin: '-60px 0px 0px 0px' });
+    }, { rootMargin: '-60px 0px 0px 0px', threshold: 0.5 });
     filterObserver.observe(suitTiles);
 
     backToFilter.addEventListener('click', () => {
