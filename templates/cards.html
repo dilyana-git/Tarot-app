@@ -388,29 +388,36 @@
   document.querySelectorAll('.suit-tile').forEach(btn => {
     btn.addEventListener('click', () => {
       activateTile(btn.dataset.suit);
-      // Scroll the freshly-rebuilt arc into view. Two competing needs:
-      //  • land with the suit-tile filter row visible below the fixed navbar
-      //    (a plain scrollIntoView once parked the tiles ~92% under it — the
-      //    navbar swallowed their clicks and the back-to-filter button never
-      //    appeared, stranding the user);
-      //  • the SHOWCASE card at the arc's bottom must be fully visible.
-      // So: prefer the filters-visible landing, but if the spread table is
-      // taller than the space below the filters, bias downward just enough
-      // that its bottom edge (the lifted display card + suit nav) clears the
-      // viewport. When that pushes the tiles mostly under the navbar, the
-      // back-to-filter button (threshold .5) appears, so the filters stay
-      // one click away. Measured AFTER activateTile — buildArc has already
-      // set the container height synchronously.
+      // Scroll the freshly-rebuilt arc into view. The spread is framed between
+      // two anchors:
+      //  • TOP — the suit-tile filter row parks just below the fixed 60px
+      //    navbar (+18px gap). A plain scrollIntoView once buried the tiles
+      //    ~92% under the navbar, which swallowed their clicks.
+      //  • BOTTOM — the dashed arc-rule line + suit-nav row (.st-arc-label)
+      //    is the meaningful bottom edge of the spread, so we frame IT fully
+      //    in view (with a small pad) rather than the whole .st-wrap, which
+      //    trails ~8px padding + the fixed back-to-filter button and used to
+      //    leave ~90px of dead space below the dashed line.
+      // Prefer the filters-at-top landing; only bias downward when the
+      // viewport is too short to also fit the dashed line + nav. When that
+      // pushes the tiles mostly under the navbar, the back-to-filter button
+      // (threshold .5) appears, so the filters stay one click away. Measured
+      // AFTER activateTile — buildArc has already set the container height
+      // synchronously.
       if (!spreadView) return;
       const tiles  = document.getElementById('suitTiles');
       const tilesH = tiles ? tiles.getBoundingClientRect().height : 0;
       const svRect = spreadView.getBoundingClientRect();
-      const filtersTop  = svRect.top + window.scrollY - 60 - tilesH - 18;
-      // 84px pad below the spread: 22px bottom offset + 44px disc + 18px gap
-      // reserves a clear strip for the bottom-CENTRED back-to-filter button,
-      // so it never sits on the showcase card's caption at the landing.
-      const showcaseTop = svRect.bottom + window.scrollY + 84 - window.innerHeight;
-      window.scrollTo({ top: Math.max(0, filtersTop, showcaseTop), behavior: 'smooth' });
+      const filtersTop = svRect.top + window.scrollY - 60 - tilesH - 18;
+      // Anchor the dashed line + suit-nav (.st-arc-label) to ~24px above the
+      // viewport bottom. The dashed .st-arc-rule-svg sits just above this row,
+      // so framing the row's bottom guarantees the line is fully visible too.
+      const navRow    = spreadView.querySelector('.st-arc-label');
+      const PAD_BOTTOM = 24;
+      const lineBottom = navRow
+        ? navRow.getBoundingClientRect().bottom + window.scrollY + PAD_BOTTOM - window.innerHeight
+        : 0;
+      window.scrollTo({ top: Math.max(0, filtersTop, lineBottom), behavior: 'smooth' });
     });
   });
   suitNavPrev?.addEventListener('click', () => activateTile(suitNavPrev.dataset.suit));

@@ -1151,8 +1151,6 @@ a:hover { color: var(--gold-pale); }
 }
 .panel-kw.is-reversed { color: var(--reversed-pale); }
 .panel-kw-sep { color: var(--gold-500); font-size: .58rem; }
-.panel-meaning h4 { font-family: var(--font-accent); font-size: .6rem; letter-spacing: .2em; color: var(--gold-dim); text-transform: uppercase; margin-bottom: .6rem; }
-.panel-meaning p { font-size: 1.05rem; line-height: 1.82; color: var(--text); margin-bottom: 1rem; }
 
 /* Reading-specific narrative (composer): the personalised interpretation, so it
    sits directly on the modal ground — a gilt left-hairline and eyebrow mark it

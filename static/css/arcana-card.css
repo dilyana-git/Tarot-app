@@ -363,7 +363,7 @@
    pulse survives the JS parallax that rewrites `transform` on tilt. */
 .arcana.arcana-bare .ac-neb{
   width:95%; height:95%;
-  background:radial-gradient(closest-side, rgba(215,180,90,.05), rgba(215,180,90,.015) 36%, transparent 56%);
+  background:radial-gradient(closest-side, rgba(215,180,90,.09), rgba(215,180,90,.03) 38%, transparent 62%);
   animation:acNebBreathe 7.5s ease-in-out infinite;
 }
 @keyframes acNebBreathe{

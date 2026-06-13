@@ -55,6 +55,8 @@
   let question = '';
   let drawnCards = [];
   let panelLastFocus = null;
+  let lastReadingData = null;            // server payload for the active draw
+  const STORAGE_KEY = 'arcana.reading';  // sessionStorage slot for restore-on-return
 
   /* ── helpers ─────────────────────────────────────────────── */
   const show = el => { if (el) el.hidden = false; };
@@ -144,8 +146,9 @@
   }
 
   /* ── 3 · render the board (all cards start face-down) ─────── */
-  function renderReading(data) {
+  function renderReading(data, restoreRevealed) {
     drawnCards = data.cards;
+    lastReadingData = data;
 
     els.leftTitle.textContent = data.spread.name;
     els.resultDesc.textContent = data.spread.description;
@@ -181,7 +184,21 @@
     buildLegend(data.cards);
     updateBoardHint();
     setStage('board');
-    autoReveal();   // cards turn themselves over, one after another
+
+    if (restoreRevealed && restoreRevealed.length) {
+      // Returning from the full-card page: skip the deal and put the cards that
+      // were face-up straight back face-up, then jump the hint to its settled text.
+      restoreRevealed.forEach(i => {
+        const sc = els.layout.querySelector('.spread-card[data-index="' + i + '"]');
+        if (sc) revealCard(i, sc);
+      });
+      els.boardHint.textContent = data.cards.length === 1
+        ? 'Tap the card for its full meaning'
+        : 'Tap any card for its full meaning';
+    } else {
+      autoReveal();   // cards turn themselves over, one after another
+    }
+    saveReading();    // snapshot the draw so it survives a trip to /card/<id>
   }
 
   function cardMarkup(card, i) {
@@ -234,6 +251,8 @@
       if (meanEl) meanEl.textContent =
         firstSentence(card.reversed ? card.reversed_meaning : card.upright_meaning);
     }
+
+    saveReading();   // a card just turned — keep the persisted revealed-set current
   }
 
   /* Cards turn themselves over in a staggered sequence after the deal.
@@ -301,7 +320,6 @@
 
     const suitSymbol  = { Wands: '△', Cups: '▽', Swords: '✕', Pentacles: '⊕' };
     const suitDisplay = card.suit ? (suitSymbol[card.suit] + ' ' + card.suit) : 'Major Arcana';
-    const meaning     = card.reversed ? card.reversed_meaning : card.upright_meaning;
     const keywords    = card.reversed ? card.keywords_reversed : card.keywords_upright;
 
     els.panelVisual.innerHTML = `
@@ -328,10 +346,6 @@
         <h4>✦ In This Reading</h4>
         <p>${esc(card.narrative)}</p>
       </div>` : ''}
-      <div class="panel-meaning">
-        <h4>${card.reversed ? '↩ Reversed' : '☝ Upright'} Meaning</h4>
-        <p>${esc(meaning)}</p>
-      </div>
       <a href="/card/${encodeURIComponent(card.id)}" class="panel-cta" target="_self"><span class="panel-cta-inner">View Full Card →</span></a>`;
 
     panelLastFocus = document.activeElement;
@@ -346,9 +360,46 @@
     panelLastFocus = null;
   }
 
+  /* ── 6b · persistence ────────────────────────────────────────
+        A reading is a random, non-deterministic draw — it has no URL to return
+        to — so leaving for /card/<id> would lose it. Snapshot the whole draw to
+        sessionStorage (this tab, this session) and rebuild it on return. */
+  function saveReading() {
+    if (!lastReadingData) return;
+    try {
+      const revealed = Array.prototype.slice
+        .call(els.layout.querySelectorAll('.spread-card.revealed'))
+        .map(sc => +sc.dataset.index);
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify({
+        spread: currentSpread, question, data: lastReadingData, revealed,
+      }));
+    } catch (_) { /* private mode / quota — preservation just degrades, no crash */ }
+  }
+
+  function clearSavedReading() {
+    try { sessionStorage.removeItem(STORAGE_KEY); } catch (_) {}
+  }
+
+  function restoreReading() {
+    let raw;
+    try { raw = sessionStorage.getItem(STORAGE_KEY); } catch (_) { return false; }
+    if (!raw) return false;
+    let saved;
+    try { saved = JSON.parse(raw); } catch (_) { clearSavedReading(); return false; }
+    if (!saved || !saved.data || !Array.isArray(saved.data.cards)) {
+      clearSavedReading(); return false;
+    }
+    currentSpread = saved.spread || currentSpread;
+    question = saved.question || '';
+    renderReading(saved.data, saved.revealed || []);
+    return true;
+  }
+
   /* ── 7 · new reading (back to the start) ─────────────────── */
   function newReading() {
     drawnCards = []; question = '';
+    lastReadingData = null;
+    clearSavedReading();
     els.layout.innerHTML = '';
     els.legend.innerHTML = '';
     if (els.notes) { els.notes.textContent = ''; hide(els.notes); }
@@ -376,5 +427,7 @@
   els.panel.addEventListener('click', e => { if (e.target === els.panel) closePanel(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closePanel(); });
 
-  setStage('select');
+  // Returning from /card/<id> (or a refresh) rebuilds the saved draw; otherwise
+  // start fresh at the spread selector.
+  if (!restoreReading()) setStage('select');
 })();
