@@ -19,9 +19,13 @@ Plus one spread-level `reading_notes` line for whole-reading patterns (mostly
 Major Arcana, a dominant suit, many reversals) so those global observations are
 said once rather than repeated on every card.
 
-The output is deterministic for a given draw: the variant chosen in each slot is
-picked by a PRNG seeded from the drawn cards + question, so re-rendering the same
-reading yields the same words, while a different reading reads differently.
+To keep the prose concrete rather than vague, each frame weaves in *two or three
+of the card's five keywords*, chosen by a shuffle, so the same position can
+surface different facets of a card from one reading to the next. The output stays
+deterministic for a given draw: every choice (template variant and keyword
+rotation alike) is driven by a PRNG seeded from the drawn cards + question, so
+re-rendering the same reading yields the same words while a different reading
+reads differently.
 
 This is a pure, dependency-free module: `compose(cards, spread_key, question)`
 takes plain dicts and returns plain strings, so it is trivially testable.
@@ -97,150 +101,191 @@ def classify_question(question):
 
 
 # ── Position roles ────────────────────────────────────────────────────────────
-# Frame templates per (role, orientation). The card's keyword (drawn from the
-# orientation-appropriate keyword list) carries the up/reversed colour, so the
-# same skeleton reads brighter upright and heavier reversed. {name}=card name,
-# {kw}/{kw2}=keywords, {pos}=position name (lower-cased).
+# Frame templates per (role, orientation). Each draws on up to three of the
+# card's own keywords — {kw}, {kw2}, {kw3} — chosen by a per-card shuffle, so the
+# same skeleton reads concretely (real qualities of *this* card) and differently
+# from one draw to the next. {name} = card name.
 _ROLE_FRAMES = {
     'past': {
         'upright': [
-            "Behind the question stands {name}: {kw} that has already shaped the ground you stand on.",
-            "{name} marks what has been at work here — a current of {kw} still echoing forward into now.",
-            "What brought you to this point wears the face of {name}, its {kw} laid down like foundation stone.",
+            "{name} is the root of all this — a season of {kw} whose {kw2} still shapes the ground beneath your feet.",
+            "Long before the question formed, {name} set things moving: {kw} that hardened into foundation, with {kw2} threaded all through it.",
+            "You carry {name} with you — the {kw} of what has already happened, and the {kw2} it taught you, both alive in the present.",
+            "What came before wears the face of {name}: {kw} that opened this chapter, {kw2} that closed the last one.",
+            "{name} lies behind you, where {kw} once ran strong; its {kw2} is the inheritance you bring into today.",
         ],
         'reversed': [
-            "Behind you, {name} reversed lingers — {kw} that was never fully resolved and still tugs at the present.",
-            "{name} reversed marks the root of it: {kw} left unfinished in the past, quietly colouring all that follows.",
-            "What set this in motion was {name} reversed, its {kw} a knot that was tied long ago and never loosened.",
+            "{name} reversed marks an old {kw} you never quite finished — it loosened into {kw2}, and the loose thread still pulls at now.",
+            "Behind you, {name} reversed holds {kw} that was buried rather than healed; {kw2} is the residue it left.",
+            "The root here is {name} reversed: {kw} that went unspoken, {kw2} set aside and only now asking to be faced.",
+            "{name} reversed shows where the past snagged — {kw} curdled into {kw2}, a knot tied long ago and never worked loose.",
+            "What set this in motion was {name} reversed; its {kw} soured into {kw2}, and you have been carrying the weight since.",
         ],
     },
     'present': {
         'upright': [
-            "Right now, {name} holds the centre — {kw} is the live current running through your situation.",
-            "Where you stand today, {name} speaks plainly of {kw}, the truest note in this moment.",
-            "The heart of it now is {name}: {kw} colouring how things actually stand.",
+            "Right now you stand inside {name}: {kw} is the air you are breathing, {kw2} the ground you walk on.",
+            "{name} is the truth of this moment — {kw} alive and unmistakable, edged with {kw2}.",
+            "Today turns on {name}. What it asks of you is {kw}; what it offers in return is {kw2}.",
+            "The present wears {name} openly — {kw} moving through everything, {kw2} just beneath the surface.",
+            "Here and now, {name} sets the tone: a clear note of {kw}, deepened by {kw2}.",
         ],
         'reversed': [
-            "Right now, {name} reversed sits at the centre — {kw} is the friction colouring this moment.",
-            "Where you stand today, {name} reversed points to {kw}, something turned inward or not yet owned.",
-            "The heart of it now is {name} reversed: {kw} working beneath the surface of the present.",
+            "{name} reversed sits at the centre now — {kw} stalled or turned inward, {kw2} you have not fully claimed.",
+            "Today carries {name} reversed: {kw} blocked at the source, {kw2} leaking out where you least expect it.",
+            "Right now {name} reversed colours things — {kw} and {kw2} tangled together, and you can feel the friction.",
+            "The present holds {name} reversed: {kw} held back, {kw2} working under the surface of the day.",
+            "At the heart of it now is {name} reversed — {kw} out of true, {kw2} asking to be set right.",
         ],
     },
     'future': {
         'upright': [
-            "If the present course holds, {name} is what ripens ahead — a turn toward {kw}.",
-            "The road from here bends toward {name}: {kw} is the shape the future is taking.",
-            "Ahead lies {name}, and with it {kw} — the likely fruit of the path you are on.",
+            "Keep to this path and it ripens into {name}: {kw} coming into its own, {kw2} close behind.",
+            "Ahead lies {name} — the road bends toward {kw}, and {kw2} waits at the turn.",
+            "{name} is what forms on the horizon: {kw} you can grow toward, {kw2} you can count on.",
+            "If today's course holds, tomorrow wears {name} — {kw} ripening, {kw2} as its reward.",
+            "The future tilts toward {name}: expect {kw}, and let {kw2} be the shape it finally takes.",
         ],
         'reversed': [
-            "If nothing shifts, {name} reversed waits ahead — {kw} arriving distorted, delayed, or half-formed.",
-            "The road from here tilts toward {name} reversed: {kw}, unless the present course is corrected.",
-            "Ahead, {name} reversed hints at {kw} — a future still unsettled, its outcome not yet fixed.",
+            "Left unchanged, the road leads to {name} reversed — {kw} arriving late or warped, {kw2} slipping out of reach.",
+            "{name} reversed waits ahead: {kw} that may sour into {kw2} unless something shifts first.",
+            "Ahead lies {name} reversed — a future where {kw} stalls and {kw2} goes unmet, though nothing here is fixed yet.",
+            "If the present holds its course, {name} reversed is the cost: {kw} deferred, {kw2} half-formed.",
+            "The horizon shows {name} reversed — {kw} you will have to wrestle with, {kw2} that will not come easily.",
         ],
     },
     'challenge': {
         'upright': [
-            "What crosses you here is {name}: {kw} is the tension you are being asked to reckon with.",
-            "The obstacle takes the form of {name} — {kw} standing squarely in your path.",
-            "{name} marks the friction in this reading: {kw} is what must be met rather than avoided.",
+            "{name} stands in your way — {kw} you cannot go around, only through, with {kw2} as the test inside it.",
+            "The obstacle is {name}: {kw} planted squarely across your path, {kw2} the lesson hidden in it.",
+            "What crosses you here is {name} — meet its {kw} head-on and its {kw2} stops being an enemy.",
+            "{name} marks the friction: {kw} pressing against you now, {kw2} the very thing it is pressing you toward.",
+            "Your work is {name} — the {kw} of it resists you, but its {kw2} is exactly what you are being asked to find.",
         ],
         'reversed': [
-            "What crosses you is {name} reversed — {kw} working against you from an unexpected angle.",
-            "The obstacle is {name} reversed: {kw}, all the harder to name because it hides its shape.",
-            "{name} reversed is the snag here — {kw} that resists being faced head-on.",
+            "{name} reversed is the snag — {kw} working against you from an angle you cannot quite see, dressed up as {kw2}.",
+            "What crosses you is {name} reversed: {kw} that hides its shape, {kw2} slipping away the moment you name it.",
+            "The obstacle is {name} reversed — {kw} turned inward, {kw2} that must be drawn into the light before it lets go.",
+            "{name} reversed blocks the way quietly: {kw} you have been avoiding, {kw2} you have been calling something else.",
+            "The harder challenge is {name} reversed — its {kw} will not be faced head-on, and its {kw2} resists every easy answer.",
         ],
     },
     'advice': {
         'upright': [
-            "The counsel of the cards is {name}: lead with {kw}.",
-            "{name} offers the way through — let {kw} guide your next move.",
-            "Here the cards advise {name}: meet this with {kw} and the path opens.",
+            "Lead with {name}: let {kw} set your pace and {kw2} steady your hand.",
+            "The way through is {name} — choose {kw} where you have been choosing fear, and let {kw2} carry the rest.",
+            "{name} points the way: act from {kw}, and trust {kw2} to meet you halfway.",
+            "Take up {name} here — {kw} is the move, {kw2} the manner to make it in.",
+            "Your next step is {name}: lean into {kw}, hold to {kw2}, and the path opens.",
         ],
         'reversed': [
-            "The cards counsel caution through {name} reversed: beware {kw} as you choose.",
-            "{name} reversed advises restraint — guard against {kw} before you act.",
-            "Here the guidance is {name} reversed: the warning is {kw}; step carefully.",
+            "{name} reversed counsels restraint — check your {kw} before you act, and watch where it tips into {kw2}.",
+            "Step carefully: {name} reversed warns against {kw}, and against the {kw2} that comes dressed as virtue.",
+            "The advice is {name} reversed — hold back the {kw} you are tempted to force, and beware {kw2}.",
+            "{name} reversed says wait: too much {kw} here curdles into {kw2}; let it settle first.",
+            "Guard against {kw} as you choose — {name} reversed shows how quickly it turns to {kw2}.",
         ],
     },
     'hidden': {
         'upright': [
-            "Beneath the surface moves {name} — {kw} working quietly, not yet in plain sight.",
-            "Out of view, {name} shapes things: {kw} is the undercurrent you may not have named.",
-            "{name} marks what is hidden here — {kw}, felt more than seen.",
+            "Beneath the surface runs {name} — {kw} you have not named yet, {kw2} quietly steering more than you know.",
+            "Out of sight, {name} is at work: {kw} moving under everything, {kw2} surfacing only in glimpses.",
+            "{name} is the undercurrent here — {kw} you feel before you see, {kw2} shaping the room from the shadows.",
+            "What is hidden wears {name}: {kw} running below the visible, {kw2} the secret engine of it all.",
+            "Underneath it all sits {name} — {kw} unspoken, {kw2} waiting for you to notice.",
         ],
         'reversed': [
-            "Beneath the surface, {name} reversed stirs — {kw} repressed, denied, or kept just out of view.",
-            "Hidden in this reading is {name} reversed: {kw}, a thing held under that wants to rise.",
-            "{name} reversed marks the buried note — {kw}, waiting in the dark to be acknowledged.",
+            "{name} reversed stirs in the dark — {kw} you have pushed down, {kw2} that wants out whether you allow it or not.",
+            "Hidden here is {name} reversed: {kw} denied, {kw2} kept just out of view and quietly costing you.",
+            "Below the surface, {name} reversed holds {kw} you will not look at and {kw2} you have been refusing to feel.",
+            "{name} reversed is the buried note — {kw} repressed, {kw2} leaking through in ways you have not traced.",
+            "What is truly going on is {name} reversed: {kw} withheld, {kw2} working against you from underneath.",
         ],
     },
     'message': {
         'upright': [
-            "The cards answer with {name}: {kw} is the single insight offered for your question.",
-            "{name} is the message — let {kw} be the thread you follow from here.",
-            "For what you asked, the card is {name}: {kw}, plainly and without hedging.",
+            "Your answer is {name}: {kw}, plainly — and {kw2} as the way to live it out.",
+            "{name} comes as the single word for all of this — {kw}, carried by {kw2}.",
+            "To what you asked, {name} replies with {kw}, and points you toward {kw2}.",
+            "The one card is {name}: take it as {kw}, and let {kw2} be how you answer.",
+            "{name} is the whole of it — {kw} at the centre, {kw2} as its echo.",
         ],
         'reversed': [
-            "The cards answer with {name} reversed: {kw} is what they ask you to sit with.",
-            "{name} reversed is the message — the caution is {kw}; weigh it honestly.",
-            "For what you asked, the card is {name} reversed: {kw}, a note turned inward.",
+            "Your answer is {name} reversed: sit with {kw}, and be honest about the {kw2} underneath it.",
+            "{name} reversed is the reply — not a no, but a {kw} that asks you to weigh {kw2} first.",
+            "To what you asked, {name} reversed offers {kw} turned inward, with {kw2} as the caution.",
+            "The single card is {name} reversed: {kw} you are not yet ready for, {kw2} you will need to face.",
+            "{name} reversed answers with {kw} — a note bent inward, shadowed by {kw2}.",
         ],
     },
 }
 
 
 # ── Topic lens templates ──────────────────────────────────────────────────────
-# A second sentence tying the card's keyword to the asked topic. Split by form
-# so a yes/no question reads as counsel and a how/why question reads as insight.
+# A second sentence tying one of the card's keywords to the asked topic. Split by
+# form so a yes/no question reads as counsel and a how/why question as insight.
+# Phrasing is deliberately *valence-neutral* — it names the keyword as what is at
+# stake rather than what to "lean on" — so it reads correctly whether the drawn
+# keyword is bright (an upright card) or shadowed (a reversed one).
 _TOPIC_LENS = {
     'love': {
         'decision': [
-            "In matters of the heart, let {kw} be your measure here.",
-            "For this relationship, {kw} is the thread worth following.",
+            "In matters of the heart, this turns on {kw} more than anything.",
+            "For this bond, {kw} is the thread to watch as you decide.",
+            "Where love is the question, {kw} is what tips the balance.",
         ],
         'understand': [
-            "In love, this points to {kw} as the heart of what you are feeling.",
-            "Where the heart is concerned, {kw} is what this card illuminates.",
+            "In love, this points straight at {kw} as the heart of what you are feeling.",
+            "Where the heart is concerned, {kw} is what the card lays bare.",
+            "For this relationship, {kw} is the truth moving underneath it.",
         ],
     },
     'career': {
         'decision': [
-            "In the work you are weighing, {kw} is the quality to lean on.",
-            "For this path of work, let {kw} steer the decision.",
+            "In the work you are weighing, {kw} is the deciding factor.",
+            "For this path, the choice turns on {kw}.",
+            "Where your work is the question, {kw} is what to weigh first.",
         ],
         'understand': [
-            "In your work, this reveals {kw} as the force in play.",
+            "In your work, this reveals {kw} as the real force in play.",
             "Where your vocation is concerned, {kw} is what the card names.",
+            "For the work itself, {kw} is the current beneath the surface.",
         ],
     },
     'money': {
         'decision': [
-            "On the material question, let {kw} temper your choice.",
-            "Where money is at stake, {kw} is the note to heed.",
+            "On the material question, {kw} is what should tip the scales.",
+            "Where money is at stake, the decision turns on {kw}.",
+            "For this question of means, {kw} is the factor to weigh.",
         ],
         'understand': [
             "In matters of money, this surfaces {kw} as the real current.",
             "On the financial question, {kw} is what the card lays bare.",
+            "Where resources are concerned, {kw} is what is actually at work.",
         ],
     },
     'self': {
         'decision': [
-            "On your own path, let {kw} be the compass.",
-            "For the growth you are reaching toward, {kw} is the work.",
+            "On your own path, this comes down to {kw}.",
+            "For the growth you are reaching toward, {kw} is what the choice rests on.",
+            "Where you are the question, {kw} is the deciding thread.",
         ],
         'understand': [
-            "Within yourself, this points to {kw} as the thing stirring.",
+            "Within you, this points to {kw} as the thing stirring.",
             "On the inner question, {kw} is what the card brings to light.",
+            "For your own becoming, {kw} is the truth underneath.",
         ],
     },
     'health': {
         'decision': [
-            "For your wellbeing, let {kw} guide what you tend to next.",
-            "Where your energy is concerned, {kw} is the note to honour.",
+            "For your wellbeing, {kw} is what the decision turns on.",
+            "Where your energy is concerned, {kw} is the factor to weigh.",
+            "For the body's question, {kw} is what to watch as you choose.",
         ],
         'understand': [
             "In the body and its energy, this names {kw} as what is at work.",
             "On the question of health, {kw} is what the card reveals.",
+            "For your vitality, {kw} is the current to watch.",
         ],
     },
 }
@@ -282,6 +327,42 @@ _ADJACENCY = {
 _CROSSING_PAIRS = {'celtic_cross': (0, 1)}
 
 
+# ── Relational sentence banks ──────────────────────────────────────────────────
+# Each takes (other_name, other_position); the "same"/rank banks take their own
+# args. Multiple phrasings per relation so neighbouring readings don't repeat.
+_REL_FRICTION = [
+    "%s in the %s pulls against it — expect crosscurrents where the two meet.",
+    "It runs up against %s in the %s; the two do not agree, and that tension is real.",
+    "%s in the %s works at cross-purposes with it, so progress here may feel like wading upstream.",
+]
+_REL_SUPPORT = [
+    "%s in the %s lends it strength; the two move easily together.",
+    "It finds an ally in %s in the %s — they reinforce one another.",
+    "%s in the %s flows with it, smoothing the way forward.",
+]
+_REL_SAME = [  # args: (other_name, element_lower)
+    "Echoed by %s, another %s influence, the theme only deepens.",
+    "%s sounds the same %s note, and the doubling is hard to ignore.",
+    "With %s carrying the same %s charge, the spread keeps circling one current.",
+]
+_REL_CROSS_FRICTION = [
+    "It is crossed by %s in the %s — the two pull hard against each other, and that strain is the crux of the matter.",
+    "%s in the %s lies straight across it; their clash is what this whole reading turns on.",
+]
+_REL_CROSS_SUPPORT = [
+    "It is crossed by %s in the %s, yet the two are kin — what looks like an obstacle may be an ally.",
+    "%s crosses it from the %s, but they are of one mind; the block is gentler than it looks.",
+]
+_REL_CROSS_NEUTRAL = [
+    "It is crossed by %s in the %s, the one pressure this whole reading turns upon.",
+    "%s in the %s cuts clean across it — the single tension everything else circles.",
+]
+_REL_RANK = [  # args: (rank,)
+    "And it does not stand alone — the %s repeats in this spread, doubling its weight.",
+    "The %s shows up more than once here, and the repetition is not idle.",
+]
+
+
 # ── Suit domains for the spread-level note ─────────────────────────────────────
 _SUIT_DOMAIN = {
     'Wands': 'energy, drive, and the will to create',
@@ -290,13 +371,19 @@ _SUIT_DOMAIN = {
     'Pentacles': 'work, money, and the material world',
 }
 
-# Negative-leaning keywords, used only to sense a past→future tonal flip.
-_NEGATIVE_HINTS = {
-    'loss', 'grief', 'fear', 'conflict', 'defeat', 'betrayal', 'despair',
-    'anxiety', 'heartbreak', 'endings', 'destruction', 'chaos', 'bondage',
-    'addiction', 'hardship', 'poverty', 'isolation', 'exhaustion', 'burnout',
-    'stagnation', 'restriction', 'delays', 'setback', 'sorrow', 'regret',
-}
+# Whole-reading observation banks (said once, picked by the seeded rng).
+_NOTE_MAJORS = [
+    "More than half these cards are Major Arcana — forces larger than everyday choice are at work here.",
+    "The Major Arcana dominate this spread; what is unfolding runs deeper than ordinary day-to-day matters.",
+]
+_NOTE_SUIT = [  # args: (suit, domain)
+    "The suit of %s runs through the spread, marking %s as where the real movement lies.",
+    "%s appears again and again here — %s is where this reading is truly pointing.",
+]
+_NOTE_REVERSED = [
+    "So many cards fall reversed that much of this reading turns inward — blocked, withheld, or not yet ready to surface.",
+    "With most cards reversed, the energy here is held back or turned inward, waiting to be released.",
+]
 
 
 def _orient_keywords(card):
@@ -306,18 +393,17 @@ def _orient_keywords(card):
     return card.get('keywords_upright') or []
 
 
-def _valence(card):
-    """Rough negative/positive lean of a card: reversed and negative keywords
-    push negative. Returns a small signed int."""
-    score = 0
-    if card.get('reversed'):
-        score -= 1
-    kws = set(k.lower() for k in _orient_keywords(card))
-    if kws & _NEGATIVE_HINTS:
-        score -= 1
-    else:
-        score += 1
-    return score
+def _three_keywords(rng, card):
+    """Three keywords from the card, shuffled so a given card surfaces different
+    facets across draws. Pads by repetition if the card has fewer than three."""
+    kws = list(_orient_keywords(card))
+    if not kws:
+        return ('change', 'change', 'change')
+    picks = kws[:]
+    rng.shuffle(picks)
+    while len(picks) < 3:
+        picks.append(picks[len(picks) % len(kws)])
+    return (picks[0], picks[1], picks[2])
 
 
 def _pick(rng, options, used):
@@ -341,10 +427,8 @@ def _frame_sentence(rng, card, role, used):
     orientation = 'reversed' if card.get('reversed') else 'upright'
     bank = _ROLE_FRAMES.get(role, _ROLE_FRAMES['message'])[orientation]
     template = _pick(rng, bank, used)
-    kws = _orient_keywords(card)
-    kw = kws[0] if kws else 'change'
-    kw2 = kws[1] if len(kws) > 1 else kw
-    return template.format(name=card.get('name', 'this card'), kw=kw, kw2=kw2)
+    kw, kw2, kw3 = _three_keywords(rng, card)
+    return template.format(name=card.get('name', 'this card'), kw=kw, kw2=kw2, kw3=kw3)
 
 
 def _lens_sentence(rng, card, topic, form, used):
@@ -354,10 +438,16 @@ def _lens_sentence(rng, card, topic, form, used):
     if not by_form:
         return ''
     bank = by_form.get(form) or by_form.get('understand')
-    template = _pick(rng, bank, used)
+    # Only use a phrasing not yet spent in this reading. Once they are all used
+    # (e.g. a 10-card spread outruns the three templates), fall silent rather than
+    # drone the same line on card after card — the frame still carries each card.
+    fresh = [t for t in bank if t not in used]
+    if not fresh:
+        return ''
+    template = rng.choice(fresh)
+    used.add(template)
     kws = _orient_keywords(card)
-    # Prefer the second keyword so the lens doesn't echo the frame's first one.
-    kw = (kws[1] if len(kws) > 1 else (kws[0] if kws else 'what stirs'))
+    kw = rng.choice(kws) if kws else 'what stirs'
     return template.format(kw=kw)
 
 
@@ -389,29 +479,28 @@ def _relation_sentence(rng, idx, cards, spread_key, rank_first):
         is_crossing = crossing and idx in crossing and n in crossing
         if is_crossing:
             if rel == 'friction':
-                consider(0, "It is crossed by %s in the %s — the two pull hard against each other, and that strain is the crux of the matter." % (other_name, other_pos))
+                consider(0, rng.choice(_REL_CROSS_FRICTION) % (other_name, other_pos))
             elif rel == 'support':
-                consider(0, "It is crossed by %s in the %s, yet the two are kin; what looks like obstacle may in fact be ally." % (other_name, other_pos))
+                consider(0, rng.choice(_REL_CROSS_SUPPORT) % (other_name, other_pos))
             else:
-                consider(0, "It is crossed by %s in the %s, the one pressure this whole reading turns upon." % (other_name, other_pos))
+                consider(0, rng.choice(_REL_CROSS_NEUTRAL) % (other_name, other_pos))
             continue
 
         if rel == 'friction':
-            consider(1, "%s in the %s pulls against it — expect crosscurrents where the two meet." % (other_name, other_pos))
+            consider(1, rng.choice(_REL_FRICTION) % (other_name, other_pos))
         elif rel == 'support':
-            consider(2, "%s in the %s lends it strength; the two elements move easily together." % (other_name, other_pos))
+            consider(2, rng.choice(_REL_SUPPORT) % (other_name, other_pos))
         elif rel == 'same':
-            consider(3, "Echoed by %s, another %s influence, the theme only deepens." % (other_name, (elem or '').lower()))
+            consider(3, rng.choice(_REL_SAME) % (other_name, (elem or '').lower()))
 
     # Rank echo is lowest priority and only annotates the first card of the echo.
     if rank_first.get(idx):
-        rank = card.get('number')
-        consider(4, "And it does not stand alone — the %s repeats in this spread, doubling its weight." % str(rank))
+        consider(4, rng.choice(_REL_RANK) % str(card.get('number')))
 
     return best[1] if best else ''
 
 
-def _reading_notes(cards):
+def _reading_notes(rng, cards):
     """Whole-reading observations, said once. Returns a short string (possibly
     empty)."""
     n = len(cards)
@@ -422,7 +511,7 @@ def _reading_notes(cards):
 
     majors = sum(1 for c in cards if c.get('arcana') == 'major')
     if majors > n / 2:
-        notes.append("More than half these cards are Major Arcana — forces larger than everyday choice are at work in this reading.")
+        notes.append(rng.choice(_NOTE_MAJORS))
 
     minors = [c for c in cards if c.get('arcana') == 'minor']
     if minors:
@@ -435,11 +524,11 @@ def _reading_notes(cards):
             suit, cnt = max(counts.items(), key=lambda kv: kv[1])
             if cnt >= 3 and cnt >= len(minors) / 2:
                 domain = _SUIT_DOMAIN.get(suit, 'this suit')
-                notes.append("The suit of %s runs through the spread, marking %s as where the real movement lies." % (suit, domain))
+                notes.append(rng.choice(_NOTE_SUIT) % (suit, domain))
 
     reversed_count = sum(1 for c in cards if c.get('reversed'))
     if reversed_count >= 3 and reversed_count >= 0.6 * n:
-        notes.append("So many cards fall reversed that much of this reading turns inward — blocked, withheld, or not yet ready to surface.")
+        notes.append(rng.choice(_NOTE_REVERSED))
 
     # Keep it to two observations at most so the note stays a note.
     return ' '.join(notes[:2])
@@ -494,7 +583,7 @@ def compose(cards, spread_key, question=''):
 
         narratives.append(' '.join(parts))
 
-    return {'narratives': narratives, 'reading_notes': _reading_notes(cards)}
+    return {'narratives': narratives, 'reading_notes': _reading_notes(rng, cards)}
 
 
 # Populated by tarot_data after SPREADS is defined, to avoid a circular import at
