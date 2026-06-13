@@ -1,5 +1,6 @@
 import os
 import random
+from functools import lru_cache
 from flask import Flask, render_template, jsonify, request, abort, url_for
 from data.tarot_data import (
     ALL_CARDS, MAJOR_ARCANA, SPREADS,
@@ -41,12 +42,21 @@ MINOR_RANK_MAP = {
 _IMG_EXTS = ('.jpg', '.jpeg', '.png', '.webp')
 
 
+@lru_cache(maxsize=None)
+def _static_exists(relpath):
+    """Cached os.path.exists for a path under static/. Card data is static, so
+    image/video resolution probes the same handful of paths on every request;
+    without this, /cards alone fires ~300 disk stats per load. Cache is cleared
+    only by restart, which matches how the assets are deployed."""
+    return os.path.exists(os.path.join(app.static_folder, relpath))
+
+
 def get_card_image_path(filename):
     """Return filename if it exists on disk, trying alternate extensions, else placeholder."""
     base, ext = os.path.splitext(filename)
     candidates = [filename] + [base + alt for alt in _IMG_EXTS if alt != ext.lower()]
     for candidate in candidates:
-        if os.path.exists(os.path.join(app.static_folder, candidate)):
+        if _static_exists(candidate):
             return candidate
     return 'images/card-placeholder.svg'
 
@@ -75,14 +85,14 @@ def get_card_video_url(card):
     raw_vid = card.get('video', '')
     if raw_vid:
         path = f'media/{raw_vid}'
-        if os.path.exists(os.path.join(app.static_folder, path)):
+        if _static_exists(path):
             return f'/static/{path}'
 
     slug = card['name'].lower().replace("'", '').replace(' ', '_')
     if slug.startswith('the_'):
         slug = slug[4:]
     path = f'media/{slug}.mp4'
-    if os.path.exists(os.path.join(app.static_folder, path)):
+    if _static_exists(path):
         return f'/static/{path}'
 
     return ''
@@ -261,6 +271,21 @@ def arcana_card():
 @app.route('/api/cards')
 def api_cards():
     return jsonify([dict(c) for c in ALL_CARDS])
+
+
+@app.errorhandler(404)
+def not_found(error):
+    # API paths get JSON; pages get the on-brand template.
+    if request.path.startswith('/api/'):
+        return jsonify({'error': 'Not found'}), 404
+    return render_template('404.html'), 404
+
+
+@app.errorhandler(500)
+def server_error(error):
+    if request.path.startswith('/api/'):
+        return jsonify({'error': 'Internal server error'}), 500
+    return render_template('500.html'), 500
 
 
 if __name__ == '__main__':

@@ -5,11 +5,20 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Running the app
 
 ```bash
-pip install -r requirements.txt   # Flask 3.0.3, Werkzeug 3.0.3
-python app.py                     # runs on http://localhost:5000 with debug=True
+pip install -r requirements.txt   # Flask 3.0.3, Werkzeug 3.0.3, gunicorn
+python app.py                     # runs on http://localhost:5000 (set FLASK_DEBUG=true for debug)
 ```
 
-There are no tests and no linter configured.
+## Tests
+
+```bash
+pip install -r requirements-dev.txt   # adds pytest
+pytest                                 # smoke suite in tests/
+```
+
+`tests/test_smoke.py` covers route status, the JSON API shapes (`/api/cards`,
+`/api/reading`), the 404 handler, narrative-composer determinism, and the
+image-path placeholder fallback. There is no linter configured.
 
 ## Architecture
 

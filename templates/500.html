@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}A Disturbance in the Reading — Arcana{% endblock %}
+
+{% block content %}
+<section class="page-hero-arch error-page">
+  <p class="page-arch-eyebrow error-eyebrow">
+    <span class="page-arch-rule"></span>
+    <span class="page-arch-label">500</span>
+    <span class="page-arch-rule"></span>
+  </p>
+  <h1 class="page-arch-title">The Cards Fell Silent</h1>
+  <p class="error-text">Something went awry on our side and the reading could not be completed. Take a breath, then try again — the deck will be ready.</p>
+  <div class="error-actions">
+    <a href="{{ url_for('index') }}" class="btn btn-primary">✦ Return Home</a>
+    <a href="{{ url_for('reading') }}" class="btn btn-outline">Begin a Reading</a>
+  </div>
+</section>
+{% endblock %}

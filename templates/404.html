@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Lost in the Veil — Arcana{% endblock %}
+
+{% block content %}
+<section class="page-hero-arch error-page">
+  <p class="page-arch-eyebrow error-eyebrow">
+    <span class="page-arch-rule"></span>
+    <span class="page-arch-label">404</span>
+    <span class="page-arch-rule"></span>
+  </p>
+  <h1 class="page-arch-title">This Card Is Not in the Deck</h1>
+  <p class="error-text">The page you sought has slipped behind the veil. Perhaps it was never drawn — or has already returned to the shuffle.</p>
+  <div class="error-actions">
+    <a href="{{ url_for('index') }}" class="btn btn-primary">✦ Return Home</a>
+    <a href="{{ url_for('cards') }}" class="btn btn-outline">Browse the Deck</a>
+  </div>
+</section>
+{% endblock %}

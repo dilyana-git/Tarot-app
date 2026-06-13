@@ -322,6 +322,28 @@ a:hover { color: var(--gold-pale); }
   position: relative; z-index: 1;
 }
 
+/* ── Error pages (404 / 500) — reuse the page-hero idiom, centred ── */
+.error-page {
+  border-bottom: none;
+  min-height: calc(100vh - 60px - 120px);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 4rem 2rem;
+}
+.error-eyebrow .page-arch-label { letter-spacing: .5em; }
+.error-text {
+  font-family: var(--font-body);
+  font-size: 1.1rem; line-height: 1.7;
+  color: var(--text-dim);
+  max-width: 34rem; margin: .75rem auto 0;
+  position: relative; z-index: 1;
+}
+.error-actions {
+  display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center;
+  margin-top: 2rem;
+  position: relative; z-index: 1;
+}
+
 /* ============================================================
    CARDS — Grid
    ============================================================ */
