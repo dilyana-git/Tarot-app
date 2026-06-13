@@ -1149,11 +1149,8 @@ a:hover { color: var(--gold-pale); }
   background: var(--reversed-tint);
   color: var(--reversed-pale);
 }
-.panel-meaning h4 { font-family: var(--font-accent); font-size: .6rem; letter-spacing: .2em; color: var(--gold-dim); text-transform: uppercase; margin-bottom: .6rem; }
-.panel-meaning p { font-size: 1.05rem; line-height: 1.82; color: var(--text); margin-bottom: 1rem; }
-
-/* Reading-specific narrative (composer): set apart from the static meaning by a
-   gilt left-rule and faint wash, since this text is unique to this draw. */
+/* Reading-specific narrative (composer): a gilt left-rule and faint wash mark
+   this text as unique to this draw. */
 .panel-narrative {
   margin-bottom: 1.5rem;
   padding: .9rem 1.1rem;
