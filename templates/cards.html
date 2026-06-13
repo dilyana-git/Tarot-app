@@ -86,6 +86,32 @@
     </div>
   </div>
 
+  <!-- Bottom suit switcher — mirrors the hero filters at the foot of the
+       spread, so another suit is always one click away without scrolling
+       back up. Wired to the same activateTile() as the top tiles. -->
+  <nav class="suit-switch" id="suitSwitch" aria-label="Jump to another suit">
+    <button class="suit-switch-btn suit-switch-btn--active" data-suit="major" style="--tile-accent:var(--suit-major)">
+      <span class="suit-switch-sigil" aria-hidden="true">✦</span>
+      <span class="suit-switch-name">Major</span>
+    </button>
+    <button class="suit-switch-btn" data-suit="wands" style="--tile-accent:var(--suit-wands)">
+      <span class="suit-switch-sigil" aria-hidden="true">△</span>
+      <span class="suit-switch-name">Wands</span>
+    </button>
+    <button class="suit-switch-btn" data-suit="cups" style="--tile-accent:var(--suit-cups)">
+      <span class="suit-switch-sigil" aria-hidden="true">▽</span>
+      <span class="suit-switch-name">Cups</span>
+    </button>
+    <button class="suit-switch-btn" data-suit="swords" style="--tile-accent:var(--suit-swords)">
+      <span class="suit-switch-sigil" aria-hidden="true">✕</span>
+      <span class="suit-switch-name">Swords</span>
+    </button>
+    <button class="suit-switch-btn" data-suit="pentacles" style="--tile-accent:var(--suit-pentacles)">
+      <span class="suit-switch-sigil" aria-hidden="true">⊕</span>
+      <span class="suit-switch-name">Pentacles</span>
+    </button>
+  </nav>
+
   <!-- Back-to-filter button — the reverse of the suit-tile click handler's
        scroll-into-view: jumps back up to the suit-tile filters once the
        arc has scrolled them out of view. -->
@@ -360,6 +386,9 @@
   function activateTile(suit) {
     document.querySelectorAll('.suit-tile').forEach(b => b.classList.remove('suit-tile--active'));
     document.querySelector(`.suit-tile[data-suit="${suit}"]`)?.classList.add('suit-tile--active');
+    // Keep the bottom switcher's highlight in sync with the top tiles.
+    document.querySelectorAll('.suit-switch-btn').forEach(b => b.classList.remove('suit-switch-btn--active'));
+    document.querySelector(`.suit-switch-btn[data-suit="${suit}"]`)?.classList.add('suit-switch-btn--active');
 
     if (pageTitle) pageTitle.textContent = SUIT_TITLES[suit] || 'The Deck';
 
@@ -422,6 +451,17 @@
   });
   suitNavPrev?.addEventListener('click', () => activateTile(suitNavPrev.dataset.suit));
   suitNavNext?.addEventListener('click', () => activateTile(suitNavNext.dataset.suit));
+
+  /* ── Bottom suit switcher ───────────────────────────────── */
+  // Switch from where the reader already is, then bring the top of the newly
+  // selected suit's arc just below the navbar (.st-wrap has scroll-margin-top)
+  // so they see it from the start without hunting for the hero filters.
+  document.querySelectorAll('.suit-switch-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activateTile(btn.dataset.suit);
+      spreadView?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
 
   /* ── Back-to-filter button ──────────────────────────────── */
   // Shows once the suit-tile filters scroll out of view (above the fixed

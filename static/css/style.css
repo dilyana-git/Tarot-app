@@ -1432,6 +1432,49 @@ a:hover { color: var(--gold-pale); }
   margin-top: .1rem;
 }
 
+/* Bottom suit switcher — a compact echo of the hero filters at the foot of the
+   spread, so the reader can jump to another suit without scrolling back up.
+   Shares the top tiles' accent-underline idiom in a single horizontal row. */
+.suit-switch {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: .2rem;
+  max-width: 640px; margin: .5rem auto 0;
+  padding-top: 1.25rem;
+  border-top: 1px solid color-mix(in srgb, var(--gold-300) 14%, transparent);
+  position: relative; z-index: 6;
+}
+.suit-switch-btn {
+  display: inline-flex; align-items: center; gap: .5rem;
+  padding: .55rem 1.1rem;
+  background: none; border: none; cursor: pointer;
+  color: var(--gold-500);
+  transition: color .22s;
+  position: relative;
+}
+.suit-switch-btn::after {
+  content: '';
+  position: absolute; left: 18%; right: 18%; bottom: .25rem;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--tile-accent, var(--gold-300)), transparent);
+  opacity: 0; transition: opacity .3s;
+}
+.suit-switch-btn:hover { color: var(--gold-300); }
+.suit-switch-btn:hover::after { opacity: .5; }
+.suit-switch-btn--active { color: var(--gold-200); }
+.suit-switch-btn--active::after { opacity: 1; }
+.suit-switch-sigil {
+  font-size: 1.05rem; line-height: 1; color: var(--gold-500);
+  transition: color .25s, filter .25s;
+}
+.suit-switch-btn--active .suit-switch-sigil {
+  color: var(--tile-accent); filter: drop-shadow(0 0 6px currentColor);
+}
+.suit-switch-name {
+  font-family: var(--font-display); font-size: .6rem; letter-spacing: var(--track-label);
+  text-transform: uppercase; color: var(--parchment-dim);
+  transition: color .22s;
+}
+.suit-switch-btn--active .suit-switch-name { color: var(--parchment); }
+
 /* ============================================================
    SPREAD TABLE (Direction C)
    ============================================================ */
