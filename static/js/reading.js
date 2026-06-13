@@ -25,6 +25,7 @@
     intentPositions: $('intentPositions'),
     asked:           $('readingAsked'),
     resultDesc:      $('resultSpreadDesc'),
+    notes:           $('readingNotes'),
     legend:          $('readingLegend'),
 
     stageSelect:    $('stageSelect'),
@@ -129,7 +130,9 @@
       const res = await fetch('/api/reading', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ spread: currentSpread }),
+        // The question feeds the server-side narrative composer (it tailors a
+        // "lens" sentence to the asked topic); it is never persisted.
+        body: JSON.stringify({ spread: currentSpread, question }),
       });
       if (!res.ok) throw new Error('Server error ' + res.status);
       const data = await res.json();
@@ -154,6 +157,14 @@
     } else {
       els.asked.textContent = '';
       hide(els.asked);
+    }
+
+    // Whole-reading observation (mostly Major Arcana, a dominant suit, many
+    // reversals) — shown once here rather than repeated on every card.
+    if (els.notes) {
+      const notes = (data.reading_notes || '').trim();
+      if (notes) { els.notes.textContent = notes; show(els.notes); }
+      else { els.notes.textContent = ''; hide(els.notes); }
     }
 
     els.layout.className = 'spread-layout spread-' + currentSpread.replace(/_/g, '-');
@@ -312,6 +323,11 @@
       <div class="panel-keywords">
         ${(keywords || []).map(k => `<span class="keyword-tag ${card.reversed ? 'keyword-reversed' : 'keyword-upright'}">${esc(k)}</span>`).join('')}
       </div>
+      ${card.narrative ? `
+      <div class="panel-narrative">
+        <h4>✦ In This Reading</h4>
+        <p>${esc(card.narrative)}</p>
+      </div>` : ''}
       <div class="panel-meaning">
         <h4>${card.reversed ? '↩ Reversed' : '☝ Upright'} Meaning</h4>
         <p>${esc(meaning)}</p>
@@ -335,6 +351,7 @@
     drawnCards = []; question = '';
     els.layout.innerHTML = '';
     els.legend.innerHTML = '';
+    if (els.notes) { els.notes.textContent = ''; hide(els.notes); }
     els.panel.style.display = 'none';
     els.leftTitle.textContent = 'Your Reading';
     setStage('select');

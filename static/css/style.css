@@ -728,6 +728,19 @@ a:hover { color: var(--gold-pale); }
   padding-bottom: 1.25rem;
   border-bottom: 1px solid var(--rule);
 }
+/* Whole-reading observation (composer's reading_notes): a gilt callout above
+   the legend, set apart from the italic spread description by its boxed frame. */
+.reading-notes {
+  font-family: var(--font-body);
+  font-size: 1rem; line-height: 1.65;
+  color: var(--gold-200);
+  margin-bottom: 1.5rem;
+  padding: .9rem 1.1rem;
+  border: 1px solid color-mix(in srgb, var(--gold-300) 26%, transparent);
+  background: color-mix(in srgb, var(--gold-300) 7%, transparent);
+  border-radius: var(--radius-md);
+}
+
 .reading-new-btn { margin-bottom: 1.5rem; align-self: flex-start; }
 
 /* Numbered legend — each drawn card's meaning, keyed to a number on the card */
@@ -1138,6 +1151,18 @@ a:hover { color: var(--gold-pale); }
 }
 .panel-meaning h4 { font-family: var(--font-accent); font-size: .6rem; letter-spacing: .2em; color: var(--gold-dim); text-transform: uppercase; margin-bottom: .6rem; }
 .panel-meaning p { font-size: 1.05rem; line-height: 1.82; color: var(--text); margin-bottom: 1rem; }
+
+/* Reading-specific narrative (composer): set apart from the static meaning by a
+   gilt left-rule and faint wash, since this text is unique to this draw. */
+.panel-narrative {
+  margin-bottom: 1.5rem;
+  padding: .9rem 1.1rem;
+  border-left: 2px solid color-mix(in srgb, var(--gold-300) 55%, transparent);
+  background: color-mix(in srgb, var(--gold-300) 6%, transparent);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+.panel-narrative h4 { font-family: var(--font-accent); font-size: .6rem; letter-spacing: .2em; color: var(--gold); text-transform: uppercase; margin-bottom: .6rem; }
+.panel-narrative p { font-family: var(--font-body); font-size: 1.05rem; line-height: 1.75; color: var(--gold-pale); margin: 0; }
 /* Position purpose, shown above the card title in the panel */
 .panel-position-meaning { font-family: var(--font-body); font-style: italic; font-size: .92rem; color: var(--text-dim); line-height: 1.5; margin: 0 0 1rem; }
 

@@ -5,6 +5,7 @@ from data.tarot_data import (
     ALL_CARDS, MAJOR_ARCANA, SPREADS,
     get_card_by_id, get_cards_by_suit, get_major_arcana, get_minor_arcana,
 )
+from data.reading_composer import compose as compose_reading
 
 app = Flask(__name__)
 _secret = os.environ.get('SECRET_KEY')
@@ -178,6 +179,7 @@ def reading():
 def api_reading():
     data = request.get_json() or {}
     spread_key = data.get('spread', 'three_card')
+    question = (data.get('question') or '').strip()
 
     if spread_key not in SPREADS:
         return jsonify({'error': 'Unknown spread'}), 400
@@ -212,9 +214,17 @@ def api_reading():
             'image_url': image_url,
         })
 
+    # Compose a per-card narrative (position × neighbours × question) plus a
+    # one-line note on whole-reading patterns. Purely additive — the cards still
+    # carry their static meanings; the narrative is an extra, reading-specific layer.
+    composed = compose_reading(result_cards, spread_key, question)
+    for card, narrative in zip(result_cards, composed['narratives']):
+        card['narrative'] = narrative
+
     return jsonify({
         'spread': spread,
         'cards': result_cards,
+        'reading_notes': composed['reading_notes'],
     })
 
 
