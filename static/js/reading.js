@@ -313,7 +313,7 @@
           <div class="panel-card-suit">${esc(suitDisplay)}</div>
         </div>
       </div>
-      ${card.reversed ? '<p class="panel-reversed-label">↩ Reversed</p>' : ''}`;
+      <p class="panel-orientation ${card.reversed ? 'is-reversed' : ''}">${card.reversed ? '↩ Reversed' : '☝ Upright'}</p>`;
 
     els.panelInfo.innerHTML = `
       <p class="panel-position-top">${esc(card.position)}</p>
@@ -321,7 +321,7 @@
       <h3 class="panel-card-title">${esc(card.name)}</h3>
       <p class="panel-element">✦ ${esc(card.element)} · ${card.arcana === 'major' ? 'Major Arcana' : esc(card.suit)}</p>
       <div class="panel-keywords">
-        ${(keywords || []).map(k => `<span class="keyword-tag ${card.reversed ? 'keyword-reversed' : 'keyword-upright'}">${esc(k)}</span>`).join('')}
+        ${(keywords || []).map((k, i, arr) => `<span class="panel-kw ${card.reversed ? 'is-reversed' : ''}">${esc(k)}</span>${i < arr.length - 1 ? '<span class="panel-kw-sep" aria-hidden="true">·</span>' : ''}`).join('')}
       </div>
       ${card.narrative ? `
       <div class="panel-narrative">
@@ -332,7 +332,7 @@
         <h4>${card.reversed ? '↩ Reversed' : '☝ Upright'} Meaning</h4>
         <p>${esc(meaning)}</p>
       </div>
-      <a href="/card/${encodeURIComponent(card.id)}" class="btn btn-outline btn-sm" target="_self">View Full Card →</a>`;
+      <a href="/card/${encodeURIComponent(card.id)}" class="panel-cta" target="_self"><span class="panel-cta-inner">View Full Card →</span></a>`;
 
     panelLastFocus = document.activeElement;
     els.panel.style.display = 'flex';

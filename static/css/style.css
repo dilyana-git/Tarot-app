@@ -1052,8 +1052,8 @@ a:hover { color: var(--gold-pale); }
   position: fixed; inset: 0; z-index: 200;
   display: flex; align-items: center; justify-content: center;
   padding: 1rem; animation: fade-in .22s ease;
-  background: color-mix(in srgb, var(--ink-900) 72%, transparent);
-  backdrop-filter: blur(6px);
+  background: color-mix(in srgb, var(--ink-900) 88%, transparent);
+  backdrop-filter: blur(18px) saturate(55%);
   cursor: pointer;
 }
 .card-panel .panel-inner { cursor: default; }
@@ -1062,29 +1062,12 @@ a:hover { color: var(--gold-pale); }
 .panel-inner {
   background: var(--bg2); border: 1px solid var(--rule-hover);
   border-radius: var(--radius-lg); padding: 2.5rem;
-  max-width: 680px; width: 100%;
+  max-width: 760px; width: 100%;
   max-height: 88vh; overflow-y: auto;
-  display: grid; grid-template-columns: 160px 1fr;
+  display: grid; grid-template-columns: minmax(200px, 270px) 1fr;
   gap: 2.5rem; position: relative;
   box-shadow: var(--shadow-lg);
   animation: slide-up .3s ease;
-}
-/* Art Nouveau corner ornaments on the panel */
-.panel-inner::before,
-.panel-inner::after {
-  content: '';
-  position: absolute; width: 28px; height: 28px;
-  border-color: var(--gold-dim); border-style: solid; opacity: .35;
-}
-.panel-inner::before {
-  top: 14px; left: 14px;
-  border-width: 1px 0 0 1px;
-  border-radius: 0 0 10px 0;
-}
-.panel-inner::after {
-  bottom: 14px; right: 14px;
-  border-width: 0 1px 1px 0;
-  border-radius: 10px 0 0 0;
 }
 @media (max-width: 580px) { .panel-inner { grid-template-columns: 1fr; } }
 @keyframes slide-up { from { transform: translateY(16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
@@ -1101,8 +1084,33 @@ a:hover { color: var(--gold-pale); }
 }
 .panel-close:hover { border-color: var(--gold-dim); color: var(--gold); }
 
+/* Visual column: stretches to the height of the text column so the card
+   reads as the dominant element; corner brackets frame the card itself
+   rather than the whole dialog. */
+.panel-card-visual {
+  position: relative;
+  height: 100%; min-height: 380px;
+  display: flex; flex-direction: column;
+}
+.panel-card-visual::before,
+.panel-card-visual::after {
+  content: '';
+  position: absolute; width: 30px; height: 30px;
+  border-color: var(--gold-dim); border-style: solid; opacity: .45;
+  pointer-events: none; z-index: 2;
+}
+.panel-card-visual::before {
+  top: -9px; left: -9px;
+  border-width: 1px 0 0 1px;
+  border-radius: 6px 0 0 0;
+}
+.panel-card-visual::after {
+  bottom: -9px; right: -9px;
+  border-width: 0 1px 1px 0;
+  border-radius: 0 0 6px 0;
+}
 .panel-card {
-  width: 100%; aspect-ratio: 2/3; border-radius: var(--radius-md);
+  width: 100%; height: 100%; flex: 1; border-radius: var(--radius-md);
   background:
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 36 36'%3E%3Ccircle cx='18' cy='18' r='8' fill='none' stroke='rgba(196%2C147%2C58%2C0.1)' stroke-width='0.6'/%3E%3Ccircle cx='18' cy='18' r='3' fill='none' stroke='rgba(196%2C147%2C58%2C0.08)' stroke-width='0.5'/%3E%3Cpath d='M18 10 Q20 14 18 18 Q16 14 18 10Z' fill='rgba(196%2C147%2C58%2C0.07)'/%3E%3Cpath d='M18 26 Q20 22 18 18 Q16 22 18 26Z' fill='rgba(196%2C147%2C58%2C0.07)'/%3E%3Cpath d='M10 18 Q14 20 18 18 Q14 16 10 18Z' fill='rgba(196%2C147%2C58%2C0.07)'/%3E%3Cpath d='M26 18 Q22 20 18 18 Q22 16 26 18Z' fill='rgba(196%2C147%2C58%2C0.07)'/%3E%3Ccircle cx='18' cy='18' r='1.2' fill='rgba(196%2C147%2C58%2C0.12)'/%3E%3C/svg%3E"),
     linear-gradient(170deg,
@@ -1116,55 +1124,66 @@ a:hover { color: var(--gold-pale); }
 .panel-card-img {
   position: absolute; inset: 0; width: 100%; height: 100%;
   object-fit: cover; border-radius: var(--radius-md);
-  opacity: .82; pointer-events: none;
+  opacity: .92; pointer-events: none;
 }
 .panel-card-inner { display: flex; flex-direction: column; align-items: center; gap: .75rem; padding: 1rem; position: relative; z-index: 1; }
 .panel-card-number { font-family: var(--font-accent); font-size: .6rem; color: var(--gold-dim); letter-spacing: .1em; }
 .panel-card-suit { font-family: var(--font-accent); font-size: .57rem; color: var(--gold-dim); letter-spacing: .15em; text-transform: uppercase; }
 .panel-position-top { font-family: var(--font-display); font-size: .72rem; font-weight: 600; letter-spacing: .26em; text-transform: uppercase; color: var(--gold-200); margin: 0 0 .5rem; }
-.panel-reversed-label { font-family: var(--font-accent); font-size: .6rem; color: var(--reversed-pale); text-align: center; letter-spacing: .1em; }
+/* Orientation — always shown (not just when reversed), since it's central
+   to interpretation. Upright reads as a quiet aside; reversed picks up the
+   verdigris hue used for reversed meanings throughout the app. */
+.panel-orientation {
+  font-family: var(--font-accent); font-size: .62rem;
+  letter-spacing: .2em; text-transform: uppercase;
+  color: var(--gold-dim); text-align: center;
+  margin: .6rem 0 0;
+}
+.panel-orientation.is-reversed { color: var(--reversed-pale); }
 .panel-card-title { font-family: var(--font-display); font-size: 1.3rem; font-weight: 500; color: var(--gold-pale); margin-bottom: .35rem; letter-spacing: -.005em; text-shadow: 0 0 40px color-mix(in srgb, var(--gold-100) 10%, transparent); }
-.panel-element { font-family: var(--font-mono); font-size: .58rem; letter-spacing: .2em; color: var(--gold-dim); text-transform: uppercase; margin-bottom: 1rem; }
-.panel-keywords { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: 1.25rem; }
-/* Keyword pills — these classes were emitted by reading.js but had no CSS,
-   so the tags rendered as naked inline text. Gilt for upright, verdigris
-   for reversed, mirroring the card-detail meaning duality. */
-.keyword-tag {
-  font-family: var(--font-accent);
-  font-size: .82rem; letter-spacing: .03em; line-height: 1.2;
-  padding: .26rem .72rem;
-  border-radius: 999px;
-  border: 1px solid var(--rule);
-  background: color-mix(in srgb, var(--ink-800) 50%, transparent);
-  color: var(--text-dim);
-  transition: border-color var(--transition), color var(--transition), background var(--transition);
+.panel-element { font-family: var(--font-mono); font-size: .58rem; letter-spacing: .2em; color: var(--gold-dim); text-transform: uppercase; margin-bottom: 1.5rem; }
+/* Keyword run — de-boxed: small-caps gold text separated by faint dots,
+   mirroring the .st-kw / .st-kw-sep pattern used on the deck/detail pages. */
+.panel-keywords { display: flex; flex-wrap: wrap; align-items: center; gap: .2rem .6rem; margin-bottom: 1.5rem; }
+.panel-kw {
+  font-family: var(--font-display); font-size: .64rem; letter-spacing: .22em;
+  text-transform: uppercase; color: var(--gold-dim);
 }
-.keyword-upright {
-  border-color: color-mix(in srgb, var(--gold-300) 38%, transparent);
-  background: color-mix(in srgb, var(--gold-300) 8%, transparent);
-  color: var(--gold-pale);
-}
-.keyword-reversed {
-  border-color: var(--reversed-line);
-  background: var(--reversed-tint);
-  color: var(--reversed-pale);
-}
+.panel-kw.is-reversed { color: var(--reversed-pale); }
+.panel-kw-sep { color: var(--gold-500); font-size: .58rem; }
 .panel-meaning h4 { font-family: var(--font-accent); font-size: .6rem; letter-spacing: .2em; color: var(--gold-dim); text-transform: uppercase; margin-bottom: .6rem; }
 .panel-meaning p { font-size: 1.05rem; line-height: 1.82; color: var(--text); margin-bottom: 1rem; }
 
-/* Reading-specific narrative (composer): set apart from the static meaning by a
-   gilt left-rule and faint wash, since this text is unique to this draw. */
+/* Reading-specific narrative (composer): the personalised interpretation, so it
+   sits directly on the modal ground — a gilt left-hairline and eyebrow mark it
+   as reading-specific without boxing it in. */
 .panel-narrative {
   margin-bottom: 1.5rem;
-  padding: .9rem 1.1rem;
+  padding-left: 1.1rem;
   border-left: 2px solid color-mix(in srgb, var(--gold-300) 55%, transparent);
-  background: color-mix(in srgb, var(--gold-300) 6%, transparent);
-  border-radius: 0 var(--radius-md) var(--radius-md) 0;
 }
 .panel-narrative h4 { font-family: var(--font-accent); font-size: .6rem; letter-spacing: .2em; color: var(--gold); text-transform: uppercase; margin-bottom: .6rem; }
-.panel-narrative p { font-family: var(--font-body); font-size: 1.05rem; line-height: 1.75; color: var(--gold-pale); margin: 0; }
+.panel-narrative p { font-family: var(--font-body); font-size: 1.18rem; line-height: 1.8; color: var(--gold-pale); margin: 0; }
 /* Position purpose, shown above the card title in the panel */
 .panel-position-meaning { font-family: var(--font-body); font-style: italic; font-size: .92rem; color: var(--text-dim); line-height: 1.5; margin: 0 0 1rem; }
+
+/* "View full card" — a hairline-rule link, mirroring .st-meta-cta, so it
+   reads as the secondary action beneath closing/continuing the reading. */
+.panel-cta {
+  display: inline-flex; align-items: center;
+  text-decoration: none; cursor: pointer;
+  padding: .5rem 0; margin-top: .5rem;
+  border-top: 1px solid color-mix(in srgb, var(--gold-300) 40%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--gold-300) 40%, transparent);
+  transition: border-color .25s;
+}
+.panel-cta:hover { border-color: color-mix(in srgb, var(--gold-200) 70%, transparent); }
+.panel-cta-inner {
+  font-family: var(--font-display); font-size: .55rem; letter-spacing: .3em;
+  text-transform: uppercase; color: var(--gold-dim);
+  transition: color .25s;
+}
+.panel-cta:hover .panel-cta-inner { color: var(--gold-pale); }
 
 /* ============================================================
    READING — five-stage flow & spread geometries (Approach A)
