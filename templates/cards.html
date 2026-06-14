@@ -86,41 +86,6 @@
     </div>
   </div>
 
-  <!-- Bottom suit switcher — mirrors the hero filters at the foot of the
-       spread, so another suit is always one click away without scrolling
-       back up. Wired to the same activateTile() as the top tiles. -->
-  <nav class="suit-switch" id="suitSwitch" aria-label="Jump to another suit">
-    <button class="suit-switch-btn suit-switch-btn--active" data-suit="major" style="--tile-accent:var(--suit-major)">
-      <span class="suit-switch-sigil" aria-hidden="true">✦</span>
-      <span class="suit-switch-name">Major</span>
-    </button>
-    <button class="suit-switch-btn" data-suit="wands" style="--tile-accent:var(--suit-wands)">
-      <span class="suit-switch-sigil" aria-hidden="true">△</span>
-      <span class="suit-switch-name">Wands</span>
-    </button>
-    <button class="suit-switch-btn" data-suit="cups" style="--tile-accent:var(--suit-cups)">
-      <span class="suit-switch-sigil" aria-hidden="true">▽</span>
-      <span class="suit-switch-name">Cups</span>
-    </button>
-    <button class="suit-switch-btn" data-suit="swords" style="--tile-accent:var(--suit-swords)">
-      <span class="suit-switch-sigil" aria-hidden="true">✕</span>
-      <span class="suit-switch-name">Swords</span>
-    </button>
-    <button class="suit-switch-btn" data-suit="pentacles" style="--tile-accent:var(--suit-pentacles)">
-      <span class="suit-switch-sigil" aria-hidden="true">⊕</span>
-      <span class="suit-switch-name">Pentacles</span>
-    </button>
-  </nav>
-
-  <!-- Back-to-filter button — the reverse of the suit-tile click handler's
-       scroll-into-view: jumps back up to the suit-tile filters once the
-       arc has scrolled them out of view. -->
-  <button class="st-back-top" id="backToFilter" aria-label="Back to filters" title="Back to filters">
-    <svg class="sigil-svg" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M5 15L12 8L19 15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-  </button>
-
 </div><!-- /st-wrap -->
 
 {% else %}
@@ -386,9 +351,6 @@
   function activateTile(suit) {
     document.querySelectorAll('.suit-tile').forEach(b => b.classList.remove('suit-tile--active'));
     document.querySelector(`.suit-tile[data-suit="${suit}"]`)?.classList.add('suit-tile--active');
-    // Keep the bottom switcher's highlight in sync with the top tiles.
-    document.querySelectorAll('.suit-switch-btn').forEach(b => b.classList.remove('suit-switch-btn--active'));
-    document.querySelector(`.suit-switch-btn[data-suit="${suit}"]`)?.classList.add('suit-switch-btn--active');
 
     if (pageTitle) pageTitle.textContent = SUIT_TITLES[suit] || 'The Deck';
 
@@ -414,72 +376,46 @@
   }
 
   const spreadView = document.getElementById('spreadView');
+
+  /* ── Frame the spread ───────────────────────────────────── */
+  // Put the top filters, the arc and the enlarged showcase card all on screen
+  // at once, so the reader never has to scroll up and down. We scroll DOWN just
+  // far enough to reveal the bottom of the showcase card — the dashed suit-label
+  // row (.st-arc-label) sits directly beneath the card, so framing that row's
+  // bottom shows the whole card with the dashed line as its finishing edge.
+  // The hard constraint is the other direction: never scroll so far that the
+  // top filters slide under the fixed 60px navbar, because those always-visible
+  // tiles are now the only suit selector. Hence the clamp — if the layout is
+  // too tall to fit all three, the bottom gives way, never the filters.
+  // Measured AFTER activateTile(), which sizes the arc container synchronously.
+  function frameSpread() {
+    if (!spreadView) return;
+    const tiles  = document.getElementById('suitTiles');
+    const tilesH = tiles ? tiles.getBoundingClientRect().height : 0;
+    const svRect = spreadView.getBoundingClientRect();
+    // Scroll value that parks the top filters just below the navbar (+4px gap).
+    // Smaller gap = higher clamp ceiling = the view can scroll a little further
+    // toward the bottom, revealing more of the showcase card.
+    const filtersTop = svRect.top + window.scrollY - 60 - tilesH - 4;
+    // Scroll value that brings the showcase card's bottom (the .st-arc-label row
+    // beneath it) to ~20px above the viewport's bottom edge.
+    const cardRow = spreadView.querySelector('.st-arc-label');
+    const PAD_BOTTOM = 36;
+    const cardBottom = cardRow
+      ? cardRow.getBoundingClientRect().bottom + window.scrollY + PAD_BOTTOM - window.innerHeight
+      : filtersTop;
+    // Reveal the card bottom, but clamp so the top filters stay in view.
+    window.scrollTo({ top: Math.max(0, Math.min(filtersTop, cardBottom)), behavior: 'smooth' });
+  }
+
   document.querySelectorAll('.suit-tile').forEach(btn => {
     btn.addEventListener('click', () => {
       activateTile(btn.dataset.suit);
-      // Scroll the freshly-rebuilt arc into view. The spread is framed between
-      // two anchors:
-      //  • TOP — the suit-tile filter row parks just below the fixed 60px
-      //    navbar (+18px gap). A plain scrollIntoView once buried the tiles
-      //    ~92% under the navbar, which swallowed their clicks.
-      //  • BOTTOM — the dashed arc-rule line + suit-nav row (.st-arc-label)
-      //    is the meaningful bottom edge of the spread, so we frame IT fully
-      //    in view (with a small pad) rather than the whole .st-wrap, which
-      //    trails ~8px padding + the fixed back-to-filter button and used to
-      //    leave ~90px of dead space below the dashed line.
-      // Prefer the filters-at-top landing; only bias downward when the
-      // viewport is too short to also fit the dashed line + nav. When that
-      // pushes the tiles mostly under the navbar, the back-to-filter button
-      // (threshold .5) appears, so the filters stay one click away. Measured
-      // AFTER activateTile — buildArc has already set the container height
-      // synchronously.
-      if (!spreadView) return;
-      const tiles  = document.getElementById('suitTiles');
-      const tilesH = tiles ? tiles.getBoundingClientRect().height : 0;
-      const svRect = spreadView.getBoundingClientRect();
-      const filtersTop = svRect.top + window.scrollY - 60 - tilesH - 18;
-      // Anchor the dashed line + suit-nav (.st-arc-label) to ~24px above the
-      // viewport bottom. The dashed .st-arc-rule-svg sits just above this row,
-      // so framing the row's bottom guarantees the line is fully visible too.
-      const navRow    = spreadView.querySelector('.st-arc-label');
-      const PAD_BOTTOM = 24;
-      const lineBottom = navRow
-        ? navRow.getBoundingClientRect().bottom + window.scrollY + PAD_BOTTOM - window.innerHeight
-        : 0;
-      window.scrollTo({ top: Math.max(0, filtersTop, lineBottom), behavior: 'smooth' });
+      frameSpread();
     });
   });
-  suitNavPrev?.addEventListener('click', () => activateTile(suitNavPrev.dataset.suit));
-  suitNavNext?.addEventListener('click', () => activateTile(suitNavNext.dataset.suit));
-
-  /* ── Bottom suit switcher ───────────────────────────────── */
-  // Switch from where the reader already is, then bring the top of the newly
-  // selected suit's arc just below the navbar (.st-wrap has scroll-margin-top)
-  // so they see it from the start without hunting for the hero filters.
-  document.querySelectorAll('.suit-switch-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      activateTile(btn.dataset.suit);
-      spreadView?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
-  });
-
-  /* ── Back-to-filter button ──────────────────────────────── */
-  // Shows once the suit-tile filters scroll out of view (above the fixed
-  // navbar) and scrolls the page back to the top, where they live.
-  const backToFilter = document.getElementById('backToFilter');
-  const suitTiles    = document.getElementById('suitTiles');
-  if (backToFilter && suitTiles) {
-    // threshold .5: a row MOSTLY hidden under the navbar counts as gone, so
-    // the button can't get stuck hidden while a last sliver still intersects.
-    const filterObserver = new IntersectionObserver((entries) => {
-      backToFilter.classList.toggle('is-visible', !entries[0].isIntersecting);
-    }, { rootMargin: '-60px 0px 0px 0px', threshold: 0.5 });
-    filterObserver.observe(suitTiles);
-
-    backToFilter.addEventListener('click', () => {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
-  }
+  suitNavPrev?.addEventListener('click', () => { activateTile(suitNavPrev.dataset.suit); frameSpread(); });
+  suitNavNext?.addEventListener('click', () => { activateTile(suitNavNext.dataset.suit); frameSpread(); });
 
   /* ── Showcase strip ─────────────────────────────────────── */
   const stMetaEyebrow = document.getElementById('stMetaEyebrow');
@@ -506,6 +442,9 @@
   /* ── Init ───────────────────────────────────────────────── */
   document.addEventListener('DOMContentLoaded', () => {
     activateTile('major');
+    // Frame the initial view too, so the showcase card is on screen from the
+    // start without the reader having to scroll past the page title.
+    requestAnimationFrame(frameSpread);
   });
 
   // Rebuild arc on resize (debounced) — respects whichever tile is active

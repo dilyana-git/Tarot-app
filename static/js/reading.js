@@ -330,8 +330,7 @@
           <div class="panel-card-number">${esc(card.number)}</div>
           <div class="panel-card-suit">${esc(suitDisplay)}</div>
         </div>
-      </div>
-      <p class="panel-orientation ${card.reversed ? 'is-reversed' : ''}">${card.reversed ? '↩ Reversed' : '☝ Upright'}</p>`;
+      </div>`;
 
     els.panelInfo.innerHTML = `
       <p class="panel-position-top">${esc(card.position)}</p>
@@ -339,7 +338,7 @@
       <h3 class="panel-card-title">${esc(card.name)}</h3>
       <p class="panel-element">✦ ${esc(card.element)} · ${card.arcana === 'major' ? 'Major Arcana' : esc(card.suit)}</p>
       <div class="panel-keywords">
-        ${(keywords || []).map((k, i, arr) => `<span class="panel-kw ${card.reversed ? 'is-reversed' : ''}">${esc(k)}</span>${i < arr.length - 1 ? '<span class="panel-kw-sep" aria-hidden="true">·</span>' : ''}`).join('')}
+        ${(keywords || []).map((k, i, arr) => `<span class="panel-kw ${card.reversed ? 'is-reversed' : ''}">${esc(k)}</span>${i < arr.length - 1 ? '<span class="panel-kw-sep" aria-hidden="true"> · </span>' : ''}`).join('')}
       </div>
       ${card.narrative ? `
       <div class="panel-narrative">

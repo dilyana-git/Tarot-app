@@ -1074,8 +1074,10 @@ a:hover { color: var(--gold-pale); }
   position: fixed; inset: 0; z-index: 200;
   display: flex; align-items: center; justify-content: center;
   padding: 1rem; animation: fade-in .22s ease;
-  background: color-mix(in srgb, var(--ink-900) 88%, transparent);
-  backdrop-filter: blur(18px) saturate(55%);
+  /* Even, quiet scrim — but not pure black: ~17% lets the blurred spread read
+     faintly through so the modal floats above its context rather than a void. */
+  background: color-mix(in srgb, var(--ink-900) 83%, transparent);
+  backdrop-filter: blur(20px) saturate(55%);
   cursor: pointer;
 }
 .card-panel .panel-inner { cursor: default; }
@@ -1083,19 +1085,22 @@ a:hover { color: var(--gold-pale); }
 @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
 .panel-inner {
   background: var(--bg2); border: 1px solid var(--rule-hover);
-  border-radius: var(--radius-lg); padding: 2.5rem;
+  border-radius: var(--radius-lg); padding: 1.5rem;
   max-width: 760px; width: 100%;
   max-height: 88vh; overflow-y: auto;
-  display: grid; grid-template-columns: minmax(200px, 270px) 1fr;
-  gap: 2.5rem; position: relative;
+  display: grid; grid-template-columns: minmax(180px, 250px) 1fr;
+  gap: 1.75rem; position: relative;
   box-shadow: var(--shadow-lg);
   animation: slide-up .3s ease;
 }
 @media (max-width: 580px) { .panel-inner { grid-template-columns: 1fr; } }
 @keyframes slide-up { from { transform: translateY(16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+/* Out of the grid flow and pinned to the panel's top-right corner, so the close
+   sits on the same line as the top of the image instead of claiming its own
+   full-width row above it. Higher z-index keeps it above the corner brackets. */
 .panel-nav {
-  display: flex; align-items: center; justify-content: flex-end;
-  grid-column: 1 / -1; margin-bottom: 0;
+  position: absolute; top: .85rem; right: .85rem; z-index: 3;
+  display: flex; align-items: center;
 }
 .panel-close {
   background: none; border: 1px solid var(--rule);
@@ -1111,8 +1116,10 @@ a:hover { color: var(--gold-pale); }
    rather than the whole dialog. */
 .panel-card-visual {
   position: relative;
-  height: 100%; min-height: 380px;
+  align-self: start;      /* don't stretch to the text column — let the card keep its true 2:3 ratio */
   display: flex; flex-direction: column;
+  gap: .7rem;             /* breathing room between the card and its label */
+  padding-bottom: .75rem; /* lifts the orientation label clear of the bottom bracket */
 }
 .panel-card-visual::before,
 .panel-card-visual::after {
@@ -1132,7 +1139,7 @@ a:hover { color: var(--gold-pale); }
   border-radius: 0 0 6px 0;
 }
 .panel-card {
-  width: 100%; height: 100%; flex: 1; border-radius: var(--radius-md);
+  width: 100%; aspect-ratio: 2 / 3; border-radius: var(--radius-md);
   background:
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 36 36'%3E%3Ccircle cx='18' cy='18' r='8' fill='none' stroke='rgba(196%2C147%2C58%2C0.1)' stroke-width='0.6'/%3E%3Ccircle cx='18' cy='18' r='3' fill='none' stroke='rgba(196%2C147%2C58%2C0.08)' stroke-width='0.5'/%3E%3Cpath d='M18 10 Q20 14 18 18 Q16 14 18 10Z' fill='rgba(196%2C147%2C58%2C0.07)'/%3E%3Cpath d='M18 26 Q20 22 18 18 Q16 22 18 26Z' fill='rgba(196%2C147%2C58%2C0.07)'/%3E%3Cpath d='M10 18 Q14 20 18 18 Q14 16 10 18Z' fill='rgba(196%2C147%2C58%2C0.07)'/%3E%3Cpath d='M26 18 Q22 20 18 18 Q22 16 26 18Z' fill='rgba(196%2C147%2C58%2C0.07)'/%3E%3Ccircle cx='18' cy='18' r='1.2' fill='rgba(196%2C147%2C58%2C0.12)'/%3E%3C/svg%3E"),
     linear-gradient(170deg,
@@ -1153,32 +1160,41 @@ a:hover { color: var(--gold-pale); }
 .panel-card-suit { font-family: var(--font-accent); font-size: .57rem; color: var(--gold-dim); letter-spacing: .15em; text-transform: uppercase; }
 .panel-position-top { font-family: var(--font-display); font-size: .72rem; font-weight: 600; letter-spacing: .26em; text-transform: uppercase; color: var(--gold-200); margin: 0 0 .5rem; }
 /* Orientation — always shown (not just when reversed), since it's central
-   to interpretation. Upright reads as a quiet aside; reversed picks up the
-   verdigris hue used for reversed meanings throughout the app. */
+   to interpretation. Sits below the card on the dark modal ground (legible,
+   unlike over the art), lifted by the column's bottom padding so it tucks just
+   inside the bottom bracket rather than colliding with it. Upright reads as a
+   quiet aside; reversed picks up the verdigris hue used for reversed meanings. */
 .panel-orientation {
+  margin: 0; text-align: center;
   font-family: var(--font-accent); font-size: .62rem;
-  letter-spacing: .2em; text-transform: uppercase;
-  color: var(--gold-dim); text-align: center;
-  margin: .6rem 0 0;
+  letter-spacing: .24em; text-transform: uppercase;
+  color: var(--gold-200);
 }
 .panel-orientation.is-reversed { color: var(--reversed-pale); }
 .panel-card-title { font-family: var(--font-display); font-size: 1.3rem; font-weight: 500; color: var(--gold-pale); margin-bottom: .35rem; letter-spacing: -.005em; text-shadow: 0 0 40px color-mix(in srgb, var(--gold-100) 10%, transparent); }
-.panel-element { font-family: var(--font-mono); font-size: .58rem; letter-spacing: .2em; color: var(--gold-dim); text-transform: uppercase; margin-bottom: 1.5rem; }
+/* Element line sits a touch brighter; the extra margin below keeps it from
+   blurring into the keyword run, which shares its gold-caps register. */
+.panel-element { font-family: var(--font-mono); font-size: .58rem; letter-spacing: .2em; color: var(--gold-200); text-transform: uppercase; margin-bottom: 1.1rem; }
 /* Keyword run — de-boxed: small-caps gold text separated by faint dots,
-   mirroring the .st-kw / .st-kw-sep pattern used on the deck/detail pages. */
-.panel-keywords { display: flex; flex-wrap: wrap; align-items: center; gap: .2rem .6rem; margin-bottom: 1.5rem; }
+   mirroring the .st-kw / .st-kw-sep pattern used on the deck/detail pages. An
+   inline flow (not flex) so `text-wrap: balance` can split a long run into even
+   lines instead of stranding a lone keyword on its own line. */
+.panel-keywords {
+  display: block; text-align: left; text-wrap: balance;
+  line-height: 1.8; margin-bottom: 1rem;
+}
 .panel-kw {
-  font-family: var(--font-display); font-size: .64rem; letter-spacing: .22em;
-  text-transform: uppercase; color: var(--gold-dim);
+  font-family: var(--font-display); font-size: .6rem; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--gold-dim); white-space: nowrap;
 }
 .panel-kw.is-reversed { color: var(--reversed-pale); }
-.panel-kw-sep { color: var(--gold-500); font-size: .58rem; }
+.panel-kw-sep { color: var(--gold-500); font-size: .52rem; }
 
 /* Reading-specific narrative (composer): the personalised interpretation, so it
    sits directly on the modal ground — a gilt left-hairline and eyebrow mark it
    as reading-specific without boxing it in. */
 .panel-narrative {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   padding-left: 1.1rem;
   border-left: 2px solid color-mix(in srgb, var(--gold-300) 55%, transparent);
 }
@@ -1453,49 +1469,6 @@ a:hover { color: var(--gold-pale); }
   color: var(--gold-dim); opacity: .7;
   margin-top: .1rem;
 }
-
-/* Bottom suit switcher — a compact echo of the hero filters at the foot of the
-   spread, so the reader can jump to another suit without scrolling back up.
-   Shares the top tiles' accent-underline idiom in a single horizontal row. */
-.suit-switch {
-  display: flex; flex-wrap: wrap; justify-content: center; gap: .2rem;
-  max-width: 640px; margin: .5rem auto 0;
-  padding-top: 1.25rem;
-  border-top: 1px solid color-mix(in srgb, var(--gold-300) 14%, transparent);
-  position: relative; z-index: 6;
-}
-.suit-switch-btn {
-  display: inline-flex; align-items: center; gap: .5rem;
-  padding: .55rem 1.1rem;
-  background: none; border: none; cursor: pointer;
-  color: var(--gold-500);
-  transition: color .22s;
-  position: relative;
-}
-.suit-switch-btn::after {
-  content: '';
-  position: absolute; left: 18%; right: 18%; bottom: .25rem;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--tile-accent, var(--gold-300)), transparent);
-  opacity: 0; transition: opacity .3s;
-}
-.suit-switch-btn:hover { color: var(--gold-300); }
-.suit-switch-btn:hover::after { opacity: .5; }
-.suit-switch-btn--active { color: var(--gold-200); }
-.suit-switch-btn--active::after { opacity: 1; }
-.suit-switch-sigil {
-  font-size: 1.05rem; line-height: 1; color: var(--gold-500);
-  transition: color .25s, filter .25s;
-}
-.suit-switch-btn--active .suit-switch-sigil {
-  color: var(--tile-accent); filter: drop-shadow(0 0 6px currentColor);
-}
-.suit-switch-name {
-  font-family: var(--font-display); font-size: .6rem; letter-spacing: var(--track-label);
-  text-transform: uppercase; color: var(--parchment-dim);
-  transition: color .22s;
-}
-.suit-switch-btn--active .suit-switch-name { color: var(--parchment); }
 
 /* ============================================================
    SPREAD TABLE (Direction C)
@@ -1832,43 +1805,6 @@ a:hover { color: var(--gold-pale); }
 }
 .st-meta-cta:hover .st-cta-inner { color: var(--gold-pale); }
 
-/* Floating "back to filter" button — the reverse of the suit-tile click
-   handler's scroll-into-view; mirrors the .st-suit-disc nav look. */
-.st-back-top {
-  position: fixed;
-  right: 28px; bottom: 28px;
-  z-index: 50;
-  display: flex; align-items: center; justify-content: center;
-  width: 46px; height: 46px;
-  border-radius: 50%;
-  border: 1.5px solid color-mix(in srgb, var(--gold-300) 65%, transparent);
-  background: radial-gradient(circle at 50% 35%,
-    color-mix(in srgb, var(--gold-300) 16%, transparent), rgba(8,7,14,.7));
-  box-shadow: 0 0 0 1px rgba(0,0,0,.4), 0 6px 18px -8px rgba(0,0,0,.8);
-  color: var(--gold-pale);
-  cursor: pointer;
-  opacity: 0; visibility: hidden; pointer-events: none;
-  transform: translateY(8px);
-  transition: opacity .25s ease, transform .25s ease, visibility 0s linear .25s,
-              border-color .25s, box-shadow .25s, background .25s, color .25s;
-}
-.st-back-top.is-visible {
-  opacity: 1; visibility: visible; pointer-events: auto;
-  transform: translateY(0);
-  transition: opacity .25s ease, transform .25s ease, visibility 0s,
-              border-color .25s, box-shadow .25s, background .25s, color .25s;
-}
-.st-back-top:hover,
-.st-back-top:focus-visible {
-  border-color: var(--gold-200);
-  background: radial-gradient(circle at 50% 35%,
-    color-mix(in srgb, var(--gold-200) 28%, transparent), rgba(8,7,14,.65));
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--gold-200) 45%, transparent),
-              0 0 22px -2px color-mix(in srgb, var(--gold-300) 55%, transparent);
-  color: var(--gold-100);
-}
-.st-back-top .sigil-svg { width: 18px; height: 18px; }
-
 @media (max-width: 900px) {
   .st-showcase-meta {
     grid-template-columns: 1fr;
@@ -1890,11 +1826,6 @@ a:hover { color: var(--gold-pale); }
     filter: brightness(1.06);
   }
   .suit-tile { transition: none; }
-  .st-back-top,
-  .st-back-top.is-visible {
-    transition: opacity .15s linear, visibility 0s;
-    transform: none;
-  }
 
   /* Reading + card-detail polish: drop the entrance, flip, and tab-crossfade
      motion. `animation: none` reverts the staggered reveals to their resting

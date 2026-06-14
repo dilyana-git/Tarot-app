@@ -12,6 +12,8 @@ venv/*
 node_modules/
 screenshot*
 check_page*
+_edge_tmp/
+_panel_preview.html
 reading*.png
 spread*.png
 v_*.png

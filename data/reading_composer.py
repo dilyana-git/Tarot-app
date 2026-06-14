@@ -386,11 +386,52 @@ _NOTE_REVERSED = [
 ]
 
 
+# ── Keyword nominalisation for prose ──────────────────────────────────────────
+# Every frame and lens template drops a keyword into a NOUN slot ("the {kw} of
+# it", "a season of {kw}", "{kw} is the air you are breathing"). Most keywords are
+# already nouns, but the court cards (and a few reversed lists) carry adjectives —
+# 'direct', 'honest', 'driven' — which render as broken prose ("the direct of it
+# resists you"). Map those to a bare-noun form (NO leading article, so "a season
+# of {kw}" doesn't double up). Keywords absent here pass through unchanged. This
+# only affects the composed narrative; the deck and detail pages still show the
+# original keyword labels, where an adjective reads perfectly well.
+_NOMINALIZE = {
+    'direct': 'directness',
+    'driven': 'drive',
+    'assertive': 'assertiveness',
+    'independent': 'independence',
+    'perceptive': 'perception',
+    'honest': 'honesty',
+    'reckless': 'recklessness',
+    'aggressive': 'aggression',
+    'domineering': 'domination',
+    'blunt': 'bluntness',
+    'destructive': 'destruction',
+    'adventurous': 'adventurousness',
+    'scattered': 'scattered energy',
+    'hot-headed': 'hot-headedness',
+    'unrealistic': 'unreality',
+    'emotionally manipulative': 'emotional manipulation',
+    'down-to-earth': 'groundedness',
+    'stuck': 'inertia',
+    'lost': 'disorientation',
+    'entrepreneur': 'enterprise',
+}
+
+
+def _nominalize(kw):
+    """Noun form of a keyword for use mid-sentence (adjectives → nouns)."""
+    return _NOMINALIZE.get(kw, kw)
+
+
 def _orient_keywords(card):
-    """Keyword list matching the card's orientation."""
+    """Keyword list matching the card's orientation, nominalised so each reads as
+    a noun when spliced into a prose slot."""
     if card.get('reversed'):
-        return card.get('keywords_reversed') or card.get('keywords_upright') or []
-    return card.get('keywords_upright') or []
+        kws = card.get('keywords_reversed') or card.get('keywords_upright') or []
+    else:
+        kws = card.get('keywords_upright') or []
+    return [_nominalize(k) for k in kws]
 
 
 def _three_keywords(rng, card):
