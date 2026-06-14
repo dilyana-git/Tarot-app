@@ -263,11 +263,6 @@ def _arcana_widget_cards():
     return result
 
 
-@app.route('/arcana-card')
-def arcana_card():
-    return render_template('arcana_card.html', cards=_arcana_widget_cards())
-
-
 @app.route('/api/cards')
 def api_cards():
     return jsonify([dict(c) for c in ALL_CARDS])

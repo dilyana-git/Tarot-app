@@ -30,7 +30,6 @@ image-path placeholder fallback. There is no linter configured.
 | `GET /cards` | `cards.html` | Accepts `?filter=major\|minor\|all` and `?suit=Wands\|Cups\|Swords\|Pentacles` |
 | `GET /card/<int:id>` | `card_detail.html` | Prev/next navigation links |
 | `GET /reading` | `reading.html` | Passes the `SPREADS` dict |
-| `GET /arcana-card` | `arcana_card.html` | Standalone demo of the mosaic card widget (includes `_arcana_hero.html`) |
 | `POST /api/reading` | — | Draws N random cards for the chosen spread; returns JSON (each card carries its position `name` and `meaning`) |
 | `GET /api/cards` | — | Returns all 78 cards as JSON |
 

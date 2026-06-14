@@ -446,7 +446,7 @@ a:hover { color: var(--gold-pale); }
   align-items: start;
   max-width: 980px;
   margin: 0 auto;
-  padding: 0 3rem 3rem;
+  padding: 2.5rem 3rem 3rem;
 }
 
 /* text column: eyebrow cap-height locked to the card's top border */

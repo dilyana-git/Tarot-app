@@ -29,7 +29,6 @@ def client():
     '/card/0',
     '/card/77',
     '/reading',
-    '/arcana-card',
     '/static/favicon.svg',
 ])
 def test_pages_ok(client, path):
