@@ -622,14 +622,11 @@
   color: var(--ah-gold-pale);
   white-space: nowrap;
   text-decoration: none;
-  transition: opacity .2s ease;
+  transition: opacity .35s ease, transform .35s ease;
 }
 .arcana-hero .main-card-label.is-out {
   opacity: 0;
   transform: translateX(-50%) translateY(6px);
-}
-.arcana-hero .main-card-label {
-  transition: opacity .35s ease, transform .35s ease;
 }
 
 /* Prev / Next satellite buttons */

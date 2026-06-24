@@ -56,6 +56,7 @@
   let drawnCards = [];
   let panelLastFocus = null;
   let lastReadingData = null;            // server payload for the active draw
+  let drawInFlight = false;              // guard against concurrent fetches
   const STORAGE_KEY = 'arcana.reading';  // sessionStorage slot for restore-on-return
 
   /* ── helpers ─────────────────────────────────────────────── */
@@ -120,10 +121,13 @@
 
   /* ── 2 · shuffle + draw ──────────────────────────────────── */
   async function shuffleAndDraw() {
+    if (drawInFlight) return;
+    drawInFlight = true;
+    if (els.intentionDraw) els.intentionDraw.disabled = true;
+
     question = (els.intentionInput && els.intentionInput.value || '').trim();
     setStage('loading');
 
-    // Let the shuffle animation breathe before the cards appear.
     const minDelay = reduceMotion ? 150 : 1200;
     const started = Date.now();
     const after = (fn) => setTimeout(fn, Math.max(0, minDelay - (Date.now() - started)));
@@ -132,8 +136,6 @@
       const res = await fetch('/api/reading', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        // The question feeds the server-side narrative composer (it tailors a
-        // "lens" sentence to the asked topic); it is never persisted.
         body: JSON.stringify({ spread: currentSpread, question }),
       });
       if (!res.ok) throw new Error('Server error ' + res.status);
@@ -142,6 +144,9 @@
     } catch (e) {
       console.error('Reading draw failed:', e);
       after(() => setStage('error'));
+    } finally {
+      drawInFlight = false;
+      if (els.intentionDraw) els.intentionDraw.disabled = false;
     }
   }
 
@@ -359,6 +364,15 @@
     panelLastFocus = null;
   }
 
+  function trapFocus(e) {
+    if (els.panel.style.display === 'none') return;
+    const focusable = els.panel.querySelectorAll('button, a[href], [tabindex]:not([tabindex="-1"])');
+    if (!focusable.length) return;
+    const first = focusable[0], last = focusable[focusable.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  }
+
   /* ── 6b · persistence ────────────────────────────────────────
         A reading is a random, non-deterministic draw — it has no URL to return
         to — so leaving for /card/<id> would lose it. Snapshot the whole draw to
@@ -424,7 +438,10 @@
 
   els.panelClose.addEventListener('click', closePanel);
   els.panel.addEventListener('click', e => { if (e.target === els.panel) closePanel(); });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') closePanel(); });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closePanel();
+    if (e.key === 'Tab') trapFocus(e);
+  });
 
   // Returning from /card/<id> (or a refresh) rebuilds the saved draw; otherwise
   // start fresh at the spread selector.

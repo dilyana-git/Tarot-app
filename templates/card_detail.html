@@ -45,7 +45,6 @@
           <span class="cl-symbol-small">{{ card.symbol }}</span>
           <span class="cl-number">{{ card.number }}</span>
         </div>
-        <div class="card-large-border-glow"></div>
       </div>
 
       <!-- Navigation -->
@@ -90,16 +89,16 @@
       <p class="detail-desc">{{ card.description }}</p>
 
       <!-- Meanings -->
-      <div class="meanings-tabs">
-        <button class="tab-btn active" data-tab="upright">Upright</button>
-        <button class="tab-btn" data-tab="reversed">Reversed</button>
+      <div class="meanings-tabs" role="tablist" aria-label="Card meanings">
+        <button class="tab-btn active" data-tab="upright" role="tab" id="tab-btn-upright" aria-selected="true" aria-controls="tab-upright">Upright</button>
+        <button class="tab-btn" data-tab="reversed" role="tab" id="tab-btn-reversed" aria-selected="false" aria-controls="tab-reversed">Reversed</button>
       </div>
-      <div class="tab-content active" id="tab-upright">
+      <div class="tab-content active" id="tab-upright" role="tabpanel" aria-labelledby="tab-btn-upright">
         <div class="meaning-box meaning-upright">
           <p>{{ card.upright_meaning }}</p>
         </div>
       </div>
-      <div class="tab-content" id="tab-reversed">
+      <div class="tab-content" id="tab-reversed" role="tabpanel" aria-labelledby="tab-btn-reversed">
         <div class="meaning-box meaning-reversed">
           <p>{{ card.reversed_meaning }}</p>
         </div>
@@ -115,9 +114,13 @@
 <script>
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => {
+        b.classList.remove('active');
+        b.setAttribute('aria-selected', 'false');
+      });
       document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
       btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
       document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
     });
   });

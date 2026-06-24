@@ -27,7 +27,7 @@
 </head>
 <body>
   <div class="grain" aria-hidden="true"></div>
-  <canvas id="stars-canvas"></canvas>
+  <canvas id="stars-canvas" aria-hidden="true"></canvas>
   <svg class="bg-sparkles" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice">
     <text fill="rgba(201,168,76,0.35)" font-size="14" font-family="serif" x="108" y="95">✦</text>
     <text fill="rgba(201,168,76,0.22)" font-size="10" font-family="serif" x="340" y="42">✦</text>
@@ -57,7 +57,7 @@
       <li><a href="{{ url_for('cards') }}" class="nav-link {% if request.endpoint == 'cards' %}active{% endif %}">The Cards</a></li>
       <li><a href="{{ url_for('reading') }}" class="nav-link {% if request.endpoint == 'reading' %}active{% endif %}">Reading</a></li>
     </ul>
-    <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">☰</button>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">☰</button>
   </nav>
 
   <main class="main-content">
@@ -67,7 +67,7 @@
   {% block footer %}
   <footer class="footer">
     <div class="footer-inner">
-      <p class="footer-rule"></p>
+      <hr class="footer-rule" aria-hidden="true" />
       <p class="footer-text">Arcana &ensp;·&ensp; The Tarot Oracle &ensp;·&ensp; For contemplation &amp; reflection</p>
     </div>
   </footer>

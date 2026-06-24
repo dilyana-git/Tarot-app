@@ -13,7 +13,7 @@
 
   function resize() {
     W = canvas.width  = window.innerWidth;
-    H = canvas.height = document.documentElement.scrollHeight;
+    H = canvas.height = window.innerHeight;
   }
 
   function makeStars(n) {
@@ -34,7 +34,6 @@
       const a = 0.08 + 0.18 * (0.5 + 0.5 * Math.sin(ts * s.speed + s.phase));
       ctx.beginPath();
       ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-      /* Warm ivory colour matching the Art Nouveau palette */
       ctx.fillStyle = `rgba(220,205,172,${a})`;
       ctx.fill();
     });
@@ -44,14 +43,15 @@
   function start() { if (reduce || running) return; running = true; raf = requestAnimationFrame(draw); }
   function stop()  { running = false; if (raf) { cancelAnimationFrame(raf); raf = null; } }
 
-  window.addEventListener('resize', () => { resize(); makeStars(110); if (reduce) draw(0); });
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => { resize(); makeStars(110); if (reduce) draw(0); }, 150);
+  });
   resize();
   makeStars(110);
-  if (reduce) draw(0); else start();   // reduced motion: one static frame, no loop
+  if (reduce) draw(0); else start();
 
-  /* Pause the starfield redraw while a card transition is in flight (the widget
-     fires these) so the loop doesn't compete for the main thread, and while the
-     tab is hidden. Resumes afterward. */
   document.addEventListener('arcana:transition-start', stop);
   document.addEventListener('arcana:transition-end', start);
   document.addEventListener('visibilitychange', () => {
@@ -63,18 +63,27 @@
 const navToggle = document.getElementById('navToggle');
 const navLinks  = document.querySelector('.nav-links');
 if (navToggle && navLinks) {
-  navToggle.addEventListener('click', () => navLinks.classList.toggle('open'));
-  /* Close on outside click */
+  navToggle.addEventListener('click', () => {
+    const open = navLinks.classList.toggle('open');
+    navToggle.setAttribute('aria-expanded', String(open));
+  });
   document.addEventListener('click', e => {
-    if (!e.target.closest('.navbar')) navLinks.classList.remove('open');
+    if (!e.target.closest('.navbar')) {
+      navLinks.classList.remove('open');
+      navToggle.setAttribute('aria-expanded', 'false');
+    }
   });
 }
 
 /* ---- Smooth scroll for in-page anchors -------------------- */
 document.querySelectorAll('a[href^="#"]').forEach(a => {
   a.addEventListener('click', e => {
-    const target = document.querySelector(a.getAttribute('href'));
-    if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth' }); }
+    const href = a.getAttribute('href');
+    if (!href || href === '#') return;
+    try {
+      const target = document.querySelector(href);
+      if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth' }); }
+    } catch (_) {}
   });
 });
 

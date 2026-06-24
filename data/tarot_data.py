@@ -1391,14 +1391,12 @@ from .reading_composer import register_spread_roles
 register_spread_roles(SPREADS)
 
 # ── COMBINED LIST & HELPERS ───────────────────────────────────────────────────
-ALL_CARDS = MAJOR_ARCANA + MINOR_ARCANA
+ALL_CARDS = tuple(MAJOR_ARCANA + MINOR_ARCANA)
+_CARDS_BY_ID = {c['id']: c for c in ALL_CARDS}
 
 
 def get_card_by_id(card_id):
-    for card in ALL_CARDS:
-        if card['id'] == card_id:
-            return card
-    return None
+    return _CARDS_BY_ID.get(card_id)
 
 
 def get_cards_by_suit(suit):

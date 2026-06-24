@@ -397,7 +397,7 @@ a:hover { color: var(--gold-pale); }
 }
 .card-tile-number {
   font-family: var(--font-accent);
-  font-size: .48rem; letter-spacing: .08em; color: var(--gold-dim);
+  font-size: .55rem; letter-spacing: .08em; color: var(--gold);
 }
 .card-tile-suit, .card-tile-arcana { font-size: .58rem; color: var(--gold-dim); opacity: .55; }
 .card-tile-footer { width: 100%; text-align: center; }
@@ -409,7 +409,7 @@ a:hover { color: var(--gold-pale); }
   transition: color var(--transition);
 }
 .card-tile:hover .card-tile-name { color: var(--gold-pale); }
-.card-tile-arcana-label { font-size: .43rem; color: var(--text-dim); opacity: .55; margin-top: .08rem; }
+.card-tile-arcana-label { font-size: .5rem; color: var(--text-dim); opacity: .7; margin-top: .08rem; }
 .card-tile-hover-info {
   position: absolute; inset: 0;
   background: linear-gradient(180deg, transparent 45%, color-mix(in srgb, var(--ink-900) 92%, transparent));
@@ -569,8 +569,6 @@ a:hover { color: var(--gold-pale); }
   font-size: .55rem; letter-spacing: .2em;
   color: var(--gold-dim); text-transform: uppercase;
 }
-.card-large-border-glow { display: none; }
-
 .card-large.has-image .card-large-corner,
 .card-large.has-image .card-large-center,
 .card-large.has-image .card-corner { display: none; }
@@ -1765,8 +1763,6 @@ a:hover { color: var(--gold-pale); }
   grid-column: 1; grid-row: 2;
 }
 
-/* Italic description — hidden in strip layout, too much text */
-.st-meta-desc { display: none; }
 
 /* Keywords */
 .st-meta-kw-block {
@@ -1852,6 +1848,7 @@ a:hover { color: var(--gold-pale); }
 .footer-rule {
   display: block; width: 36px; height: 1px;
   background: var(--rule); margin: 0 auto .75rem;
+  border: none;
 }
 .footer-text {
   font-family: var(--font-accent); font-size: .6rem;

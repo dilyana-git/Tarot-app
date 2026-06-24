@@ -31,7 +31,8 @@ image-path placeholder fallback. There is no linter configured.
 | `GET /card/<int:id>` | `card_detail.html` | Prev/next navigation links |
 | `GET /reading` | `reading.html` | Passes the `SPREADS` dict |
 | `POST /api/reading` | — | Draws N random cards for the chosen spread; returns JSON (each card carries its position `name` and `meaning`) |
-| `GET /api/cards` | — | Returns all 78 cards as JSON |
+| `GET /api/cards` | — | Returns all 78 cards as JSON (public fields only via `_card_json`) |
+| `GET /health` | — | Returns `{"status":"ok"}` for load-balancer probes |
 
 **Card data (`data/tarot_data.py`)** is a static Python file — the single source of truth for all 78 cards. Each card dict has: `id`, `name`, `number`, `arcana` (`'major'`/`'minor'`), `suit` (None for major), `symbol`, `element`, `keywords_upright`, `keywords_reversed`, `upright_meaning`, `reversed_meaning`, `description`, `card_color`, `accent_color`, `image` (path relative to `static/images/`), and optionally `video` (filename relative to `static/media/`). `ALL_CARDS = MAJOR_ARCANA + MINOR_ARCANA`. Card IDs for minor arcana start at 22.
 
@@ -40,6 +41,8 @@ image-path placeholder fallback. There is no linter configured.
 **Image resolution (`app.py:get_card_image_path`)** tries multiple extensions in order (`.jpg`, `.jpeg`, `.png`, `.webp`) and falls back to `images/card-placeholder.svg` if none exist. Image paths on disk follow these conventions:
 - Major arcana: `static/images/major/<slug>.jpg` — slug is the lowercased name with `the_` prefix stripped and spaces replaced with `_` (e.g. `high_priestess.jpg`)
 - Minor arcana: `static/images/minor/<suit_lower>/<rank>.jpg` — rank is mapped via `MINOR_RANK_MAP` (e.g. `ace`, `two`, `page`, `king`)
+
+**Card art assets** (`static/images/`, `static/media/`) are gitignored because of their size. On a fresh clone every card renders with `images/card-placeholder.svg` instead. To add real artwork, place files matching the conventions above under `static/images/major/` and `static/images/minor/<suit>/`, then optionally add `.mp4` loops under `static/media/`. The LRU-cached resolver picks them up automatically on the next request (restart to clear the cache).
 
 **Templates** all extend `base.html`, which provides the navbar and starfield canvas, loads `static/css/tokens.css` + `static/css/style.css` in `<head>`, and loads `static/js/main.js` at the bottom. Per-page scripts go in `{% block scripts %}` *before* `main.js` executes. The homepage injects card data as `window.ARCANA = {{ major_arcana | tojson }}`, consumed by the mosaic hero controller (`arcana-hero-mosaic.js`).
 

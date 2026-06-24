@@ -403,12 +403,12 @@ function buildMosaic(cw, ch) {
     '<header class="ac-head"><div class="ac-mark"><span class="rule"></span><span>ARCANA</span><span class="rule"></span></div>' +
     '<nav class="ac-nav"><a class="on">HOME</a><a>THE CARDS</a><a>READING</a></nav></header>' +
     '<main class="ac-stage">' +
-      '<button class="ac-side" data-dir="-1" type="button"><span class="disc"><em></em></span><span class="lbl"></span></button>' +
+      '<button class="ac-side" data-dir="-1" type="button" aria-label="Previous card"><span class="disc"><em></em></span><span class="lbl"></span></button>' +
       '<div class="ac-zone">' +
         '<div class="ac-eyebrow"><span class="rule"></span> MAJOR ARCANA <span class="rule"></span></div>' +
         '<div class="ac-shadow"></div>' +
         '<div class="ac-float">' +
-          '<div class="ac-tilt" tabindex="0" role="button">' +
+          '<div class="ac-tilt" tabindex="0" role="button" aria-label="Tarot card — click to flip">' +
             '<div class="ac-flip">' +
               '<div class="ac-face ac-front">' +
                 '<div class="front-light"></div>' +
@@ -432,7 +432,7 @@ function buildMosaic(cw, ch) {
         '</div>' +
         '<div class="ac-hint"></div>' +
       '</div>' +
-      '<button class="ac-side" data-dir="1" type="button"><span class="disc"><em></em></span><span class="lbl"></span></button>' +
+      '<button class="ac-side" data-dir="1" type="button" aria-label="Next card"><span class="disc"><em></em></span><span class="lbl"></span></button>' +
     '</main>' +
     '<footer class="ac-foot"><div class="ac-rail"><span class="cap">00</span><div class="track"><div class="fill"></div><div class="bead"></div></div><span class="cap">XXI</span></div>' +
     '<button class="ac-cta" type="button">\u2726 &nbsp;BEGIN A READING</button></footer>' +
@@ -1103,7 +1103,7 @@ function buildMosaic(cw, ch) {
     // wire events
     tiltEl.addEventListener("mousemove", function (e) { onMove(e.clientX, e.clientY); });
     tiltEl.addEventListener("mouseleave", resetTilt);
-    tiltEl.addEventListener("touchmove", function (e) { var t = e.touches[0]; if (t) { e.preventDefault(); onMove(t.clientX, t.clientY); } }, { passive: false });
+    tiltEl.addEventListener("touchmove", function (e) { var t = e.touches[0]; if (t) { onMove(t.clientX, t.clientY); } }, { passive: true });
     tiltEl.addEventListener("touchend", resetTilt);
     tiltEl.addEventListener("click", toggleFlip);
     tiltEl.addEventListener("keydown", function (e) {

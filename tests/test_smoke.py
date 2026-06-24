@@ -46,9 +46,23 @@ def test_unknown_page_404(client):
 
 
 # ── JSON APIs ──────────────────────────────────────────────────────────────────
+def test_health(client):
+    resp = client.get('/health')
+    assert resp.status_code == 200
+    assert resp.get_json() == {'status': 'ok'}
+
+
 def test_api_cards(client):
     data = client.get('/api/cards').get_json()
     assert len(data) == len(ALL_CARDS) == 78
+    assert 'focal_point' not in data[0]
+    assert 'video' not in data[0]
+
+
+def test_security_headers(client):
+    resp = client.get('/')
+    assert resp.headers['X-Content-Type-Options'] == 'nosniff'
+    assert resp.headers['X-Frame-Options'] == 'DENY'
 
 
 def test_api_unknown_path_returns_json_404(client):
@@ -102,6 +116,19 @@ def test_composer_deterministic_and_complete(spread_key):
     assert all(n for n in a['narratives'])
     blob = ' '.join(a['narratives']) + a['reading_notes']
     assert '{' not in blob and '}' not in blob  # no unsubstituted placeholders
+
+
+# ── Accessibility ─────────────────────────────────────────────────────────────
+def test_card_detail_has_aria_tabs(client):
+    resp = client.get('/card/0')
+    assert b'role="tablist"' in resp.data
+    assert b'role="tab"' in resp.data
+    assert b'role="tabpanel"' in resp.data
+
+
+def test_canvas_has_aria_hidden(client):
+    resp = client.get('/')
+    assert b'id="stars-canvas" aria-hidden="true"' in resp.data
 
 
 # ── Image path resolution ──────────────────────────────────────────────────────
