@@ -438,6 +438,35 @@ a:hover { color: var(--gold-pale); }
     transparent 70%);
 }
 
+/* X close button — returns to the cards listing */
+.card-detail-close {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 50%;
+  color: var(--gold-pale);
+  border: 1px solid var(--rule);
+  background: color-mix(in srgb, var(--card-color, #161A26) 30%, transparent);
+  text-decoration: none;
+  transition: color .2s ease, border-color .2s ease, background .2s ease, transform .2s ease;
+}
+.card-detail-close:hover {
+  color: var(--gold-100);
+  border-color: var(--rule-hover);
+  background: color-mix(in srgb, var(--card-color, #161A26) 55%, transparent);
+  transform: rotate(90deg);
+}
+.card-detail-close:focus-visible {
+  outline: 2px solid var(--gold-300);
+  outline-offset: 2px;
+}
+
 /* two-column spotlight: art | text */
 .card-detail-spotlight {
   display: grid;

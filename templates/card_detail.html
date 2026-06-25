@@ -7,6 +7,12 @@
 <!-- Unified spotlight: art + title in one breathing block -->
 <section class="card-detail-hero" style="--card-color: {{ card.card_color }}; --accent-color: {{ card.accent_color }}">
 
+  <a href="{{ url_for('cards') }}" class="card-detail-close" aria-label="Back to cards" title="Back to cards">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+      <path d="M6 6 L18 18 M18 6 L6 18"/>
+    </svg>
+  </a>
+
   <div class="card-detail-spotlight">
 
     <!-- LEFT: card art -->
