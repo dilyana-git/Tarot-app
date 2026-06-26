@@ -7,6 +7,13 @@
 <!-- Unified spotlight: art + title in one breathing block -->
 <section class="card-detail-hero" style="--card-color: {{ card.card_color }}; --accent-color: {{ card.accent_color }}">
 
+  <div class="card-detail-backbar">
+    <a href="{{ back_href }}" class="card-detail-back">
+      <span class="card-detail-back-arrow" aria-hidden="true">←</span>
+      {{ back_label }}
+    </a>
+  </div>
+
   <div class="card-detail-spotlight">
 
     <!-- LEFT: card art -->
@@ -50,10 +57,10 @@
       <!-- Navigation -->
       <div class="card-nav">
         {% if prev_card %}
-        <a href="{{ url_for('card_detail', card_id=prev_card.id) }}" class="card-nav-btn">← {{ prev_card.name }}</a>
+        <a href="{{ prev_href }}" class="card-nav-btn">← {{ prev_card.name }}</a>
         {% else %}<span></span>{% endif %}
         {% if next_card %}
-        <a href="{{ url_for('card_detail', card_id=next_card.id) }}" class="card-nav-btn">{{ next_card.name }} →</a>
+        <a href="{{ next_href }}" class="card-nav-btn">{{ next_card.name }} →</a>
         {% endif %}
       </div>
     </div>

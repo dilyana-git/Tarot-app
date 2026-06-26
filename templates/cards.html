@@ -4,10 +4,9 @@
 
 {% block content %}
 
-<!-- ── Compact page hero ───────────────────────────────────── -->
-<section class="page-hero-arch {% if filter_type == 'all' %}page-hero-arch--spread{% endif %}">
-  <h1 class="page-arch-title">{{ title }}</h1>
-  {% if filter_type == 'all' %}
+<!-- ── Compact page hero (spread view only) ──────────────────── -->
+{% if filter_type == 'all' %}
+<section class="page-hero-arch page-hero-arch--spread">
   <div class="suit-tiles" id="suitTiles">
     <button class="suit-tile suit-tile--active" data-suit="major" style="--tile-accent:var(--suit-major)">
       <span class="suit-tile-sigil"><svg class="sigil-svg" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -52,8 +51,8 @@
       <span class="suit-tile-count">14</span>
     </button>
   </div>
-  {% endif %}
 </section>
+{% endif %}
 
 
 {% if filter_type == 'all' %}
@@ -331,18 +330,10 @@
     pentacles: 'Suit of Pentacles · Earth · 14 Cards',
   };
 
-  const SUIT_TITLES = {
-    major:     'The Arcana',
-    wands:     'Wands',
-    cups:      'Cups',
-    swords:    'Swords',
-    pentacles: 'Pentacles',
-  };
   const SUIT_SIGILS = {
     major: '✦', wands: '△', cups: '▽', swords: '✕', pentacles: '⊕',
   };
   const SUIT_ORDER  = ['major', 'wands', 'cups', 'swords', 'pentacles'];
-  const pageTitle   = document.querySelector('.page-arch-title');
   const prevSigil   = document.getElementById('prevSuitSigil');
   const nextSigil   = document.getElementById('nextSuitSigil');
   const suitNavPrev = document.getElementById('suitNavPrev');
@@ -351,8 +342,6 @@
   function activateTile(suit) {
     document.querySelectorAll('.suit-tile').forEach(b => b.classList.remove('suit-tile--active'));
     document.querySelector(`.suit-tile[data-suit="${suit}"]`)?.classList.add('suit-tile--active');
-
-    if (pageTitle) pageTitle.textContent = SUIT_TITLES[suit] || 'The Deck';
 
     const idx = SUIT_ORDER.indexOf(suit);
     const prevSuit = SUIT_ORDER[(idx - 1 + SUIT_ORDER.length) % SUIT_ORDER.length];
@@ -443,7 +432,7 @@
   document.addEventListener('DOMContentLoaded', () => {
     activateTile('major');
     // Frame the initial view too, so the showcase card is on screen from the
-    // start without the reader having to scroll past the page title.
+    // start without the reader having to scroll down to reach it.
     requestAnimationFrame(frameSpread);
   });
 

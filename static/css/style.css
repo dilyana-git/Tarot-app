@@ -446,8 +446,37 @@ a:hover { color: var(--gold-pale); }
   align-items: start;
   max-width: 980px;
   margin: 0 auto;
-  padding: 2.5rem 3rem 3rem;
+  padding: 1.25rem 3rem 3rem;
 }
+
+/* "Back to the deck" — an escape hatch up to the listing, kept visually
+   distinct from the lateral prev/next nav under the card. Shares the
+   spotlight's max-width + gutter so it lines up with the art column. */
+.card-detail-backbar {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 1.75rem 3rem 0;
+  position: relative;
+  z-index: 1;
+}
+.card-detail-back {
+  display: inline-flex;
+  align-items: center;
+  gap: .55rem;
+  min-height: 44px;
+  font-family: var(--font-display);
+  font-size: .68rem;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  transition: color var(--transition);
+}
+.card-detail-back:hover { color: var(--gold); }
+.card-detail-back-arrow {
+  display: inline-block;
+  transition: transform var(--transition);
+}
+.card-detail-back:hover .card-detail-back-arrow { transform: translateX(-3px); }
 
 /* text column: eyebrow cap-height locked to the card's top border */
 .card-detail-spotlight-text {

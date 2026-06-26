@@ -196,7 +196,27 @@ def card_detail(card_id):
     prev_card = get_card_by_id(card_id - 1) if card_id > 0 else None
     next_card = get_card_by_id(card_id + 1) if card_id < len(ALL_CARDS) - 1 else None
 
-    return render_template('card_detail.html', card=card, prev_card=prev_card, next_card=next_card)
+    # Where the "back" link points. A reading is an ephemeral random draw with no
+    # URL of its own (it's restored from sessionStorage on /reading), so when the
+    # user arrives via the reading's "View Full Card" link (?from=reading) we send
+    # them back there; otherwise back to the deck listing. The marker is carried
+    # through prev/next so the escape hatch survives browsing adjacent cards.
+    came_from_reading = request.args.get('from') == 'reading'
+    if came_from_reading:
+        back_href, back_label = url_for('reading'), 'Back to your reading'
+    else:
+        back_href, back_label = url_for('cards'), 'Back to the deck'
+
+    nav_args = {'from': 'reading'} if came_from_reading else {}
+    prev_href = url_for('card_detail', card_id=prev_card['id'], **nav_args) if prev_card else None
+    next_href = url_for('card_detail', card_id=next_card['id'], **nav_args) if next_card else None
+
+    return render_template(
+        'card_detail.html', card=card,
+        prev_card=prev_card, next_card=next_card,
+        prev_href=prev_href, next_href=next_href,
+        back_href=back_href, back_label=back_label,
+    )
 
 
 @app.route('/reading')

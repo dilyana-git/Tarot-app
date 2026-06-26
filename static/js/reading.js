@@ -350,7 +350,7 @@
         <h4>✦ In This Reading</h4>
         <p>${esc(card.narrative)}</p>
       </div>` : ''}
-      <a href="/card/${encodeURIComponent(card.id)}" class="panel-cta" target="_self"><span class="panel-cta-inner">View Full Card →</span></a>`;
+      <a href="/card/${encodeURIComponent(card.id)}?from=reading" class="panel-cta" target="_self"><span class="panel-cta-inner">View Full Card →</span></a>`;
 
     panelLastFocus = document.activeElement;
     els.panel.style.display = 'flex';
