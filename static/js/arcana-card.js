@@ -602,9 +602,12 @@ function buildMosaic(cw, ch) {
     }
     function cardImgUrl(card) {
       // imgFor() returns css url(...) — for real art OR the generated placeholder.
+      // Match greedily up to the CLOSING quote: the generated SVG data-URLs
+      // contain unencoded parentheses (e.g. url(#grad)), so a [^)]+ match
+      // truncates them and the mosaic never gets a decodable image.
       var raw = imgFor(card);
-      var m = /url\(["']?([^"')]+)["']?\)/.exec(raw);
-      return m ? m[1] : raw;
+      var m = /^url\((['"]?)([\s\S]*)\1\)$/.exec(raw);
+      return m ? m[2] : raw;
     }
     function currentImg() { return getDecodedImg(cardImgUrl(cards[index])); }
 
@@ -627,8 +630,8 @@ function buildMosaic(cw, ch) {
     // to nothing — so at any moment only a few dozen particles are airborne:
     // quiet erosion, not a snowstorm. Selection uses existing per-tile randoms
     // (rotJit) so the rng sequence stays untouched.
-    // SHED_MAX × the ~0.3–0.45 airborne duty cycle ≈ 50–75 concurrent chips.
-    var SHED_MAX = 170;
+    // SHED_MAX × the ~0.34–0.5 airborne duty cycle ≈ 75–105 concurrent chips.
+    var SHED_MAX = 220;
     function buildRest() {
       bandList = [];
       twinkleList = [];
@@ -639,7 +642,7 @@ function buildMosaic(cw, ch) {
           t = all[i];
           t.isShed = false;
           if (t.omit || !t.band) continue;
-          if (t.bandT < 0.55 && Math.abs(t.rotJit) < 20) cand.push(t);
+          if (t.bandT < 0.6 && Math.abs(t.rotJit) < 20) cand.push(t);
         }
         // stride-pick so the shed tiles spread around the whole rim instead of
         // exhausting the cap in the first rows
@@ -654,14 +657,14 @@ function buildMosaic(cw, ch) {
           var vx = cxp - size.cw / 2, vy = cyp - size.ch / 2;
           var d = Math.max(1, Math.hypot(vx, vy));
           var ux = vx / d, uy = vy / d;
-          var reach = 12 + (1 - t.bandT) * 26;
+          var reach = 16 + (1 - t.bandT) * 34;
           t.shDx = ux * reach;
-          t.shDy = uy * reach - (5 + (t.ly % 8));                 // slight rise
+          t.shDy = uy * reach - (6 + (t.ly % 9));                 // slight rise
           t.shPx = -uy; t.shPy = ux;                              // turbulence axis
           t.shPhase = -t.lt / 5;                                  // 0..1 stagger
-          t.shPeriod = 6000 + ((t.ds - 0.3) / 0.22) * 4000;       // 6–10s cycle
-          t.shLife = 0.30 + ((t.lb - 0.7) / 0.85) * 0.15;         // airborne 2–4s
-          t.shWobA = 1.5 + (t.lx % 8) * 0.3;                      // wobble px
+          t.shPeriod = 5200 + ((t.ds - 0.3) / 0.22) * 3400;       // ~5–8.6s cycle
+          t.shLife = 0.34 + ((t.lb - 0.7) / 0.85) * 0.16;         // airborne ~2–4.3s
+          t.shWobA = 1.8 + (t.lx % 8) * 0.35;                     // wobble px
           t.shWobF = 1 + (t.ly % 3) * 0.5;                        // wobble cycles
           t.shWobP = (t.lx + t.ly) * 0.13;                        // wobble phase
           shedList.push(t);
@@ -828,7 +831,7 @@ function buildMosaic(cw, ch) {
       // gentle perpendicular wobble (no straight lines), SHRINKING and fading
       // to nothing. The chip is a slice of the art itself, so every particle
       // carries the true local colour of the pixels it detached from — no
-      // fixed tint, no glint dot. Sparse by design: ~50–75 airborne at once,
+      // fixed tint, no glint dot. Sparse by design: ~75–105 airborne at once,
       // quiet erosion rather than a snowstorm. Runs inside the loop that
       // already drives the twinkle; cost is negligible.
       if (shedList.length && curArtImg) {
@@ -840,9 +843,10 @@ function buildMosaic(cw, ch) {
           var ph = ((ts / st.shPeriod) + st.shPhase) % 1;
           if (ph >= st.shLife) continue;        // dormant — slot sits empty
           var lp = ph / st.shLife;              // 0..1 over the particle's life
-          // envelope: quick detach fade-in, then a long fade to nothing
-          var a = st.ho * Math.min(1, lp / 0.12) *
-                  (lp > 0.35 ? Math.max(0, 1 - (lp - 0.35) / 0.62) : 1);
+          // envelope: quick detach fade-in, a longer fully-visible hold, then
+          // a fade to nothing — the chip reads clearly for most of its flight
+          var a = st.ho * Math.min(1, lp / 0.1) *
+                  (lp > 0.45 ? Math.max(0, 1 - (lp - 0.45) / 0.52) : 1);
           if (a <= 0.01) continue;
           var srcX = (st.left + st.hx - mx) * ssx, srcY = (st.top + st.hy - my) * ssy;
           var srcW = st.w * ssx, srcH = st.h * ssy;
@@ -854,7 +858,7 @@ function buildMosaic(cw, ch) {
                         st.top + st.hy + st.h / 2 + st.shDy * mv + st.shPy * wob);
           ctx.rotate((st.hr + st.rotJit * lp) * Math.PI / 180);
           // the freed tessera shrinks away as it dies
-          var sc = 1.6 * (1 - 0.72 * lp);
+          var sc = 1.8 * (1 - 0.68 * lp);
           ctx.globalAlpha = a;
           ctx.drawImage(curArtImg,
             Math.max(0, srcX), Math.max(0, srcY), srcW, srcH,
@@ -873,9 +877,10 @@ function buildMosaic(cw, ch) {
       ctx.globalCompositeOperation = "lighten";
       for (var i = 0; i < twinkleList.length; i++) {
         var t = twinkleList[i];
-        // phase: peak at 85% of cycle, dark elsewhere (matches old keyframe)
+        // phase: peak at 83% of cycle, dark elsewhere — a slightly wider
+        // window than the old keyframe so each glint lingers a touch longer
         var ph = (((ts / CYCLE) + (-t.lt / 5)) % 1 + 1) % 1;
-        var a = ph > 0.70 ? (1 - Math.abs(ph - 0.85) / 0.15) : 0;
+        var a = ph > 0.66 ? (1 - Math.abs(ph - 0.83) / 0.17) : 0;
         if (a <= 0) continue;
         a = Math.max(0, Math.min(1, a)) * t.lb;
         var col = t.sparkColor || "#fff4c4";
@@ -883,12 +888,12 @@ function buildMosaic(cw, ch) {
         ctx.translate(cxp, cyp); ctx.rotate(t.hr * Math.PI / 180);
         // 1) DELICATE colour shimmer — a soft, partial glow over the centre of the
         // tile (not the whole chip) at low alpha, so the sparkle is gentle.
-        ctx.globalAlpha = a * 0.35;
+        ctx.globalAlpha = a * 0.45;
         ctx.fillStyle = col;
-        var gw = t.w * 0.55, gh = t.h * 0.55;
+        var gw = t.w * 0.6, gh = t.h * 0.6;
         ctx.fillRect(-gw / 2, -gh / 2, gw, gh);
         // 2) fine catch-light glint at the tile's highlight point
-        ctx.globalAlpha = a * 0.85;
+        ctx.globalAlpha = a * 0.92;
         var sp = t.sp;
         var gx = (t.lx / 100 - 0.5) * t.w, gy = (t.ly / 100 - 0.5) * t.h;
         ctx.fillRect(gx - sp / 2, gy - sp / 2, sp, sp);
