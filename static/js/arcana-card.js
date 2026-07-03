@@ -843,16 +843,22 @@ function buildMosaic(cw, ch) {
           var ph = ((ts / st.shPeriod) + st.shPhase) % 1;
           if (ph >= st.shLife) continue;        // dormant — slot sits empty
           var lp = ph / st.shLife;              // 0..1 over the particle's life
-          // envelope: quick detach fade-in, a longer fully-visible hold, then
-          // a fade to nothing — the chip reads clearly for most of its flight
-          var a = st.ho * Math.min(1, lp / 0.1) *
+          // envelope: squared ease-in birth (~600ms at mid life) so the chip
+          // MATERIALISES off the rim — particles are brightest at birth, so a
+          // fast linear ramp reads as a pop — then a fully-visible hold and a
+          // long fade to nothing
+          var birth = Math.min(1, lp / 0.16);
+          var a = st.ho * birth * birth *
                   (lp > 0.45 ? Math.max(0, 1 - (lp - 0.45) / 0.52) : 1);
           if (a <= 0.01) continue;
           var srcX = (st.left + st.hx - mx) * ssx, srcY = (st.top + st.hy - my) * ssy;
           var srcW = st.w * ssx, srcH = st.h * ssy;
           if (srcW <= 0 || srcH <= 0) continue;
-          // ease-out drift away from the rim + gentle turbulence across it
-          var mv = 1 - (1 - lp) * (1 - lp);
+          // smoothstep drift: near-zero velocity while the chip materialises,
+          // gathering speed mid-flight, then coasting to a stop as it fades —
+          // crumbling erosion rather than a launch (ease-out peaked the speed
+          // exactly at birth, which read as chips being fired off the rim)
+          var mv = lp * lp * (3 - 2 * lp);
           var wob = Math.sin(lp * st.shWobF * 6.2832 + st.shWobP) * st.shWobA * lp;
           ctx.translate(st.left + st.hx + st.w / 2 + st.shDx * mv + st.shPx * wob,
                         st.top + st.hy + st.h / 2 + st.shDy * mv + st.shPy * wob);
