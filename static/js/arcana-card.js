@@ -1019,16 +1019,22 @@ function buildMosaic(cw, ch) {
     // card's art + mosaic swap in beneath the fade, then it fades back up.
     // (A tessera-dissolve transition was tried here and removed: the dissolve
     // belongs to the card's RESTING state, not to navigation.)
+    // The fade is ASYMMETRIC, like a film dissolve: a shorter ease-in departure
+    // and a longer ease-out arrival. The out window must outlast the text-plate
+    // fades that ride on .is-shifting (240ms) / .is-transitioning (320ms), and
+    // the class comes off only after the arrival settles — cutting those fades
+    // short mid-flight made every swap read as a stutter.
     // Assumes `busy` is already set by dissolve().
     function fadeSwap(target) {
-      var FADE = 200;
-      flipEl.style.transition = "opacity " + FADE + "ms ease";
+      var FADE_OUT = 340, FADE_IN = 460;
+      flipEl.style.transition = "opacity " + FADE_OUT + "ms ease-in";
       flipEl.style.opacity = "0";
       var finished = false;
       function finish() {
         if (finished) return;
         finished = true;
         setCard(target);                              // swap the card art + mosaic beneath the fade
+        flipEl.style.transition = "opacity " + FADE_IN + "ms cubic-bezier(.22,.61,.36,1)";
         flipEl.style.opacity = "1";
         preloadCard(nextI()); preloadCard(prevI());   // warm the neighbours
         timers.push(setTimeout(function () {
@@ -1038,15 +1044,15 @@ function buildMosaic(cw, ch) {
           setAnimPaused(false);                       // resume idle twinkle once settled
           // pre-render the new neighbours' band bitmaps off the critical path
           timers.push(setTimeout(function () { primeBand(nextI()); primeBand(prevI()); }, 300));
-        }, FADE + 20));
+        }, FADE_IN + 20));
       }
       // Swap only once BOTH the fade-out has played AND the target art is decoded,
       // so the new card appears whole in one frame instead of streaming in.
       var ready = preloadCard(target);
-      var faded = new Promise(function (res) { timers.push(setTimeout(res, FADE)); });
+      var faded = new Promise(function (res) { timers.push(setTimeout(res, FADE_OUT)); });
       Promise.all([ready, faded]).then(finish);
       // Safety net: never strand `busy` if a decode stalls or rejects.
-      timers.push(setTimeout(finish, FADE + 500));
+      timers.push(setTimeout(finish, FADE_OUT + 500));
     }
 
     function dissolve(target, dir) {
