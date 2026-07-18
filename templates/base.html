@@ -55,6 +55,7 @@
     <ul class="nav-links">
       <li><a href="{{ url_for('index') }}" class="nav-link {% if request.endpoint == 'index' %}active{% endif %}">Home</a></li>
       <li><a href="{{ url_for('cards') }}" class="nav-link {% if request.endpoint == 'cards' %}active{% endif %}">The Cards</a></li>
+      <li><a href="{{ url_for('lore') }}" class="nav-link {% if request.endpoint == 'lore' %}active{% endif %}">Lore</a></li>
       <li><a href="{{ url_for('reading') }}" class="nav-link {% if request.endpoint == 'reading' %}active{% endif %}">Reading</a></li>
     </ul>
     <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">☰</button>

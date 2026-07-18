@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% block title %}Lore — The History &amp; Symbolism of Tarot — Arcana{% endblock %}
+{% block meta_description %}The lore of the tarot — six centuries of history, the structure of the seventy-eight-card deck, the four suits and their elements, the numerology of the pips, and the symbols the cards read by.{% endblock %}
+
+{% block content %}
+
+<!-- ── Page hero ─────────────────────────────────────────────── -->
+<section class="page-hero-arch lore-hero">
+  <div class="page-arch-eyebrow">
+    <span class="page-arch-rule"></span>
+    <span class="page-arch-label">History &amp; Symbolism</span>
+    <span class="page-arch-rule"></span>
+  </div>
+  <h1 class="page-arch-title">The Lore</h1>
+  <p class="lore-lede">{{ intro }}</p>
+</section>
+
+<div class="lore-page">
+
+  <!-- ── History ─────────────────────────────────────────────── -->
+  <section class="lore-section" id="history" aria-labelledby="history-title">
+    <header class="lore-section-head">
+      <span class="lore-section-num">I</span>
+      <h2 class="lore-section-title" id="history-title">A Short History</h2>
+      <p class="lore-section-sub">From a Renaissance card game to a mirror for the modern mind.</p>
+    </header>
+
+    <ol class="lore-timeline">
+      {% for entry in timeline %}
+      <li class="lore-tl-item">
+        <span class="lore-tl-era">{{ entry.era }}</span>
+        <div class="lore-tl-body">
+          <h3 class="lore-tl-title">{{ entry.title }}</h3>
+          <p class="lore-tl-text">{{ entry.text }}</p>
+        </div>
+      </li>
+      {% endfor %}
+    </ol>
+  </section>
+
+  <!-- ── Structure of the deck ───────────────────────────────── -->
+  <section class="lore-section" id="structure" aria-labelledby="structure-title">
+    <header class="lore-section-head">
+      <span class="lore-section-num">II</span>
+      <h2 class="lore-section-title" id="structure-title">Structure of the Deck</h2>
+      <p class="lore-section-sub">{{ deck.intro }}</p>
+    </header>
+
+    <div class="lore-parts">
+      {% for part in deck.parts %}
+      <article class="lore-part">
+        <span class="lore-part-glyph" aria-hidden="true">{{ part.glyph }}</span>
+        <p class="lore-part-count">{{ part.count }}</p>
+        <h3 class="lore-part-name">{{ part.name }}</h3>
+        <p class="lore-part-text">{{ part.text }}</p>
+      </article>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- ── The four suits ──────────────────────────────────────── -->
+  <section class="lore-section" id="suits" aria-labelledby="suits-title">
+    <header class="lore-section-head">
+      <span class="lore-section-num">III</span>
+      <h2 class="lore-section-title" id="suits-title">The Four Suits</h2>
+      <p class="lore-section-sub">Each suit is an element, and each element a domain of experience.</p>
+    </header>
+
+    <div class="lore-suits">
+      {% for suit in suits %}
+      <article class="lore-suit lore-suit--{{ suit.slug }}" style="--suit-accent: var(--suit-{{ suit.slug }})">
+        <span class="lore-suit-glyph" aria-hidden="true">{{ suit.glyph }}</span>
+        <div class="lore-suit-head">
+          <h3 class="lore-suit-name">{{ suit.name }}</h3>
+          <p class="lore-suit-el">{{ suit.element }}</p>
+        </div>
+        <p class="lore-suit-domain">{{ suit.domain }}</p>
+        <p class="lore-suit-text">{{ suit.text }}</p>
+        <a class="lore-suit-link" href="{{ url_for('cards', filter='minor', suit=suit.name) }}">
+          See the {{ suit.name }} &rsaquo;
+        </a>
+      </article>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- ── Numerology ──────────────────────────────────────────── -->
+  <section class="lore-section" id="numerology" aria-labelledby="numerology-title">
+    <header class="lore-section-head">
+      <span class="lore-section-num">IV</span>
+      <h2 class="lore-section-title" id="numerology-title">Numerology</h2>
+      <p class="lore-section-sub">{{ numerology.intro }}</p>
+    </header>
+
+    <h3 class="lore-subhead">Ace through Ten</h3>
+    <ul class="lore-pips">
+      {% for pip in numerology.pips %}
+      <li class="lore-pip">
+        <span class="lore-pip-rank">{{ pip.rank }}</span>
+        <span class="lore-pip-title">{{ pip.title }}</span>
+        <span class="lore-pip-text">{{ pip.text }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+
+    <h3 class="lore-subhead">The Court Cards</h3>
+    <ul class="lore-pips lore-pips--courts">
+      {% for court in numerology.courts %}
+      <li class="lore-pip">
+        <span class="lore-pip-rank">{{ court.rank }}</span>
+        <span class="lore-pip-title">{{ court.title }}</span>
+        <span class="lore-pip-text">{{ court.text }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <!-- ── Symbolism ───────────────────────────────────────────── -->
+  <section class="lore-section" id="symbols" aria-labelledby="symbols-title">
+    <header class="lore-section-head">
+      <span class="lore-section-num">V</span>
+      <h2 class="lore-section-title" id="symbols-title">A Vocabulary of Symbols</h2>
+      <p class="lore-section-sub">{{ symbols.intro }}</p>
+    </header>
+
+    <div class="lore-motifs">
+      {% for motif in symbols.motifs %}
+      <article class="lore-motif">
+        <span class="lore-motif-glyph" aria-hidden="true">{{ motif.glyph }}</span>
+        <div class="lore-motif-body">
+          <h3 class="lore-motif-name">{{ motif.name }}</h3>
+          <p class="lore-motif-text">{{ motif.text }}</p>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+
+    <h3 class="lore-subhead">The Language of Colour</h3>
+    <p class="lore-colors-intro">{{ symbols.colors_intro }}</p>
+    <ul class="lore-colors">
+      {% for color in symbols.colors %}
+      <li class="lore-color">
+        <span class="lore-color-swatch" style="--swatch: {{ color.swatch }}" aria-hidden="true"></span>
+        <span class="lore-color-name">{{ color.name }}</span>
+        <span class="lore-color-text">{{ color.text }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <!-- ── Closing note ────────────────────────────────────────── -->
+  <section class="lore-ethos" aria-labelledby="ethos-title">
+    <div class="lore-ethos-inner">
+      <span class="lore-ethos-glyph" aria-hidden="true">✦</span>
+      <h2 class="lore-ethos-title" id="ethos-title">{{ ethos.title }}</h2>
+      {% for para in ethos.paragraphs %}
+      <p class="lore-ethos-text">{{ para }}</p>
+      {% endfor %}
+      <a class="btn btn-primary lore-ethos-cta" href="{{ url_for('reading') }}">Draw a Reading ✦</a>
+    </div>
+  </section>
+
+</div><!-- /lore-page -->
+
+{% endblock %}
