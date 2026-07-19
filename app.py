@@ -7,6 +7,10 @@ from data.tarot_data import (
     get_card_by_id, get_cards_by_suit, get_major_arcana, get_minor_arcana,
 )
 from data.reading_composer import compose as compose_reading
+from data.lore_data import (
+    LORE_INTRO, HISTORY_TIMELINE, DECK_STRUCTURE, SUITS,
+    NUMEROLOGY, SYMBOLS, READING_ETHOS,
+)
 
 app = Flask(__name__)
 _secret = os.environ.get('SECRET_KEY')
@@ -216,6 +220,20 @@ def card_detail(card_id):
         prev_card=prev_card, next_card=next_card,
         prev_href=prev_href, next_href=next_href,
         back_href=back_href, back_label=back_label,
+    )
+
+
+@app.route('/lore')
+def lore():
+    return render_template(
+        'lore.html',
+        intro=LORE_INTRO,
+        timeline=HISTORY_TIMELINE,
+        deck=DECK_STRUCTURE,
+        suits=SUITS,
+        numerology=NUMEROLOGY,
+        symbols=SYMBOLS,
+        ethos=READING_ETHOS,
     )
 
 

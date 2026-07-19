@@ -29,10 +29,22 @@ def client():
     '/card/0',
     '/card/77',
     '/reading',
+    '/lore',
     '/static/favicon.svg',
 ])
 def test_pages_ok(client, path):
     assert client.get(path).status_code == 200
+
+
+def test_lore_content_renders(client):
+    resp = client.get('/lore')
+    body = resp.data
+    # Section spine and headline copy from lore_data are present.
+    assert b'The Lore' in body
+    assert b'A Short History' in body
+    assert b'The Four Suits' in body
+    # Each suit deep-links back into the deck.
+    assert b'/cards?filter=minor&amp;suit=Wands' in body
 
 
 def test_card_detail_out_of_range_404(client):
