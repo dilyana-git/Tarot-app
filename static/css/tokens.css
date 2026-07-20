@@ -19,6 +19,11 @@
   /* — Text — */
   --parchment:     #E8DFC8;
   --parchment-dim: #B9B299;
+  /* Body copy sits just under the label parchment. Paragraph text is set in a
+     light serif whose thin strokes read dimmer than any measured ratio, so it
+     gets its own value — lifted to #E5DCC4 (~14.7:1 on --ink-900, up from the
+     earlier #D7CEB4 ~12.5:1) so the running text stops reading grey at 15px. */
+  --text-body:     #E5DCC4;
 
   /* — Jewel accents — */
   --lapis:     #34508C;
@@ -71,4 +76,29 @@
   /* — Tracking — */
   --track-label:   0.2em;
   --track-display: 0.01em;
+
+  /* — Letterspaced-caps scale —
+     43 rules across the app set `text-transform: uppercase` + `letter-spacing`,
+     and almost none set a weight — so five distinct roles (brand, nav, eyebrow,
+     field label, caption) all landed in one 8–12px register and read as a single
+     flat tier. These steps separate them on TWO axes at once:
+
+       size   descends 16.8 → 8.6px  (wider than before, so adjacent tiers no
+              longer share the same 9–12px register)
+       weight ladders 700/600/500/400 across the Cinzel range already loaded, so
+              tiers at similar sizes still read apart by stroke weight alone
+
+     Tracking runs opposite to size on purpose: the widest tracking goes to the
+     smallest, quietest marker (the eyebrow), because wide-tracked caps read as
+     "section marker" while tight-tracked caps read as "text you scan". */
+  --caps-1-size: 1.05rem; --caps-1-track: .3em;  --caps-1-weight: 700; /* brand      */
+  --caps-2-size: .85rem;  --caps-2-track: .16em; --caps-2-weight: 500; /* nav, tabs  */
+  --caps-3-size: .75rem;  --caps-3-track: .45em; --caps-3-weight: 600; /* eyebrow    */
+  /* Tiers 4 and 5 split on CONTENT vs SCAFFOLDING, not on where they sit:
+     tier 4 is caps that carry meaning (keywords, orientation), tier 5 is the
+     words that only frame other words ("ELEMENT", captions, footer). They now
+     part on both size AND weight (11.2px/600 vs 8.6px/400), so the card's
+     keyword line no longer flattens into the field labels beneath it. */
+  --caps-4-size: .7rem;   --caps-4-track: .16em; --caps-4-weight: 600; /* content   */
+  --caps-5-size: .54rem;  --caps-5-track: .14em; --caps-5-weight: 400; /* scaffolding*/
 }

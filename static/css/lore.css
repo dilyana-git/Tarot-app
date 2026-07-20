@@ -1,0 +1,972 @@
+/* ============================================================
+   ARCANA — LORE (/lore)
+   "The illuminated grimoire": an illustrated, scroll-driven read.
+   Loaded from lore.html's {% block head %}, after tokens.css + style.css.
+
+   Illustration slots are `.lore-plate`. Every plate has two states — art
+   present (an <img> in a button that opens the lightbox) and art pending
+   (`.is-empty`, an engraved cartouche). Both are designed states: the page
+   must look finished with no lore art on disk.
+   ============================================================ */
+
+/* ---- Scroll-reveal ------------------------------------------
+   Only armed once lore.js has set .lore-js on <html>, so a JS failure
+   leaves the whole page visible rather than blank. */
+.lore-js [data-lore-reveal] {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity .7s ease, transform .7s cubic-bezier(.2, .7, .3, 1);
+}
+.lore-js [data-lore-reveal].is-revealed {
+  opacity: 1;
+  transform: none;
+}
+
+/* ============================================================
+   PLATES — the shared illustration frame
+   ============================================================ */
+.lore-plate {
+  margin: 0;
+  --plate-ar: 4 / 5;
+}
+.lore-plate-frame {
+  display: block;
+  position: relative;
+  width: 100%;
+  aspect-ratio: var(--plate-ar);
+  overflow: hidden;
+  border: 0;
+  padding: 0;
+  border-radius: var(--radius-md);
+  background: linear-gradient(160deg, var(--ink-700), var(--ink-900));
+  box-shadow:
+    inset 0 0 0 1px var(--rule),
+    inset 0 -60px 80px -40px rgba(0, 0, 0, .85),
+    0 10px 34px rgba(0, 0, 0, .5);
+}
+/* Inner hairline — the engraved second rule of a printed plate. */
+.lore-plate-frame::after {
+  content: '';
+  position: absolute;
+  inset: 7px;
+  border: 1px solid color-mix(in srgb, var(--gold-300) 13%, transparent);
+  border-radius: 2px;
+  pointer-events: none;
+  transition: border-color var(--transition);
+}
+.lore-plate-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  /* Art arrives from many generators; grading it down to a warm, dim register
+     on rest is what keeps forty plates reading as one deck. Hover lifts it. */
+  filter: saturate(.72) contrast(1.06) brightness(.82) sepia(.12);
+  transform: scale(1.015);
+  transition: filter .6s ease, transform .9s cubic-bezier(.2, .7, .3, 1);
+}
+
+/* Interactive plate (art present) */
+.lore-plate-btn {
+  cursor: zoom-in;
+  background: none;
+}
+.lore-plate-btn:hover img,
+.lore-plate-btn:focus-visible img {
+  filter: saturate(1) contrast(1.04) brightness(1) sepia(0);
+  transform: scale(1.06);
+}
+.lore-plate-btn:hover::after,
+.lore-plate-btn:focus-visible::after {
+  border-color: color-mix(in srgb, var(--gold-300) 42%, transparent);
+}
+
+/* Gold glint sweeping the glass on hover */
+.lore-plate-glint {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(105deg,
+    transparent 38%,
+    color-mix(in srgb, var(--gold-100) 22%, transparent) 50%,
+    transparent 62%);
+  transform: translateX(-120%);
+  opacity: 0;
+}
+.lore-plate-btn:hover .lore-plate-glint {
+  animation: lore-glint 1.1s ease-out;
+}
+@keyframes lore-glint {
+  0%   { transform: translateX(-120%); opacity: 0; }
+  18%  { opacity: 1; }
+  100% { transform: translateX(120%);  opacity: 0; }
+}
+
+/* Pending plate (art not yet generated) */
+.lore-plate-empty {
+  display: grid;
+  place-content: center;
+  gap: .5rem;
+  text-align: center;
+  background:
+    radial-gradient(60% 55% at 50% 45%,
+      color-mix(in srgb, var(--gold-300) 7%, transparent) 0%, transparent 70%),
+    linear-gradient(160deg, var(--ink-700), var(--ink-900));
+}
+.lore-plate-orn {
+  font-size: 1.5rem;
+  color: color-mix(in srgb, var(--gold-300) 55%, transparent);
+  text-shadow: 0 0 18px color-mix(in srgb, var(--gold-300) 35%, transparent);
+}
+.lore-plate-slug {
+  font-family: var(--font-mono);
+  font-size: .58rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--parchment) 26%, transparent);
+}
+.lore-plate-cap {
+  margin-top: .55rem;
+  font-family: var(--font-accent);
+  font-size: var(--step--1);
+  font-style: italic;
+  letter-spacing: .02em;
+  color: color-mix(in srgb, var(--parchment-dim) 78%, transparent);
+}
+
+/* Per-slot aspect ratios */
+.lore-plate--tl    { --plate-ar: 4 / 3; }
+.lore-plate--wide  { --plate-ar: 16 / 10; }
+.lore-plate--suit  { --plate-ar: 3 / 4; }
+.lore-plate--rung  { --plate-ar: 1 / 1; }
+.lore-plate--motif { --plate-ar: 4 / 3; }
+
+/* ============================================================
+   HERO — full-bleed atmospheric plate
+   ============================================================ */
+.lore-hero {
+  position: relative;
+  isolation: isolate;
+  min-height: min(78vh, 640px);
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: var(--space-7) var(--space-4) var(--space-6);
+  overflow: hidden;
+  border-bottom: 1px solid var(--rule);
+}
+.lore-hero-plate {
+  position: absolute;
+  inset: -8% 0 0;
+  z-index: -2;
+  background-image: var(--hero-img);
+  background-size: cover;
+  background-position: center 40%;
+  filter: saturate(.6) brightness(.5) contrast(1.05);
+  will-change: transform;
+}
+.lore-hero-plate.is-empty {
+  background: radial-gradient(70% 60% at 50% 35%,
+    color-mix(in srgb, var(--gold-300) 9%, transparent) 0%, transparent 72%);
+  filter: none;
+}
+.lore-hero-veil {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(75% 60% at 50% 42%, transparent 0%, var(--ink-900) 100%),
+    linear-gradient(to bottom, color-mix(in srgb, var(--ink-900) 55%, transparent) 0%, transparent 30%, var(--ink-900) 96%);
+}
+.lore-hero-inner {
+  max-width: 48rem;
+  position: relative;
+}
+.lore-lede {
+  max-width: 46rem;
+  margin: 1rem auto 0;
+  font-family: var(--font-body);
+  font-size: var(--step-1);
+  line-height: 1.75;
+  color: var(--text-body);
+}
+.lore-lede::first-letter { color: var(--gold-lt); }
+
+.lore-hero-scroll {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .5rem;
+  margin-top: var(--space-5);
+  font-family: var(--font-display);
+  font-size: var(--caps-4-size);
+  font-weight: var(--caps-4-weight);
+  letter-spacing: var(--caps-4-track);
+  text-transform: uppercase;
+  color: var(--gold);
+}
+.lore-hero-arrow {
+  animation: lore-bob 2.6s ease-in-out infinite;
+  font-size: 1rem;
+}
+@keyframes lore-bob {
+  0%, 100% { transform: translateY(0);   opacity: .55; }
+  50%      { transform: translateY(6px); opacity: 1; }
+}
+
+/* ============================================================
+   CHAPTER RAIL — sticky scroll-spy
+   ============================================================ */
+.lore-rail {
+  position: fixed;
+  left: max(1.25rem, calc((100vw - 62rem) / 2 - 9.5rem));
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 40;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .5s ease;
+}
+.lore-rail.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+.lore-rail-list {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 .9rem;
+  display: grid;
+  gap: 1.1rem;
+  border-left: 1px solid var(--rule);
+}
+.lore-rail-link {
+  display: grid;
+  grid-template-columns: 1.6rem auto;
+  align-items: baseline;
+  gap: .5rem;
+  position: relative;
+  color: color-mix(in srgb, var(--parchment) 42%, transparent);
+  transition: color var(--transition);
+}
+.lore-rail-link::before {
+  content: '';
+  position: absolute;
+  left: -.95rem;
+  top: .45rem;
+  width: 1px;
+  height: 0;
+  background: var(--gold);
+  transition: height .35s ease;
+}
+.lore-rail-num {
+  font-family: var(--font-mono);
+  font-size: .68rem;
+  letter-spacing: .1em;
+  color: var(--gold-warm);
+}
+.lore-rail-label {
+  font-family: var(--font-display);
+  font-size: var(--caps-5-size);
+  font-weight: var(--caps-5-weight);
+  letter-spacing: var(--caps-5-track);
+  text-transform: uppercase;
+}
+.lore-rail-link:hover { color: var(--gold-lt); }
+.lore-rail-link.is-current { color: var(--gold-pale); }
+.lore-rail-link.is-current::before { height: 1.1rem; }
+@media (max-width: 1279px) {
+  .lore-rail { display: none; }
+}
+
+/* ============================================================
+   PAGE SHELL & SECTION HEADS
+   ============================================================ */
+.lore-page {
+  max-width: 62rem;
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-4) var(--space-5);
+}
+.lore-section { margin-bottom: var(--space-7); }
+.lore-section:target { scroll-margin-top: 90px; }
+
+.lore-section-head {
+  text-align: center;
+  max-width: 44rem;
+  margin: 0 auto var(--space-5);
+}
+.lore-section-num {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  letter-spacing: var(--track-label);
+  color: var(--gold-warm);
+  margin-bottom: .6rem;
+}
+.lore-section-title {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: var(--step-3);
+  color: var(--gold-lt);
+  letter-spacing: .01em;
+  margin: 0 0 .6rem;
+}
+.lore-section-sub {
+  font-family: var(--font-body);
+  font-size: var(--step-0);
+  line-height: 1.7;
+  color: var(--text-dim);
+  margin: 0;
+}
+.lore-subhead {
+  font-family: var(--font-accent);
+  font-size: var(--step-1);
+  font-weight: 500;
+  letter-spacing: .04em;
+  color: var(--text);
+  text-align: center;
+  margin: var(--space-6) 0 var(--space-4);
+}
+.lore-subhead::after {
+  content: '';
+  display: block;
+  width: 34px; height: 1px;
+  margin: .7rem auto 0;
+  background: var(--rule-hover);
+}
+
+/* ============================================================
+   I · TIMELINE — alternating illustrated plates on a centre spine
+   ============================================================ */
+.lore-timeline {
+  list-style: none;
+  margin: 0 auto;
+  padding: 0;
+  position: relative;
+}
+.lore-tl-item {
+  position: relative;
+  display: grid;
+  gap: var(--space-3);
+  padding: 0 0 var(--space-6) var(--space-4);
+  border-left: 1px solid var(--rule);
+}
+.lore-tl-item:last-child { padding-bottom: 0; }
+.lore-tl-item::before {
+  content: '';
+  position: absolute;
+  left: -4px; top: .5rem;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--gold) 65%, transparent);
+}
+.lore-tl-era {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  letter-spacing: .1em;
+  color: var(--gold-warm);
+  margin-bottom: .35rem;
+}
+.lore-tl-title {
+  font-family: var(--font-accent);
+  font-size: var(--step-2);
+  font-weight: 500;
+  color: var(--gold-lt);
+  margin: 0 0 .5rem;
+}
+.lore-tl-text {
+  font-family: var(--font-body);
+  font-size: var(--step-0);
+  line-height: 1.75;
+  color: var(--text-body);
+  margin: 0;
+}
+
+@media (min-width: 900px) {
+  .lore-timeline { max-width: 58rem; }
+  .lore-timeline::before {
+    content: '';
+    position: absolute;
+    left: 50%; top: 0; bottom: 0;
+    width: 1px;
+    background: linear-gradient(to bottom,
+      transparent, var(--rule) 8%, var(--rule) 92%, transparent);
+  }
+  .lore-tl-item {
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: var(--space-6);
+    padding: 0 0 var(--space-6);
+    border-left: 0;
+  }
+  .lore-tl-item::before {
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
+  .lore-tl-body { padding-left: var(--space-4); }
+  /* Alternate: even entries put the plate on the right. */
+  .lore-tl-item:nth-child(even) .lore-tl-plate { order: 2; }
+  .lore-tl-item:nth-child(even) .lore-tl-body {
+    order: 1;
+    text-align: right;
+    padding-left: 0;
+    padding-right: var(--space-4);
+  }
+  /* Reveal slides each half in from its own side. */
+  .lore-js .lore-tl-item[data-lore-reveal] { transform: none; }
+  .lore-js .lore-tl-item[data-lore-reveal] .lore-tl-plate,
+  .lore-js .lore-tl-item[data-lore-reveal] .lore-tl-body {
+    opacity: 0;
+    transform: translateX(-22px);
+    transition: opacity .75s ease, transform .75s cubic-bezier(.2, .7, .3, 1);
+  }
+  .lore-js .lore-tl-item[data-lore-reveal] .lore-tl-body { transform: translateX(22px); }
+  .lore-js .lore-tl-item.is-revealed .lore-tl-plate,
+  .lore-js .lore-tl-item.is-revealed .lore-tl-body {
+    opacity: 1;
+    transform: none;
+  }
+  .lore-js .lore-tl-item.is-revealed .lore-tl-body { transition-delay: .12s; }
+}
+
+/* ============================================================
+   II · DECK STRUCTURE — two illustrated panels
+   ============================================================ */
+.lore-parts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+.lore-part {
+  background: var(--bg2);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  transition: border-color var(--transition), background var(--transition), transform var(--transition);
+}
+.lore-part:hover {
+  border-color: var(--rule-hover);
+  background: var(--surface);
+  transform: translateY(-3px);
+}
+.lore-part-body { padding-top: var(--space-4); }
+.lore-part-count {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--gold-warm);
+  margin: 0 0 .35rem;
+}
+.lore-part-glyph {
+  font-size: 1.05rem;
+  color: var(--gold);
+}
+.lore-part-name {
+  font-family: var(--font-display);
+  font-size: var(--step-2);
+  font-weight: 500;
+  color: var(--gold-lt);
+  margin: 0 0 .75rem;
+}
+.lore-part-text {
+  font-family: var(--font-body);
+  font-size: var(--step-0);
+  line-height: 1.75;
+  color: var(--text-body);
+  margin: 0;
+}
+
+/* ============================================================
+   III · SUITS — illustrated elemental tiles
+   ============================================================ */
+.lore-suits {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-4);
+}
+.lore-suit {
+  position: relative;
+  display: grid;
+  grid-template-columns: 12rem 1fr;
+  gap: var(--space-4);
+  background: var(--bg2);
+  border: 1px solid var(--rule);
+  border-top: 2px solid var(--suit-accent);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  transition: border-color var(--transition), background var(--transition), transform var(--transition);
+}
+.lore-suit:hover {
+  background: var(--surface);
+  border-color: var(--rule-hover);
+  border-top-color: var(--suit-accent);
+  transform: translateY(-3px);
+}
+/* The tile takes its element's colour as it lights up. */
+.lore-suit:hover .lore-plate-frame::after {
+  border-color: color-mix(in srgb, var(--suit-accent) 55%, transparent);
+}
+.lore-suit:hover .lore-plate-frame img {
+  filter: saturate(1) brightness(1) contrast(1.04);
+  transform: scale(1.05);
+}
+.lore-suit:hover .lore-suit-glyph {
+  opacity: 1;
+  text-shadow: 0 0 22px color-mix(in srgb, var(--suit-accent) 60%, transparent);
+}
+.lore-suit-body { position: relative; }
+.lore-suit-glyph {
+  position: absolute;
+  top: -.15rem; right: 0;
+  font-size: 1.5rem;
+  color: var(--suit-accent);
+  opacity: .7;
+  transition: opacity var(--transition), text-shadow var(--transition);
+}
+.lore-suit-head {
+  display: flex;
+  align-items: baseline;
+  gap: .75rem;
+  margin-bottom: .4rem;
+}
+.lore-suit-name {
+  font-family: var(--font-display);
+  font-size: var(--step-1);
+  font-weight: 500;
+  color: var(--text);
+  margin: 0;
+}
+.lore-suit-el {
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--suit-accent);
+  margin: 0;
+}
+.lore-suit-domain {
+  font-family: var(--font-accent);
+  font-size: var(--step-0);
+  font-style: italic;
+  letter-spacing: .03em;
+  color: var(--text-dim);
+  margin: 0 0 .7rem;
+}
+.lore-suit-text {
+  font-family: var(--font-body);
+  font-size: var(--step--1);
+  line-height: 1.7;
+  color: var(--text-body);
+  margin: 0 0 var(--space-3);
+}
+.lore-suit-link {
+  font-family: var(--font-display);
+  font-size: var(--step--1);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--suit-accent);
+}
+.lore-suit-link:hover { color: var(--gold-pale); }
+
+/* ============================================================
+   IV · NUMEROLOGY LADDER — pick a rank, read its stage
+   ============================================================ */
+.lore-ladder {
+  display: grid;
+  grid-template-columns: 17rem 1fr;
+  gap: var(--space-5);
+  align-items: start;
+}
+.lore-ladder-hint {
+  font-family: var(--font-display);
+  font-size: var(--caps-5-size);
+  font-weight: var(--caps-5-weight);
+  letter-spacing: var(--caps-5-track);
+  text-transform: uppercase;
+  color: var(--gold-warm);
+  margin: 0 0 .7rem;
+}
+.lore-rungs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.lore-rungs--courts { margin-top: var(--space-3); }
+.lore-rung {
+  display: grid;
+  grid-template-columns: 2.1rem 1fr;
+  align-items: baseline;
+  gap: .5rem;
+  padding: .6rem .75rem;
+  background: var(--bg2);
+  border: 0;
+  border-left: 2px solid transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--transition), border-color var(--transition);
+}
+.lore-rung:hover { background: var(--surface); }
+.lore-rung[aria-selected="true"] {
+  background: var(--surface2);
+  border-left-color: var(--gold);
+}
+.lore-rung-numeral {
+  font-family: var(--font-mono);
+  font-size: .7rem;
+  letter-spacing: .08em;
+  color: var(--gold-warm);
+}
+.lore-rung[aria-selected="true"] .lore-rung-numeral { color: var(--gold-pale); }
+.lore-rung-rank {
+  font-family: var(--font-accent);
+  font-size: var(--step-0);
+  color: var(--text-dim);
+}
+.lore-rung[aria-selected="true"] .lore-rung-rank { color: var(--gold-lt); }
+
+.lore-ladder-panel {
+  background: var(--bg2);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+}
+.lore-ladder-card {
+  display: grid;
+  grid-template-columns: 13rem 1fr;
+  gap: var(--space-4);
+  align-items: center;
+}
+/* `display: grid` on these would otherwise beat the UA's [hidden] rule. */
+.lore-ladder-card[hidden],
+.lore-motif-detail[hidden] { display: none; }
+
+/* Cross-fade between ranks (lore.js toggles .is-swapping around the swap). */
+.lore-ladder-card,
+.lore-motif-detail {
+  opacity: 1;
+  transition: opacity .3s ease;
+}
+.lore-ladder-panel.is-swapping .lore-ladder-card,
+.lore-motif-panel.is-swapping .lore-motif-detail { opacity: 0; }
+
+.lore-ladder-rank {
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--gold-warm);
+  margin: 0 0 .3rem;
+}
+.lore-ladder-title {
+  font-family: var(--font-display);
+  font-size: var(--step-2);
+  font-weight: 500;
+  color: var(--gold-lt);
+  margin: 0 0 .6rem;
+}
+.lore-ladder-body {
+  font-family: var(--font-body);
+  font-size: var(--step-0);
+  line-height: 1.75;
+  color: var(--text-body);
+  margin: 0;
+}
+
+/* ============================================================
+   V · SYMBOLS — motif grid + detail plate
+   ============================================================ */
+.lore-motifs {
+  display: grid;
+  gap: var(--space-4);
+}
+.lore-motif-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-2);
+}
+.lore-motif {
+  display: grid;
+  justify-items: center;
+  gap: .45rem;
+  padding: var(--space-3) .5rem;
+  background: var(--bg2);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background var(--transition), border-color var(--transition), transform var(--transition);
+}
+.lore-motif:hover {
+  background: var(--surface);
+  border-color: var(--rule-hover);
+  transform: translateY(-2px);
+}
+.lore-motif[aria-selected="true"] {
+  background: var(--surface2);
+  border-color: color-mix(in srgb, var(--gold-300) 55%, transparent);
+}
+/* Belt and braces with the U+FE0E selectors in lore_data.py: these glyphs must
+   render as gold text, never as colour emoji. */
+.lore-motif-glyph,
+.lore-motif-mark,
+.lore-suit-glyph,
+.lore-part-glyph { font-variant-emoji: text; }
+.lore-motif-glyph {
+  font-size: 1.45rem;
+  line-height: 1;
+  color: var(--gold);
+  transition: text-shadow var(--transition);
+}
+.lore-motif[aria-selected="true"] .lore-motif-glyph {
+  color: var(--gold-pale);
+  text-shadow: 0 0 18px color-mix(in srgb, var(--gold-300) 55%, transparent);
+}
+.lore-motif-name {
+  font-family: var(--font-accent);
+  font-size: var(--step--1);
+  text-align: center;
+  color: var(--text-dim);
+}
+.lore-motif[aria-selected="true"] .lore-motif-name { color: var(--gold-lt); }
+
+.lore-motif-panel {
+  background: var(--bg2);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+}
+.lore-motif-detail {
+  display: grid;
+  grid-template-columns: 18rem 1fr;
+  gap: var(--space-5);
+  align-items: center;
+}
+.lore-motif-body { position: relative; }
+.lore-motif-mark {
+  display: block;
+  font-size: 2rem;
+  color: var(--gold);
+  opacity: .8;
+  margin-bottom: .5rem;
+}
+.lore-motif-title {
+  font-family: var(--font-display);
+  font-size: var(--step-2);
+  font-weight: 500;
+  color: var(--gold-lt);
+  margin: 0 0 .6rem;
+}
+.lore-motif-text {
+  font-family: var(--font-body);
+  font-size: var(--step-0);
+  line-height: 1.75;
+  color: var(--text-body);
+  margin: 0;
+}
+
+/* Colour language ---------------------------------------------------- */
+.lore-colors-intro {
+  max-width: 40rem;
+  margin: 0 auto var(--space-4);
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: var(--step-0);
+  line-height: 1.7;
+  color: var(--text-dim);
+}
+.lore-colors {
+  list-style: none;
+  margin: 0 auto;
+  padding: 0;
+  max-width: 44rem;
+}
+.lore-color {
+  display: grid;
+  grid-template-columns: 1.25rem 6rem 1fr;
+  gap: var(--space-3);
+  align-items: center;
+  padding: var(--space-2) var(--space-2);
+  border-bottom: 1px solid var(--rule);
+  border-radius: var(--radius);
+  transition: background var(--transition);
+}
+.lore-color:hover {
+  background: color-mix(in srgb, var(--swatch) 9%, transparent);
+}
+.lore-color-swatch {
+  width: 1.1rem; height: 1.1rem;
+  border-radius: 50%;
+  background: var(--swatch);
+  border: 1px solid color-mix(in srgb, var(--parchment) 30%, transparent);
+  box-shadow: inset 0 0 4px rgba(0, 0, 0, .4);
+  transition: box-shadow var(--transition);
+}
+.lore-color:hover .lore-color-swatch {
+  box-shadow: 0 0 14px color-mix(in srgb, var(--swatch) 70%, transparent);
+}
+.lore-color-name {
+  font-family: var(--font-display);
+  font-size: var(--step--1);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--gold-lt);
+}
+.lore-color-text {
+  font-family: var(--font-body);
+  font-size: var(--step--1);
+  line-height: 1.55;
+  color: var(--text-dim);
+}
+
+/* ============================================================
+   CLOSING BAND
+   ============================================================ */
+.lore-ethos {
+  position: relative;
+  isolation: isolate;
+  padding: var(--space-7) var(--space-4);
+  text-align: center;
+  border-top: 1px solid var(--rule);
+  background-image: var(--ethos-img);
+  background-size: cover;
+  background-position: center 55%;
+  background-attachment: fixed;
+}
+.lore-ethos.is-empty { background-image: none; }
+.lore-ethos-veil {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(70% 70% at 50% 50%,
+      color-mix(in srgb, var(--ink-900) 78%, transparent) 0%, var(--ink-900) 100%);
+}
+.lore-ethos.is-empty .lore-ethos-veil {
+  background: radial-gradient(60% 60% at 50% 45%,
+    color-mix(in srgb, var(--gold-300) 6%, transparent) 0%, transparent 70%);
+}
+.lore-ethos-inner { max-width: 40rem; margin: 0 auto; }
+.lore-ethos-glyph {
+  display: block;
+  font-size: 1.4rem;
+  color: var(--gold);
+  margin-bottom: var(--space-3);
+}
+.lore-ethos-title {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: var(--step-2);
+  color: var(--gold-lt);
+  margin: 0 0 var(--space-4);
+}
+.lore-ethos-text {
+  font-family: var(--font-body);
+  font-size: var(--step-1);
+  line-height: 1.8;
+  color: var(--text);
+  margin: 0 0 var(--space-4);
+}
+.lore-ethos-cta { margin-top: var(--space-2); }
+
+/* ============================================================
+   LIGHTBOX
+   ============================================================ */
+.lore-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 600;
+  display: grid;
+  place-items: center;
+  padding: var(--space-5);
+  background: color-mix(in srgb, var(--ink-900) 92%, transparent);
+  backdrop-filter: blur(6px);
+  opacity: 0;
+  transition: opacity .28s ease;
+}
+.lore-lightbox[hidden] { display: none; }
+.lore-lightbox.is-open { opacity: 1; }
+.lore-lb-figure {
+  margin: 0;
+  max-width: min(92vw, 62rem);
+  text-align: center;
+}
+.lore-lb-figure img {
+  max-width: 100%;
+  max-height: 78vh;
+  border-radius: var(--radius-md);
+  border: 1px solid color-mix(in srgb, var(--gold-300) 28%, transparent);
+  box-shadow: var(--shadow-lg);
+}
+.lore-lb-figure figcaption {
+  margin-top: var(--space-3);
+  font-family: var(--font-accent);
+  font-style: italic;
+  font-size: var(--step-0);
+  color: var(--text-dim);
+}
+.lore-lb-close {
+  position: absolute;
+  top: var(--space-4); right: var(--space-4);
+  width: 2.4rem; height: 2.4rem;
+  border-radius: 50%;
+  border: 1px solid var(--rule);
+  background: var(--bg2);
+  color: var(--gold-lt);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: border-color var(--transition), color var(--transition);
+}
+.lore-lb-close:hover { border-color: var(--rule-hover); color: var(--gold-pale); }
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 1000px) {
+  .lore-ladder { grid-template-columns: 1fr; }
+  .lore-motif-detail { grid-template-columns: 14rem 1fr; gap: var(--space-4); }
+}
+@media (max-width: 780px) {
+  .lore-hero { min-height: 62vh; padding: var(--space-6) var(--space-3) var(--space-5); }
+  .lore-page { padding: var(--space-5) var(--space-3) var(--space-4); }
+  .lore-section { margin-bottom: var(--space-6); }
+  .lore-parts,
+  .lore-suits { grid-template-columns: 1fr; }
+  .lore-suit { grid-template-columns: 9rem 1fr; }
+  .lore-motif-grid { grid-template-columns: repeat(2, 1fr); }
+  .lore-motif-detail,
+  .lore-ladder-card { grid-template-columns: 1fr; }
+  .lore-ladder-card .lore-plate { max-width: 14rem; }
+  .lore-color { grid-template-columns: 1.25rem 5rem 1fr; column-gap: var(--space-2); }
+  .lore-ethos { background-attachment: scroll; padding: var(--space-6) var(--space-3); }
+}
+@media (max-width: 460px) {
+  .lore-suit { grid-template-columns: 1fr; }
+  .lore-rungs { grid-template-columns: 1fr; }
+}
+
+/* ============================================================
+   REDUCED MOTION — keep the reveals, drop the movement
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  .lore-js [data-lore-reveal],
+  .lore-js .lore-tl-item[data-lore-reveal] .lore-tl-plate,
+  .lore-js .lore-tl-item[data-lore-reveal] .lore-tl-body {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  .lore-hero-arrow { animation: none; }
+  .lore-plate-btn:hover .lore-plate-glint { animation: none; }
+  .lore-plate-frame img { transition: filter .3s ease; }
+  .lore-plate-btn:hover img { transform: scale(1.015); }
+  .lore-ethos { background-attachment: scroll; }
+}

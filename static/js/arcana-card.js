@@ -435,7 +435,7 @@ function buildMosaic(cw, ch) {
       '<button class="ac-side" data-dir="1" type="button" aria-label="Next card"><span class="disc"><em></em></span><span class="lbl"></span></button>' +
     '</main>' +
     '<footer class="ac-foot"><div class="ac-rail"><span class="cap">00</span><div class="track"><div class="fill"></div><div class="bead"></div></div><span class="cap">XXI</span></div>' +
-    '<button class="ac-cta" type="button">\u2726 &nbsp;BEGIN A READING</button></footer>' +
+    '<button class="ac-cta" type="button">\u2726 &nbsp;DRAW YOUR CARDS</button></footer>' +
     '<div class="ac-grain"></div>';
 
   // Minimal scaffold: JUST the tiling card (front + back), with the soft neb glow
@@ -631,6 +631,9 @@ function buildMosaic(cw, ch) {
     // quiet erosion, not a snowstorm. Selection uses existing per-tile randoms
     // (rotJit) so the rng sequence stays untouched.
     // SHED_MAX × the ~0.34–0.5 airborne duty cycle ≈ 75–105 concurrent chips.
+    // Kept at 220: this is the per-frame draw-call count and the animation's
+    // main cost driver. The depth-graded chip SIZE below carries the visual
+    // weight instead — it's near-free, where density is not.
     var SHED_MAX = 220;
     function buildRest() {
       bandList = [];
@@ -667,6 +670,13 @@ function buildMosaic(cw, ch) {
           t.shWobA = 1.8 + (t.lx % 8) * 0.35;                     // wobble px
           t.shWobF = 1 + (t.ly % 3) * 0.5;                        // wobble cycles
           t.shWobP = (t.lx + t.ly) * 0.13;                        // wobble phase
+          // DEPTH-GRADED SIZE: chips freed from deeper in the band (toward the
+          // middle) fly a touch larger than the ones off the very rim, so the
+          // erosion reads as bigger pieces breaking off the body and finer
+          // crumbs off the edge. ±20% about 1.0 (a 1.5× rim→deep ratio) on top
+          // of the tile geometry's own bandT growth (sizeScale) — centred on
+          // 1.0 so the average chip size is unchanged.
+          t.shScale = 0.80 + Math.min(1, t.bandT / 0.6) * 0.40;
           shedList.push(t);
         }
       }
@@ -864,7 +874,7 @@ function buildMosaic(cw, ch) {
                         st.top + st.hy + st.h / 2 + st.shDy * mv + st.shPy * wob);
           ctx.rotate((st.hr + st.rotJit * lp) * Math.PI / 180);
           // the freed tessera shrinks away as it dies
-          var sc = 1.8 * (1 - 0.68 * lp);
+          var sc = 1.85 * st.shScale * (1 - 0.68 * lp);
           ctx.globalAlpha = a;
           ctx.drawImage(curArtImg,
             Math.max(0, srcX), Math.max(0, srcY), srcW, srcH,
@@ -930,13 +940,13 @@ function buildMosaic(cw, ch) {
       if (kwEl) kwEl.textContent = (c.keywords || []).join(" \u00b7 ");
       if (watermark) watermark.textContent = c.roman;
       if (backBody) backBody.innerHTML =
-        '<div class="b-eyebrow">CARD ' + esc(c.num) + '</div>' +
+        '<div class="b-eyebrow">CARD ' + esc(c.roman) + '</div>' +
         '<div class="b-name">' + esc(c.name) + '</div>' +
         '<div class="b-div"><span></span><span class="dot">\u2726</span><span></span></div>' +
         '<div class="b-element"><span class="glyph">' + elementGlyphSVG(c.element) +
           '</span><span class="b-el-text"><em>ELEMENT</em>' + esc(c.element) + '</span></div>' +
         '<p class="b-meaning">' + esc(c.meaning) + '</p>' +
-        '<div class="b-foot">MAJOR ARCANA \u00b7 ' + esc(c.num) + ' OF XXI</div>';
+        '<div class="b-foot">MAJOR ARCANA \u00b7 ' + esc(c.roman) + ' OF XXI</div>';
       setV(frontEl, "--img", imgFor(c));
       frontEl.classList.toggle("has-image", !!c.image);
       var f = (parseInt(c.num, 10) / 21) * 100;
@@ -1015,44 +1025,82 @@ function buildMosaic(cw, ch) {
       } catch (e) { /* CustomEvent unsupported — non-fatal */ }
     }
 
-    // Navigation swap: a plain opacity cross-fade. The card fades out, the next
-    // card's art + mosaic swap in beneath the fade, then it fades back up.
+    // Navigation swap: a TRUE cross-dissolve, the two cards overlapping.
     // (A tessera-dissolve transition was tried here and removed: the dissolve
     // belongs to the card's RESTING state, not to navigation.)
-    // The fade is ASYMMETRIC, like a film dissolve: a shorter ease-in departure
-    // and a longer ease-out arrival. The out window must outlast the text-plate
-    // fades that ride on .is-shifting (240ms) / .is-transitioning (320ms), and
-    // the class comes off only after the arrival settles — cutting those fades
-    // short mid-flight made every swap read as a stutter.
+    //
+    // The outgoing front face is snapshotted into a ghost clone stacked over the
+    // live one; the real card then swaps to the new art UNDERNEATH the opaque
+    // ghost — so the mosaic rebuild, the background-image swap and the text
+    // relabel all cost nothing visually — and the ghost dissolves away to reveal
+    // it. This replaces an earlier fade-to-zero-and-back, whose ~340ms of empty
+    // frame between the two halves is what read as a jump: the card is now never
+    // blank, and the whole swap is shorter than the old out+in put together.
+    // HOLD_MS is a short beat before the swap, so a host that dipped its own
+    // copy out on `arcana:transition-start` has finished doing so before we
+    // relabel it. The card is under the opaque ghost throughout, so this reads
+    // as the card holding still, not as a blank frame.
+    var DISSOLVE_MS = 560, HOLD_MS = 200;
+
+    // Clone the front face as it stands. cloneNode carries the inline custom
+    // properties that drive the art (--img/--cw/--ch/--mx/--my all live on
+    // frontEl) but hands back a BLANK canvas, so the live mosaic pixels are
+    // blitted across by hand.
+    function snapshotFront() {
+      var old = flipEl.querySelector(".ac-ghost");
+      if (old) old.parentNode.removeChild(old);       // defensive: never stack ghosts
+      var ghost = frontEl.cloneNode(true);
+      ghost.classList.add("ac-ghost");
+      ghost.setAttribute("aria-hidden", "true");
+      var gc = ghost.querySelector(".mosaic-canvas");
+      if (gc && mosaicCanvas && mosaicCanvas.width) {
+        gc.width = mosaicCanvas.width; gc.height = mosaicCanvas.height;
+        try { gc.getContext("2d").drawImage(mosaicCanvas, 0, 0); } catch (e) { /* non-fatal */ }
+      }
+      flipEl.appendChild(ghost);                      // last sibling → paints over the live face
+      return ghost;
+    }
+
     // Assumes `busy` is already set by dissolve().
     function fadeSwap(target) {
-      var FADE_OUT = 340, FADE_IN = 460;
-      flipEl.style.transition = "opacity " + FADE_OUT + "ms ease-in";
-      flipEl.style.opacity = "0";
+      var ghost = snapshotFront();
       var finished = false;
       function finish() {
         if (finished) return;
         finished = true;
-        setCard(target);                              // swap the card art + mosaic beneath the fade
-        flipEl.style.transition = "opacity " + FADE_IN + "ms cubic-bezier(.22,.61,.36,1)";
-        flipEl.style.opacity = "1";
+        setCard(target);                              // swap art + mosaic behind the ghost
+        // The new card is now committed (still hidden). Hosts bring their copy
+        // back on this, so their text returns WITH the dissolve rather than
+        // after it — `transition-end` stays reserved for "animations may run
+        // again", which is only true once everything has settled.
+        try {
+          container.dispatchEvent(new CustomEvent("arcana:card-swapped", { bubbles: true }));
+        } catch (e) { /* CustomEvent unsupported — non-fatal */ }
         preloadCard(nextI()); preloadCard(prevI());   // warm the neighbours
-        timers.push(setTimeout(function () {
-          flipEl.style.transition = "";
-          container.classList.remove("is-shifting");
-          busy = false; setDisabled(); applyTilt();
-          setAnimPaused(false);                       // resume idle twinkle once settled
-          // pre-render the new neighbours' band bitmaps off the critical path
-          timers.push(setTimeout(function () { primeBand(nextI()); primeBand(prevI()); }, 300));
-        }, FADE_IN + 20));
+        // Two frames: one for the new card's paint to land, one to guarantee the
+        // ghost's opacity:1 is committed before we transition it. Starting the
+        // dissolve any earlier shows the new art still streaming in beneath.
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () {
+            ghost.style.transition = "opacity " + DISSOLVE_MS + "ms cubic-bezier(.37,0,.28,1)";
+            ghost.style.opacity = "0";
+            timers.push(setTimeout(function () {
+              if (ghost.parentNode) ghost.parentNode.removeChild(ghost);
+              busy = false; setDisabled(); applyTilt();
+              setAnimPaused(false);                   // resume idle twinkle once settled
+              // pre-render the new neighbours' band bitmaps off the critical path
+              timers.push(setTimeout(function () { primeBand(nextI()); primeBand(prevI()); }, 300));
+            }, DISSOLVE_MS + 20));
+          });
+        });
       }
-      // Swap only once BOTH the fade-out has played AND the target art is decoded,
-      // so the new card appears whole in one frame instead of streaming in.
+      // Swap once BOTH the hold has elapsed AND the target art is decoded, so
+      // the new card appears whole in one frame instead of streaming in.
       var ready = preloadCard(target);
-      var faded = new Promise(function (res) { timers.push(setTimeout(res, FADE_OUT)); });
-      Promise.all([ready, faded]).then(finish);
+      var held = new Promise(function (res) { timers.push(setTimeout(res, HOLD_MS)); });
+      Promise.all([ready, held]).then(finish);
       // Safety net: never strand `busy` if a decode stalls or rejects.
-      timers.push(setTimeout(finish, FADE_OUT + 500));
+      timers.push(setTimeout(finish, HOLD_MS + 400));
     }
 
     function dissolve(target, dir) {
@@ -1061,7 +1109,6 @@ function buildMosaic(cw, ch) {
       busy = true; flipped = false; updateFlip(); setDisabled();
       clearTimers();
       setAnimPaused(true);                    // freeze idle twinkle for the swap
-      container.classList.add("is-shifting"); // fades the card's own text plates (CSS)
       fadeSwap(target);
     }
 

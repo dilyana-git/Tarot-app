@@ -40,7 +40,7 @@
   <!-- LEFT — text column -->
   <div class="hero-left">
     <div class="text-stack" id="textStack">
-      <div class="card-num">CARD <span class="card-num-bold" id="cardNum">00</span></div>
+      <div class="card-num">CARD <span class="card-num-bold" id="cardNum">0</span></div>
       <h1 class="card-title" id="cardTitle">THE FOOL</h1>
 
       <div class="kw-row" id="kwRow">
@@ -54,6 +54,12 @@
           <dt>ELEMENT</dt>
           <dd id="cardElement">AIR</dd>
         </div>
+        {# "RULER" not "PLANET": the Golden Dawn attributions are 10 planets and
+           12 zodiac signs across the 22 majors, so most cards here are signs. #}
+        <div class="meta-row">
+          <dt>RULER</dt>
+          <dd id="cardRuler">URANUS</dd>
+        </div>
         <div class="meta-row">
           <dt>SYMBOL</dt>
           <dd id="cardSymbol" class="meta-symbol">✦</dd>
@@ -64,27 +70,21 @@
     <div class="cta-row">
       <a href="{{ url_for('reading') }}" class="btn-primary">
         <span class="btn-dot"></span>
-        BEGIN A READING
+        DRAW YOUR CARDS
       </a>
       <a href="{{ url_for('cards') }}" class="btn-ghost">EXPLORE THE DECK</a>
     </div>
 
-    <!-- Counter / progress -->
-    <div class="counter-row">
-      <button class="counter-arrow" id="counterPrev" aria-label="Previous">←</button>
-      <span class="counter-txt" id="counterIdx">00</span>
-      <div class="counter-track" id="counterTrack">
-        <div class="counter-fill" id="counterFill"></div>
-        <!-- ticks injected by JS -->
-      </div>
-      <span class="counter-txt counter-txt-end">XXI</span>
-      <button class="counter-arrow" id="counterNext" aria-label="Next">→</button>
-    </div>
+    <!-- GAUGE — the deck's index as an astronomical graduation scale. Thin
+         vertical hairlines of varying height (major graduations taller), the
+         current tick tallest and gold, with a roman "n / XXI" readout beneath.
+         Sits at the foot of the text column, below the CTA. Doubles as jump-to
+         nav; replaces the old left-margin numeral rail. -->
+    <nav class="arcana-gauge" id="arcanaGauge" aria-label="Major Arcana index">
+      <div class="gauge-ticks" id="gaugeTicks"><!-- populated by JS --></div>
+      <div class="gauge-label"><span id="gaugeCurrent">0</span> / XXI</div>
+    </nav>
 
-    <div class="counter-caption">
-      <span id="counterCaption">THE FOOL · CARD 00 OF XXI</span>
-      <span class="counter-hint">← → TO JOURNEY</span>
-    </div>
   </div>
 
   <!-- RIGHT — mosaic card display -->

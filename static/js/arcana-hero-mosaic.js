@@ -27,6 +27,7 @@
       num:      String(i).padStart(2, '0'),
       name:     String(c.name || '').toUpperCase(),
       element:  String(c.element || 'AIR').toUpperCase(),
+      astro:    String(c.astro || '').toUpperCase(),
       keywords: (c.keywords_upright || []).slice(0, 3).map(function (k) { return String(k).toUpperCase(); }),
       meaning:  c.upright_meaning || c.description || '',
       image:    c.image_url || ''
@@ -41,44 +42,46 @@
     cardTitle:      $('cardTitle'),
     kwRow:          $('kwRow'),
     cardDesc:       $('cardDesc'),
+    textStack:      $('textStack'),
     cardElement:    $('cardElement'),
+    cardRuler:      $('cardRuler'),
     cardSymbol:     $('cardSymbol'),
     navPrev:        $('navPrev'),
     navNext:        $('navNext'),
     prevRoman:      $('prevRoman'),
     nextRoman:      $('nextRoman'),
-    counterIdx:     $('counterIdx'),
-    counterFill:    $('counterFill'),
-    counterTrack:   $('counterTrack'),
-    counterPrev:    $('counterPrev'),
-    counterNext:    $('counterNext'),
-    counterCaption: $('counterCaption')
+    gaugeTicks:     $('gaugeTicks'),
+    gaugeCurrent:   $('gaugeCurrent')
   };
   if (!els.mount) return;
 
   var raws = raw; // keep the rich dicts for description/symbol
   var stripThe = function (n) { return String(n || '').replace(/^THE /i, ''); };
 
-  // ── Progress ticks ────────────────────────────────────────
-  if (els.counterTrack) {
-    cards.forEach(function (_, i) {
-      var tick = document.createElement('button');
-      tick.className = 'counter-tick';
-      tick.style.left = (cards.length > 1 ? (i / (cards.length - 1)) * 100 : 0) + '%';
-      tick.setAttribute('aria-label', cards[i].name);
-      tick.setAttribute('title', cards[i].name);
-      tick.addEventListener('click', function () { widget && widget.go(i); });
-      els.counterTrack.appendChild(tick);
+  // ── Gauge — one hairline tick per major, doubling as jump-to nav ──
+  // Every fifth tick and the two endpoints are "major" graduations (taller),
+  // so the row reads as a measuring scale rather than an even dot strip.
+  if (els.gaugeTicks) {
+    cards.forEach(function (c, i) {
+      var b = document.createElement('button');
+      b.className = 'gauge-tick';
+      b.type = 'button';
+      if (i % 5 === 0 || i === cards.length - 1) b.setAttribute('data-major', '');
+      b.setAttribute('aria-label', c.roman + ' — ' + c.name);
+      b.setAttribute('title', c.roman + ' · ' + c.name);
+      b.addEventListener('click', function () { widget && widget.go(i); stopAuto(); });
+      els.gaugeTicks.appendChild(b);
     });
   }
 
   // ── Update the hero text column + counter for card `i` ─────
   function syncHero(card, i, neighbours) {
     var rc = raws[i] || {};
-    if (els.cardNum)     els.cardNum.textContent = String(i).padStart(2, '0');
+    if (els.cardNum)     els.cardNum.textContent = card.roman;
     if (els.cardTitle)   els.cardTitle.textContent = card.name;
     if (els.cardDesc)    els.cardDesc.textContent = rc.description || card.meaning || '';
     if (els.cardElement) els.cardElement.textContent = card.element;
+    if (els.cardRuler)   els.cardRuler.textContent = card.astro || '—';
     if (els.cardSymbol)  els.cardSymbol.textContent = rc.symbol || '✦';
 
     if (els.kwRow) {
@@ -94,20 +97,66 @@
       });
     }
 
-    var pct = cards.length > 1 ? (i / (cards.length - 1)) * 100 : 0;
-    if (els.counterIdx)  els.counterIdx.textContent = String(i).padStart(2, '0');
-    if (els.counterFill) els.counterFill.style.width = pct + '%';
-    if (els.counterCaption) els.counterCaption.textContent = card.name + ' · CARD ' + card.num + ' OF XXI';
+    // Gauge readout — the roman "n / XXI" label and the lit needle tick.
+    if (els.gaugeCurrent) els.gaugeCurrent.textContent = card.roman;
 
-    if (els.counterTrack) {
-      var ticks = els.counterTrack.querySelectorAll('.counter-tick');
-      for (var k = 0; k < ticks.length; k++) ticks[k].classList.toggle('is-active', k === i);
+    if (els.gaugeTicks) {
+      var ticks = els.gaugeTicks.children;
+      for (var k = 0; k < ticks.length; k++) {
+        var on = (k === i);
+        ticks[k].classList.toggle('is-active', on);
+        if (on) ticks[k].setAttribute('aria-current', 'true');
+        else ticks[k].removeAttribute('aria-current');
+      }
     }
 
     // prev / next nav roman numerals
     var p = neighbours && neighbours.prev, nx = neighbours && neighbours.next;
     if (p && els.prevRoman) els.prevRoman.textContent = p.roman;
     if (nx && els.nextRoman) els.nextRoman.textContent = nx.roman;
+  }
+
+  // ── Hold the text column at its tallest ───────────────────
+  // Titles run to 1 or 2 lines and descriptions to 4-6, so the stack's height
+  // swings ~95px across the 22 majors — which walked the CTA button and the
+  // progress track up and down as you moved through the deck. Reserve the
+  // tallest state so nothing below the stack moves.
+  //
+  // Measured rather than hardcoded on purpose: .card-title sizes off a vw-based
+  // clamp and .card-desc rewraps, so the tallest card differs at every viewport
+  // width — any fixed px value would be correct at exactly one window size.
+  function reserveStackHeight() {
+    var stack = els.textStack;
+    if (!stack || !els.cardTitle || !els.cardDesc) return;
+
+    var saved = {
+      title: els.cardTitle.textContent,
+      desc:  els.cardDesc.textContent,
+      el:    els.cardElement && els.cardElement.textContent,
+      ruler: els.cardRuler   && els.cardRuler.textContent,
+      sym:   els.cardSymbol  && els.cardSymbol.textContent
+    };
+
+    stack.style.minHeight = '0px';           // release before measuring
+    var tallest = 0;
+    for (var i = 0; i < cards.length; i++) {
+      var rc = raws[i] || {};
+      els.cardTitle.textContent = cards[i].name;
+      els.cardDesc.textContent  = rc.description || cards[i].meaning || '';
+      if (els.cardElement) els.cardElement.textContent = cards[i].element;
+      if (els.cardRuler)   els.cardRuler.textContent   = cards[i].astro || '—';
+      if (els.cardSymbol)  els.cardSymbol.textContent  = rc.symbol || '✦';
+      var h = stack.getBoundingClientRect().height;
+      if (h > tallest) tallest = h;
+    }
+
+    els.cardTitle.textContent = saved.title;
+    els.cardDesc.textContent  = saved.desc;
+    if (els.cardElement && saved.el   != null) els.cardElement.textContent = saved.el;
+    if (els.cardRuler   && saved.ruler!= null) els.cardRuler.textContent   = saved.ruler;
+    if (els.cardSymbol  && saved.sym  != null) els.cardSymbol.textContent  = saved.sym;
+
+    stack.style.minHeight = Math.ceil(tallest) + 'px';
   }
 
   // ── Mount the bare mosaic card ────────────────────────────
@@ -118,15 +167,38 @@
     onCard: syncHero
   });
 
+  // Measure once the webfonts are in — Cinzel/EB Garamond have different metrics
+  // to the fallbacks, so measuring before they land reserves the wrong height.
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(reserveStackHeight);
+  } else {
+    reserveStackHeight();
+  }
+  var reserveTimer;
+  window.addEventListener('resize', function () {
+    clearTimeout(reserveTimer);
+    reserveTimer = setTimeout(reserveStackHeight, 150);
+  });
+
   // ── Card-transition hook ──────────────────────────────────
-  // Dip the text column out while the card dissolves so its copy swap hides
-  // inside the transition; restore once the new card has settled.
+  // Dip the text column out so its copy swap hides inside the transition, then
+  // release it on `card-swapped` — which the widget fires the moment the new
+  // card is committed, while it is still hidden behind its dissolve ghost. This
+  // only STARTS the clock: the actual reveal is held back by the return delay on
+  // .text-stack (arcana-hero.css) so the picture changes first and the copy
+  // settles in behind it. `transition-end` lands much later, once everything has
+  // settled, so it is not the cue here.
   (function wireTransitionDip() {
     var heroRoot = document.querySelector('.arcana-hero');
     if (!heroRoot) return;
     document.addEventListener('arcana:transition-start', function () {
       heroRoot.classList.add('is-transitioning');
     });
+    document.addEventListener('arcana:card-swapped', function () {
+      heroRoot.classList.remove('is-transitioning');
+    });
+    // Belt and braces: if a swap ever ends without the swap event (a reduced
+    // motion path, a stalled decode), never leave the copy stranded invisible.
     document.addEventListener('arcana:transition-end', function () {
       heroRoot.classList.remove('is-transitioning');
     });
@@ -136,7 +208,6 @@
   function wirePrev(el) { el && el.addEventListener('click', function () { widget.prev(); stopAuto(); }); }
   function wireNext(el) { el && el.addEventListener('click', function () { widget.next(); stopAuto(); }); }
   wirePrev(els.navPrev);  wireNext(els.navNext);
-  wirePrev(els.counterPrev); wireNext(els.counterNext);
 
   // ── Auto-advance (pauses on interaction / hover / tab-hide) ─
   var AUTO_MS = 5500, autoTimer = null, stopped = false;

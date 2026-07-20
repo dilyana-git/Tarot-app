@@ -1,3 +1,4 @@
+import mimetypes
 import os
 import random
 from functools import lru_cache
@@ -8,11 +9,15 @@ from data.tarot_data import (
 )
 from data.reading_composer import compose as compose_reading
 from data.lore_data import (
-    LORE_INTRO, HISTORY_TIMELINE, DECK_STRUCTURE, SUITS,
-    NUMEROLOGY, SYMBOLS, READING_ETHOS,
+    LORE_INTRO, LORE_HERO_IMAGE, CHAPTERS, HISTORY_TIMELINE, DECK_STRUCTURE,
+    SUITS, NUMEROLOGY, SYMBOLS, READING_ETHOS,
 )
 
 app = Flask(__name__)
+# Windows' mimetypes registry has no .webp entry, so the card art would be
+# served as application/octet-stream. Register it before the first send_file.
+mimetypes.add_type('image/webp', '.webp')
+
 _secret = os.environ.get('SECRET_KEY')
 if not _secret:
     import warnings
@@ -62,7 +67,9 @@ MINOR_RANK_MAP = {
 }
 
 
-_IMG_EXTS = ('.jpg', '.jpeg', '.png', '.webp')
+# WebP first: the art on disk is .webp (card data still names .jpg), and it is
+# ~7x smaller than the PNG/JPEG originals at the same on-screen size.
+_IMG_EXTS = ('.webp', '.jpg', '.jpeg', '.png')
 
 
 @lru_cache(maxsize=None)
@@ -75,9 +82,14 @@ def _static_exists(relpath):
 
 
 def get_card_image_path(filename):
-    """Return filename if it exists on disk, trying alternate extensions, else placeholder."""
+    """Return the best existing file for this card, else the placeholder.
+
+    _IMG_EXTS order wins over the extension named in the card data, so dropping
+    a .jpg back into the tree can't beat the .webp we actually ship."""
     base, ext = os.path.splitext(filename)
-    candidates = [filename] + [base + alt for alt in _IMG_EXTS if alt != ext.lower()]
+    candidates = [base + alt for alt in _IMG_EXTS]
+    if ext.lower() not in _IMG_EXTS:
+        candidates.append(filename)
     for candidate in candidates:
         if _static_exists(candidate):
             return candidate
@@ -122,6 +134,24 @@ def get_card_video_url(card):
 
 app.jinja_env.globals['get_card_video_url'] = get_card_video_url
 
+
+def lore_image_url(slug):
+    """Return a /static/… URL for a lore plate, or '' when that art has not been
+    generated yet. Empty is a supported state: lore.html renders an engraved
+    cartouche in the slot instead of a broken image, so the page is complete
+    with no lore art on disk at all. Probes the same extensions, in the same
+    order, as the card art."""
+    if not slug:
+        return ''
+    for ext in _IMG_EXTS:
+        rel = f'images/lore/{slug}{ext}'
+        if _static_exists(rel):
+            return f'/static/{rel}'
+    return ''
+
+app.jinja_env.globals['lore_image_url'] = lore_image_url
+
+
 @app.route('/')
 def index():
     arcana = []
@@ -144,6 +174,7 @@ def _card_json(card):
         'arcana':   card['arcana'],
         'suit':     card.get('suit'),
         'element':  card.get('element', ''),
+        'astro':    card.get('astro', ''),   # majors only; '' for the minors
         'symbol':   card.get('symbol', '✦'),
         'keywords_upright': card.get('keywords_upright', [])[:3],
         'description': card.get('description', ''),
@@ -228,6 +259,8 @@ def lore():
     return render_template(
         'lore.html',
         intro=LORE_INTRO,
+        hero_image=LORE_HERO_IMAGE,
+        chapters=CHAPTERS,
         timeline=HISTORY_TIMELINE,
         deck=DECK_STRUCTURE,
         suits=SUITS,

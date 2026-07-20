@@ -3,24 +3,82 @@
 {% block title %}Lore — The History &amp; Symbolism of Tarot — Arcana{% endblock %}
 {% block meta_description %}The lore of the tarot — six centuries of history, the structure of the seventy-eight-card deck, the four suits and their elements, the numerology of the pips, and the symbols the cards read by.{% endblock %}
 
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/lore.css') }}" />
+{% endblock %}
+
+{#
+  An illustration slot. `lore_image_url` (app.py) resolves the plate on disk;
+  when it returns '' the slot renders as an engraved empty cartouche, so the
+  page is complete before any lore art exists. Plates with art are buttons that
+  open the lightbox in lore.js.
+#}
+{% macro plate(img, cls='') -%}
+  {%- set src = lore_image_url(img.slug) if img else '' -%}
+  <figure class="lore-plate {{ cls }}{{ ' is-empty' if not src }}">
+    {%- if src %}
+    <button type="button" class="lore-plate-frame lore-plate-btn"
+            data-full="{{ src }}" data-caption="{{ img.caption }}" data-alt="{{ img.alt }}"
+            aria-label="Enlarge illustration: {{ img.alt }}">
+      <img src="{{ src }}" alt="{{ img.alt }}" loading="lazy" decoding="async" />
+      <span class="lore-plate-glint" aria-hidden="true"></span>
+    </button>
+    {%- else %}
+    <div class="lore-plate-frame lore-plate-empty" role="img" aria-label="{{ img.alt if img else 'Illustration pending' }}">
+      <span class="lore-plate-orn" aria-hidden="true">✦</span>
+      <span class="lore-plate-slug" aria-hidden="true">{{ img.slug if img }}</span>
+    </div>
+    {%- endif %}
+    {%- if img and img.caption %}
+    <figcaption class="lore-plate-cap">{{ img.caption }}</figcaption>
+    {%- endif %}
+  </figure>
+{%- endmacro %}
+
 {% block content %}
 
 <!-- ── Page hero ─────────────────────────────────────────────── -->
-<section class="page-hero-arch lore-hero">
-  <div class="page-arch-eyebrow">
-    <span class="page-arch-rule"></span>
-    <span class="page-arch-label">History &amp; Symbolism</span>
-    <span class="page-arch-rule"></span>
+<section class="lore-hero" aria-labelledby="lore-title">
+  {% set hero_src = lore_image_url(hero_image.slug) %}
+  <div class="lore-hero-plate{{ ' is-empty' if not hero_src }}" aria-hidden="true"
+       {% if hero_src %}style="--hero-img: url('{{ hero_src }}')"{% endif %}
+       data-lore-parallax></div>
+  <div class="lore-hero-veil" aria-hidden="true"></div>
+
+  <div class="lore-hero-inner">
+    <div class="page-arch-eyebrow">
+      <span class="page-arch-rule"></span>
+      <span class="page-arch-label">History &amp; Symbolism</span>
+      <span class="page-arch-rule"></span>
+    </div>
+    <h1 class="page-arch-title" id="lore-title">The Lore</h1>
+    <p class="lore-lede">{{ intro }}</p>
+    <a class="lore-hero-scroll" href="#history">
+      <span>Begin</span>
+      <span class="lore-hero-arrow" aria-hidden="true">↓</span>
+    </a>
   </div>
-  <h1 class="page-arch-title">The Lore</h1>
-  <p class="lore-lede">{{ intro }}</p>
 </section>
+
+<!-- ── Chapter rail (sticky scroll-spy; desktop only) ────────── -->
+<nav class="lore-rail" id="loreRail" aria-label="Chapters">
+  <ol class="lore-rail-list">
+    {% for ch in chapters %}
+    <li>
+      <a class="lore-rail-link" href="#{{ ch.id }}" data-rail-for="{{ ch.id }}">
+        <span class="lore-rail-num">{{ ch.num }}</span>
+        <span class="lore-rail-label">{{ ch.label }}</span>
+      </a>
+    </li>
+    {% endfor %}
+  </ol>
+</nav>
 
 <div class="lore-page">
 
-  <!-- ── History ─────────────────────────────────────────────── -->
+  <!-- ── I · History ─────────────────────────────────────────── -->
   <section class="lore-section" id="history" aria-labelledby="history-title">
-    <header class="lore-section-head">
+    <header class="lore-section-head" data-lore-reveal>
       <span class="lore-section-num">I</span>
       <h2 class="lore-section-title" id="history-title">A Short History</h2>
       <p class="lore-section-sub">From a Renaissance card game to a mirror for the modern mind.</p>
@@ -28,9 +86,10 @@
 
     <ol class="lore-timeline">
       {% for entry in timeline %}
-      <li class="lore-tl-item">
-        <span class="lore-tl-era">{{ entry.era }}</span>
+      <li class="lore-tl-item" data-lore-reveal>
+        <div class="lore-tl-plate">{{ plate(entry.image, 'lore-plate--tl') }}</div>
         <div class="lore-tl-body">
+          <span class="lore-tl-era">{{ entry.era }}</span>
           <h3 class="lore-tl-title">{{ entry.title }}</h3>
           <p class="lore-tl-text">{{ entry.text }}</p>
         </div>
@@ -39,9 +98,9 @@
     </ol>
   </section>
 
-  <!-- ── Structure of the deck ───────────────────────────────── -->
+  <!-- ── II · Structure of the deck ──────────────────────────── -->
   <section class="lore-section" id="structure" aria-labelledby="structure-title">
-    <header class="lore-section-head">
+    <header class="lore-section-head" data-lore-reveal>
       <span class="lore-section-num">II</span>
       <h2 class="lore-section-title" id="structure-title">Structure of the Deck</h2>
       <p class="lore-section-sub">{{ deck.intro }}</p>
@@ -49,19 +108,21 @@
 
     <div class="lore-parts">
       {% for part in deck.parts %}
-      <article class="lore-part">
-        <span class="lore-part-glyph" aria-hidden="true">{{ part.glyph }}</span>
-        <p class="lore-part-count">{{ part.count }}</p>
-        <h3 class="lore-part-name">{{ part.name }}</h3>
-        <p class="lore-part-text">{{ part.text }}</p>
+      <article class="lore-part" data-lore-reveal>
+        {{ plate(part.image, 'lore-plate--wide') }}
+        <div class="lore-part-body">
+          <p class="lore-part-count"><span class="lore-part-glyph" aria-hidden="true">{{ part.glyph }}</span>{{ part.count }}</p>
+          <h3 class="lore-part-name">{{ part.name }}</h3>
+          <p class="lore-part-text">{{ part.text }}</p>
+        </div>
       </article>
       {% endfor %}
     </div>
   </section>
 
-  <!-- ── The four suits ──────────────────────────────────────── -->
+  <!-- ── III · The four suits ────────────────────────────────── -->
   <section class="lore-section" id="suits" aria-labelledby="suits-title">
-    <header class="lore-section-head">
+    <header class="lore-section-head" data-lore-reveal>
       <span class="lore-section-num">III</span>
       <h2 class="lore-section-title" id="suits-title">The Four Suits</h2>
       <p class="lore-section-sub">Each suit is an element, and each element a domain of experience.</p>
@@ -69,79 +130,124 @@
 
     <div class="lore-suits">
       {% for suit in suits %}
-      <article class="lore-suit lore-suit--{{ suit.slug }}" style="--suit-accent: var(--suit-{{ suit.slug }})">
-        <span class="lore-suit-glyph" aria-hidden="true">{{ suit.glyph }}</span>
-        <div class="lore-suit-head">
-          <h3 class="lore-suit-name">{{ suit.name }}</h3>
-          <p class="lore-suit-el">{{ suit.element }}</p>
+      <article class="lore-suit lore-suit--{{ suit.slug }}" data-lore-reveal
+               style="--suit-accent: var(--suit-{{ suit.slug }})">
+        {{ plate(suit.image, 'lore-plate--suit') }}
+        <div class="lore-suit-body">
+          <span class="lore-suit-glyph" aria-hidden="true">{{ suit.glyph }}</span>
+          <div class="lore-suit-head">
+            <h3 class="lore-suit-name">{{ suit.name }}</h3>
+            <p class="lore-suit-el">{{ suit.element }}</p>
+          </div>
+          <p class="lore-suit-domain">{{ suit.domain }}</p>
+          <p class="lore-suit-text">{{ suit.text }}</p>
+          <a class="lore-suit-link" href="{{ url_for('cards', filter='minor', suit=suit.name) }}">
+            See the {{ suit.name }} &rsaquo;
+          </a>
         </div>
-        <p class="lore-suit-domain">{{ suit.domain }}</p>
-        <p class="lore-suit-text">{{ suit.text }}</p>
-        <a class="lore-suit-link" href="{{ url_for('cards', filter='minor', suit=suit.name) }}">
-          See the {{ suit.name }} &rsaquo;
-        </a>
       </article>
       {% endfor %}
     </div>
   </section>
 
-  <!-- ── Numerology ──────────────────────────────────────────── -->
+  <!-- ── IV · Numerology (interactive ladder) ────────────────── -->
   <section class="lore-section" id="numerology" aria-labelledby="numerology-title">
-    <header class="lore-section-head">
+    <header class="lore-section-head" data-lore-reveal>
       <span class="lore-section-num">IV</span>
       <h2 class="lore-section-title" id="numerology-title">Numerology</h2>
       <p class="lore-section-sub">{{ numerology.intro }}</p>
     </header>
 
-    <h3 class="lore-subhead">Ace through Ten</h3>
-    <ul class="lore-pips">
-      {% for pip in numerology.pips %}
-      <li class="lore-pip">
-        <span class="lore-pip-rank">{{ pip.rank }}</span>
-        <span class="lore-pip-title">{{ pip.title }}</span>
-        <span class="lore-pip-text">{{ pip.text }}</span>
-      </li>
-      {% endfor %}
-    </ul>
+    {% set ranks = numerology.pips + numerology.courts %}
+    <div class="lore-ladder" data-lore-reveal>
+      <div class="lore-ladder-picker">
+        <p class="lore-ladder-hint">Choose a stage</p>
+        <div class="lore-rungs" role="tablist" aria-label="Ranks of the minor arcana">
+          {% for r in numerology.pips %}
+          <button type="button" class="lore-rung" role="tab"
+                  id="rung-{{ loop.index0 }}" aria-controls="ladder-panel"
+                  aria-selected="{{ 'true' if loop.first else 'false' }}"
+                  tabindex="{{ '0' if loop.first else '-1' }}"
+                  data-rung="{{ loop.index0 }}">
+            <span class="lore-rung-numeral">{{ r.numeral }}</span>
+            <span class="lore-rung-rank">{{ r.rank }}</span>
+          </button>
+          {% endfor %}
+        </div>
+        <div class="lore-rungs lore-rungs--courts" role="tablist" aria-label="Court cards">
+          {% for r in numerology.courts %}
+          {% set idx = numerology.pips|length + loop.index0 %}
+          <button type="button" class="lore-rung lore-rung--court" role="tab"
+                  id="rung-{{ idx }}" aria-controls="ladder-panel"
+                  aria-selected="false" tabindex="-1" data-rung="{{ idx }}">
+            <span class="lore-rung-numeral">{{ r.numeral }}</span>
+            <span class="lore-rung-rank">{{ r.rank }}</span>
+          </button>
+          {% endfor %}
+        </div>
+      </div>
 
-    <h3 class="lore-subhead">The Court Cards</h3>
-    <ul class="lore-pips lore-pips--courts">
-      {% for court in numerology.courts %}
-      <li class="lore-pip">
-        <span class="lore-pip-rank">{{ court.rank }}</span>
-        <span class="lore-pip-title">{{ court.title }}</span>
-        <span class="lore-pip-text">{{ court.text }}</span>
-      </li>
-      {% endfor %}
-    </ul>
+      <div class="lore-ladder-panel" id="ladder-panel" role="tabpanel"
+           aria-labelledby="rung-0" tabindex="0">
+        {% for r in ranks %}
+        <article class="lore-ladder-card{{ ' is-active' if loop.first }}" data-rung-panel="{{ loop.index0 }}"
+                 {{ 'hidden' if not loop.first }}>
+          {{ plate(r.image, 'lore-plate--rung') }}
+          <div class="lore-ladder-text">
+            <p class="lore-ladder-rank">{{ r.rank }}</p>
+            <h3 class="lore-ladder-title">{{ r.title }}</h3>
+            <p class="lore-ladder-body">{{ r.text }}</p>
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+    </div>
   </section>
 
-  <!-- ── Symbolism ───────────────────────────────────────────── -->
+  <!-- ── V · Symbolism (interactive motif grid) ──────────────── -->
   <section class="lore-section" id="symbols" aria-labelledby="symbols-title">
-    <header class="lore-section-head">
+    <header class="lore-section-head" data-lore-reveal>
       <span class="lore-section-num">V</span>
       <h2 class="lore-section-title" id="symbols-title">A Vocabulary of Symbols</h2>
       <p class="lore-section-sub">{{ symbols.intro }}</p>
     </header>
 
-    <div class="lore-motifs">
-      {% for motif in symbols.motifs %}
-      <article class="lore-motif">
-        <span class="lore-motif-glyph" aria-hidden="true">{{ motif.glyph }}</span>
-        <div class="lore-motif-body">
-          <h3 class="lore-motif-name">{{ motif.name }}</h3>
-          <p class="lore-motif-text">{{ motif.text }}</p>
-        </div>
-      </article>
-      {% endfor %}
+    <div class="lore-motifs" data-lore-reveal>
+      <div class="lore-motif-grid" role="tablist" aria-label="Recurring motifs">
+        {% for motif in symbols.motifs %}
+        <button type="button" class="lore-motif{{ ' is-active' if loop.first }}" role="tab"
+                id="motif-{{ loop.index0 }}" aria-controls="motif-panel"
+                aria-selected="{{ 'true' if loop.first else 'false' }}"
+                tabindex="{{ '0' if loop.first else '-1' }}"
+                data-motif="{{ loop.index0 }}">
+          <span class="lore-motif-glyph" aria-hidden="true">{{ motif.glyph }}</span>
+          <span class="lore-motif-name">{{ motif.name }}</span>
+        </button>
+        {% endfor %}
+      </div>
+
+      <div class="lore-motif-panel" id="motif-panel" role="tabpanel"
+           aria-labelledby="motif-0" tabindex="0">
+        {% for motif in symbols.motifs %}
+        <article class="lore-motif-detail{{ ' is-active' if loop.first }}" data-motif-panel="{{ loop.index0 }}"
+                 {{ 'hidden' if not loop.first }}>
+          {{ plate(motif.image, 'lore-plate--motif') }}
+          <div class="lore-motif-body">
+            <span class="lore-motif-mark" aria-hidden="true">{{ motif.glyph }}</span>
+            <h3 class="lore-motif-title">{{ motif.name }}</h3>
+            <p class="lore-motif-text">{{ motif.text }}</p>
+          </div>
+        </article>
+        {% endfor %}
+      </div>
     </div>
 
     <h3 class="lore-subhead">The Language of Colour</h3>
     <p class="lore-colors-intro">{{ symbols.colors_intro }}</p>
-    <ul class="lore-colors">
+    <ul class="lore-colors" data-lore-reveal>
       {% for color in symbols.colors %}
-      <li class="lore-color">
-        <span class="lore-color-swatch" style="--swatch: {{ color.swatch }}" aria-hidden="true"></span>
+      <li class="lore-color" style="--swatch: {{ color.swatch }}">
+        <span class="lore-color-swatch" aria-hidden="true"></span>
         <span class="lore-color-name">{{ color.name }}</span>
         <span class="lore-color-text">{{ color.text }}</span>
       </li>
@@ -149,18 +255,34 @@
     </ul>
   </section>
 
-  <!-- ── Closing note ────────────────────────────────────────── -->
-  <section class="lore-ethos" aria-labelledby="ethos-title">
-    <div class="lore-ethos-inner">
-      <span class="lore-ethos-glyph" aria-hidden="true">✦</span>
-      <h2 class="lore-ethos-title" id="ethos-title">{{ ethos.title }}</h2>
-      {% for para in ethos.paragraphs %}
-      <p class="lore-ethos-text">{{ para }}</p>
-      {% endfor %}
-      <a class="btn btn-primary lore-ethos-cta" href="{{ url_for('reading') }}">Draw a Reading ✦</a>
-    </div>
-  </section>
-
 </div><!-- /lore-page -->
 
+<!-- ── Closing note (full-bleed band) ──────────────────────────── -->
+{% set ethos_src = lore_image_url(ethos.image.slug) %}
+<section class="lore-ethos{{ ' is-empty' if not ethos_src }}" aria-labelledby="ethos-title"
+         {% if ethos_src %}style="--ethos-img: url('{{ ethos_src }}')"{% endif %}>
+  <div class="lore-ethos-veil" aria-hidden="true"></div>
+  <div class="lore-ethos-inner" data-lore-reveal>
+    <span class="lore-ethos-glyph" aria-hidden="true">✦</span>
+    <h2 class="lore-ethos-title" id="ethos-title">{{ ethos.title }}</h2>
+    {% for para in ethos.paragraphs %}
+    <p class="lore-ethos-text">{{ para }}</p>
+    {% endfor %}
+    <a class="btn btn-primary lore-ethos-cta" href="{{ url_for('reading') }}">Draw a Reading ✦</a>
+  </div>
+</section>
+
+<!-- ── Lightbox ────────────────────────────────────────────────── -->
+<div class="lore-lightbox" id="loreLightbox" hidden role="dialog" aria-modal="true" aria-label="Illustration">
+  <button type="button" class="lore-lb-close" id="loreLightboxClose" aria-label="Close">✕</button>
+  <figure class="lore-lb-figure">
+    <img id="loreLightboxImg" src="" alt="" />
+    <figcaption id="loreLightboxCap"></figcaption>
+  </figure>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/lore.js') }}"></script>
 {% endblock %}

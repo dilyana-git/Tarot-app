@@ -45,6 +45,26 @@ def test_lore_content_renders(client):
     assert b'The Four Suits' in body
     # Each suit deep-links back into the deck.
     assert b'/cards?filter=minor&amp;suit=Wands' in body
+    # The interactive pickers ship their full content server-side.
+    assert body.count(b'data-rung-panel') == 14
+    assert body.count(b'data-motif-panel') == 8
+
+
+def test_lore_plates_fall_back_to_cartouches(client):
+    """Lore art is optional and gitignored: with none on disk every slot must
+    render the engraved empty state, never a broken <img>."""
+    from app import lore_image_url
+    assert lore_image_url('history-triumphs') in ('', '/static/images/lore/history-triumphs.webp',
+                                                  '/static/images/lore/history-triumphs.jpg',
+                                                  '/static/images/lore/history-triumphs.jpeg',
+                                                  '/static/images/lore/history-triumphs.png')
+    assert lore_image_url('definitely-not-a-plate') == ''
+    assert lore_image_url('') == ''
+
+    body = client.get('/lore').data
+    if b'images/lore/' not in body:          # no art installed — the usual case
+        assert b'lore-plate-empty' in body
+        assert b'lore-plate-btn' not in body
 
 
 def test_card_detail_out_of_range_404(client):

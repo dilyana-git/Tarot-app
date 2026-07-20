@@ -19,8 +19,9 @@
   --ah-text:       var(--parchment);
   /* Brighter dim/mute tokens for WCAG-AA legibility against the near-black bg.
      mute was gold-500 (#6E5527 = 2.81:1, fails); now burnished gold #C9A84C
-     (8.64:1). dim was parchment-dim; lifted toward full parchment (~+12% L). */
-  --ah-text-dim:   #D7CEB4;
+     (8.64:1). dim carries the hero's body copy (.card-desc), lifted again to
+     #E5DCC4 (~14.7:1) so the light serif stops reading grey at 15px. */
+  --ah-text-dim:   #E5DCC4;
   --ah-text-mute:  #C9A84C;
   --ah-rule:       color-mix(in srgb, var(--gold-300) 18%, transparent);
   --ah-bg-warm:    var(--ink-800);
@@ -32,6 +33,8 @@
      sized to their content with a modest gap, and the whole group is centred. */
   position: relative;
   display: grid;
+  /* text · card — the deck index now lives in the gauge pinned to the hero's
+     base, not a left-margin column. */
   grid-template-columns: minmax(360px, 460px) auto;
   justify-content: center;        /* centre the column group horizontally */
   align-items: center;
@@ -41,11 +44,6 @@
   column-gap: clamp(8px, 1vw, 16px);
   max-width: 1400px;
   margin-inline: auto;
-  /* The card's feathered glow visually fills its right margin while the panel's
-     hard left edge leaves the left margin reading emptier (the prev disc looked
-     stranded there). A small right-bias padding nudges the whole pairing right so
-     the two margins feel balanced. */
-  padding-left: clamp(0px, 3vw, 56px);
   width: 100%;
   /* Hero spans the FULL viewport (the home page drops the 60px top gap); the
      fixed navbar overlays the top transparently. */
@@ -69,6 +67,10 @@
   padding: 24px 8px 24px 24px;
   display: flex; flex-direction: column;
   justify-content: center;
+  /* The lower block (meta · CTA · gauge) is anchored by the text-stack's
+     reserved height, so the sitewide 2.2rem inter-child gap would only re-open
+     a chasm above the CTA — the individual margins below set the spacing. */
+  gap: 0;
   min-width: 0;
 }
 
@@ -83,7 +85,9 @@
 }
 .arcana-hero .eyebrow {
   font-family: var(--font-display);
-  font-size: 12px; letter-spacing: .45em;
+  font-size: var(--caps-3-size);
+  font-weight: var(--caps-3-weight);
+  letter-spacing: var(--caps-3-track);
   color: var(--ah-gold-pale);
   text-transform: uppercase;
 }
@@ -92,6 +96,11 @@
    The whole stack still moves as a group via .is-out, but each
    child has its own animation-delay for the entry. */
 .arcana-hero .text-stack {
+  /* Bottom-aligned within its JS-reserved height: the meta table (last child)
+     pins to a stable baseline while shorter cards absorb their slack ABOVE the
+     title. That keeps the CTA + gauge sitting tight beneath the meta on every
+     card, instead of the reserve opening a gap between meta and the buttons. */
+  display: flex; flex-direction: column; justify-content: flex-end;
   transition: opacity .25s ease, filter .25s ease;
 }
 .arcana-hero .text-stack.is-out {
@@ -141,11 +150,14 @@
 
 .arcana-hero .card-num {
   font-family: var(--font-display);
-  font-size: 12px; letter-spacing: .32em;
-  /* Brighter than the shared mute token — small, wide-tracked caps need extra
-     lift to read clearly. gold-200 (#E7C878) = 12.16:1 on the near-black bg. */
-  color: var(--gold-200);
-  margin-bottom: 6px;
+  font-size: 11px; letter-spacing: .34em;
+  /* A quiet locator, deliberately dimmer than the keyword line below the title:
+     burnished mute (#C9A84C, 8.64:1) rather than the brighter gold-200 it used
+     to share with more important marks. The card number itself (.card-num-bold)
+     stays pale so the eye still catches "CARD · 0". */
+  font-weight: 500;
+  color: var(--ah-text-mute);
+  margin-bottom: 8px;
 }
 .arcana-hero .card-num-bold {
   color: var(--ah-gold-pale);
@@ -161,10 +173,6 @@
   letter-spacing: -.005em;
   text-shadow: 0 0 60px color-mix(in srgb, var(--gold-100) 12%, transparent);
   margin: 0;
-  /* Reserve exactly two lines so the layout never reflows between cards.
-     Short names (THE LOVERS) get the same vertical footprint as long ones
-     (THE HIEROPHANT) — nothing below shifts as you click through the deck. */
-  min-height: calc(2em * .9);
 }
 
 .arcana-hero .card-roman {
@@ -178,7 +186,9 @@
 .arcana-hero .kw-row {
   display: flex; align-items: center;
   flex-wrap: wrap;
-  margin-top: 10px;
+  /* The title runs at line-height .9, so its box already sits tight under the
+     caps — this is the whole visible gap between name and keywords. */
+  margin-top: 12px;
 }
 /* Separator diamond drawn INSIDE each keyword (after the first) via ::before, so
    it always travels with its keyword on a wrap — never stranded, never trailing. */
@@ -195,34 +205,44 @@
   font-family: var(--font-display);
   /* Tighter tracking so a three-keyword line (e.g. THE HIEROPHANT) fits without
      orphaning the last word; each keyword also stays unbroken internally. */
-  font-size: 11px; letter-spacing: .18em;
+  font-size: var(--caps-4-size);
+  font-weight: var(--caps-4-weight);
+  letter-spacing: var(--caps-4-track);
   white-space: nowrap;
-  /* burnished gold #C9A84C = 8.64:1 (was gold-400 #9A7B36 = 4.95:1, borderline) */
-  color: #C9A84C;
+  /* The card's essence — lifted from the burnished #C9A84C it used to share with
+     the field labels to the brighter warm gold-200 (#E7C878, ~12:1). Brighter
+     tone + the heavier caps-4 weight now read this as content, not scaffolding. */
+  color: var(--gold-200);
   text-transform: uppercase;
 }
 
 .arcana-hero .card-desc {
-  margin-top: 10px;
+  margin-top: 14px;
   font-size: 15px;
   line-height: 1.6;
   color: var(--ah-text-dim);
   max-width: 460px;
 }
 
+/* The rule reads as a section break, so it needs air on BOTH sides: clear of the
+   description above, and the ELEMENT/SYMBOL pairs standing off it below. */
 .arcana-hero .meta {
-  margin-top: 12px;
+  margin-top: 26px;
   display: flex; gap: 36px;
-  padding-top: 10px;
+  padding-top: 18px;
   border-top: 1px solid var(--ah-gold-ghost);
   max-width: 460px;
 }
 .arcana-hero .meta-row {
   display: flex; flex-direction: column; gap: 6px;
 }
+/* Tier 5, not 4: these are scaffolding words ("ELEMENT"), and the keywords under
+   the title are content. Sizing the labels above the keywords inverted that. */
 .arcana-hero .meta dt {
   font-family: var(--font-mono);
-  font-size: 12px; letter-spacing: .2em;
+  font-size: var(--caps-5-size);
+  font-weight: var(--caps-5-weight);
+  letter-spacing: var(--caps-5-track);
   color: var(--ah-text-mute);
 }
 .arcana-hero .meta dd {
@@ -230,12 +250,18 @@
   font-size: 12px; letter-spacing: .2em;
   color: var(--ah-gold-pale);
 }
-/* Symbol glyph — large and luminous so the symbol (heart, etc.) reads clearly. */
-.arcana-hero .meta-symbol {
+/* Symbol glyph — large and luminous so the symbol (heart, etc.) reads clearly.
+   MUST out-specify `.arcana-hero .meta dd` (0,2,1) or the font-size below is
+   silently dropped and the glyph renders at 12px wearing a 28px glow — which is
+   exactly what it did before, reading as a stray character. Hence `dd.meta-symbol`. */
+.arcana-hero .meta dd.meta-symbol {
   font-size: 34px;
   line-height: 1;
   letter-spacing: 0;
-  margin-top: 2px;
+  /* Negative, deliberately: a 34px box and a 12px box share a top edge, so the
+     glyph's optical centre otherwise hangs ~8.5px below the neighbouring values.
+     This lifts it back onto their centre line. */
+  margin-top: -6px;
   color: var(--ah-gold-pale);
   text-shadow:
     0 0 12px color-mix(in srgb, var(--gold-100) 55%, transparent),
@@ -246,8 +272,12 @@
    so the hero has its architectural outline button instead of the solid
    amber one used elsewhere on the page. */
 .arcana-hero .cta-row {
-  display: flex; gap: 10px; align-items: center;
-  margin-top: 14px;
+  /* 24px gap (not a margin on the ghost link) so the standoff from the primary
+     survives a wrap onto its own line without indenting it. */
+  display: flex; gap: 24px; align-items: center;
+  /* hero-left's flex gap is now 0, so this margin alone sets the standoff from
+     the meta table above — a compact gap so the CTA sits just beneath it. */
+  margin-top: 26px;
   flex-wrap: wrap;
 }
 
@@ -309,18 +339,28 @@
   clip-path: polygon(50% 0,100% 50%,50% 100%,0 50%);
 }
 
+/* Secondary action — the double gold hairline used sitewide for this role
+   (.st-meta-cta on the deck page, .panel-cta in the reading panel), so it reads
+   as a control rather than a caption sitting beside the gold button. Horizontal
+   padding is 0 so the rules bracket the words exactly; the standoff from the
+   primary comes from the row's gap. */
 .arcana-hero .cta-row .btn-ghost {
-  padding: 12px 18px;
+  padding: 12px 0;
   background: transparent;
   border: 0;
+  border-top: 1px solid color-mix(in srgb, var(--gold-300) 40%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--gold-300) 40%, transparent);
   color: var(--ah-text-dim);
   font-family: var(--font-display);
   letter-spacing: .25em; font-size: 11px;
   text-transform: uppercase;
   text-decoration: none;
-  transition: color var(--transition);
+  transition: color var(--transition), border-color var(--transition);
 }
-.arcana-hero .cta-row .btn-ghost:hover { color: var(--ah-gold-pale); }
+.arcana-hero .cta-row .btn-ghost:hover {
+  color: var(--ah-gold-pale);
+  border-color: color-mix(in srgb, var(--gold-200) 70%, transparent);
+}
 
 /* Side circles do a soft pop-scale when their image changes */
 .arcana-hero .nav-btn-circle.is-changing {
@@ -333,95 +373,72 @@
 }
 
 /* =================================================================
-   COUNTER / PROGRESS — lives in the left column flow
+   GAUGE — the deck index as an astronomical graduation scale.
+   A horizontal row of thin vertical hairlines at the foot of the text column,
+   below the CTA: minor ticks short, major graduations (every fifth + the
+   endpoints) taller, the current card's tick tallest and gold — the
+   instrument's needle. A roman "n / XXI" readout sits beneath. Doubles as
+   jump-to nav; reads as a measuring instrument, not a carousel.
    ================================================================= */
-.arcana-hero .counter-row {
-  display: flex; align-items: center; gap: 14px;
-  margin-top: auto;
-  padding-top: 22px;
-  max-width: 480px;
+.arcana-hero .arcana-gauge {
+  margin-top: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;      /* aligned to the column, under the buttons */
+  gap: 10px;
+  user-select: none;
 }
-.arcana-hero .counter-caption {
-  display: flex; justify-content: space-between; align-items: center;
-  margin-top: 10px;
-  max-width: 480px;
-  font-family: var(--font-display);
-  font-size: 11px; letter-spacing: .28em;
-  /* Functional navigation — lifted to a clearly legible gold. gold-200
-     (#E7C878) = 12.16:1 on the near-black bg, and the size is bumped from 10px. */
-  color: var(--gold-200);
+
+/* Hairlines grow upward from a common baseline; the container is as tall as the
+   tallest possible tick so the baseline never shifts as the needle moves. */
+.arcana-hero .gauge-ticks {
+  display: flex;
+  align-items: flex-end;
+  gap: clamp(6px, 0.9vw, 12px);
+  height: 26px;
 }
-.arcana-hero .counter-hint {
-  font-family: var(--font-mono);
-  letter-spacing: .2em; font-size: 12px;
-  color: var(--gold-200);
-}
-.arcana-hero .counter-arrow {
-  background: none; border: 0;
-  font-family: var(--font-display);
-  font-size: 13px;
-  color: var(--ah-text-dim);
-  padding: 4px 8px;
+.arcana-hero .gauge-tick {
+  display: flex; align-items: flex-end;
+  height: 100%;
+  padding: 0; border: 0; background: none;
   cursor: pointer;
-  transition: color .25s ease;
+  -webkit-tap-highlight-color: transparent;
 }
-.arcana-hero .counter-arrow:hover { color: var(--ah-gold-pale); }
-.arcana-hero .counter-txt {
-  font-family: var(--font-display);
-  font-size: 11px; letter-spacing: .25em;
-  color: var(--ah-gold-pale);
-  min-width: 28px;
-}
-.arcana-hero .counter-txt-end { color: var(--ah-text-mute); }
-.arcana-hero .counter-track {
-  position: relative;
-  flex: 1;
-  height: 1px;
-  background: color-mix(in srgb, var(--gold-300) 20%, transparent);
-}
-.arcana-hero .counter-fill {
-  position: absolute; left: 0; top: 0; bottom: 0;
-  width: 0%;
-  background: var(--ah-gold);
-  transition: width .35s ease;
-}
-.arcana-hero .counter-tick {
-  position: absolute;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  width: 24px; height: 24px;
-  padding: 0; background: none; border: 0;
-  border-radius: 50%;
-  cursor: pointer;
-}
-.arcana-hero .counter-tick::before {
+.arcana-hero .gauge-tick:focus-visible { outline: none; }
+
+/* The visible hairline — a 1px column whose height encodes its graduation. */
+.arcana-hero .gauge-tick::before {
   content: '';
-  position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  width: 3px; height: 3px;
-  border-radius: 50%;
-  background: var(--ah-text-mute);
-  transition: width .25s, height .25s, background .25s, box-shadow .25s;
+  width: 1px;
+  height: 8px;                 /* minor graduation */
+  background: color-mix(in srgb, var(--gold-300) 30%, transparent);
+  transition: height .4s cubic-bezier(.22,.7,.3,1),
+              background .3s ease, box-shadow .3s ease;
 }
-.arcana-hero .counter-tick:hover::before {
+.arcana-hero .gauge-tick[data-major]::before {
+  height: 15px;               /* major graduation — every fifth + endpoints */
+  background: color-mix(in srgb, var(--gold-300) 45%, transparent);
+}
+.arcana-hero .gauge-tick:hover::before,
+.arcana-hero .gauge-tick:focus-visible::before {
   background: var(--ah-gold-pale);
-  width: 5px; height: 5px;
 }
-.arcana-hero .counter-tick.is-active::before {
-  background: var(--ah-gold-pale);
-  width: 6px; height: 6px;
-  box-shadow: 0 0 10px color-mix(in srgb, var(--gold-100) 60%, transparent);
+
+/* Current position — tallest, gold, softly lit. */
+.arcana-hero .gauge-tick.is-active::before {
+  height: 26px;
+  background: linear-gradient(to top,
+    color-mix(in srgb, var(--gold-300) 40%, transparent), var(--ah-gold));
+  box-shadow: 0 0 8px color-mix(in srgb, var(--gold-200) 55%, transparent);
 }
-/* Pop the just-activated tick to draw the eye */
-.arcana-hero .counter-tick.just-activated::before {
-  animation: ahTickPop .6s cubic-bezier(.3,.8,.4,1.4);
+
+.arcana-hero .gauge-label {
+  font-family: var(--font-mono);
+  font-size: 10px; letter-spacing: .28em;
+  color: var(--ah-text-mute);
+  text-transform: uppercase;
 }
-@keyframes ahTickPop {
-  0%   { transform: translate(-50%, -50%) scale(1);   box-shadow: 0 0 0 color-mix(in srgb, var(--gold-100) 0%, transparent); }
-  35%  { transform: translate(-50%, -50%) scale(2.4); box-shadow: 0 0 22px color-mix(in srgb, var(--gold-100) 90%, transparent); }
-  100% { transform: translate(-50%, -50%) scale(1);   box-shadow: 0 0 10px color-mix(in srgb, var(--gold-100) 60%, transparent); }
-}
+.arcana-hero .gauge-label #gaugeCurrent { color: var(--gold-100); }
 
 /* =================================================================
    RIGHT — ORBITAL DISPLAY
@@ -443,12 +460,29 @@
 
 .arcana-hero .orbit-svg { display: none; }
 
-/* While the card dissolves, the text column dips out so the copy swap happens
+/* While the card swaps, the text column dips out so the copy swap happens
    invisibly inside the transition (class toggled by the widget's
-   transition-start/-end events). The card's own edge-dissolve particles live
-   inside the widget canvas (arcana-card.js) — the hero background stays clean. */
-.arcana-hero .text-stack { transition: opacity .32s ease; }
-.arcana-hero.is-transitioning .text-stack { opacity: 0; }
+   transition-start / card-swapped events). Asymmetric, like the card's own
+   dissolve: a quick ease-in departure that must finish inside the widget's
+   200ms pre-swap hold — with real margin, not just barely, or the copy is still
+   faintly legible when it swaps and you see it change — then a delayed, eased
+   return.
+
+   The RETURN DELAY is the load-bearing number. The widget fires card-swapped as
+   soon as the new card is committed, but at that instant the new art is still
+   hidden under a barely-faded dissolve ghost — so a text return that starts
+   there makes the copy legible while the OLD picture is still on screen, and
+   the words appear to change before the card does. The delay holds the copy
+   down until the dissolve is well past halfway, so the picture always leads and
+   the text settles in behind it. Keep it comfortably inside the 560ms dissolve.
+
+   The card's own edge-dissolve particles live inside the widget canvas
+   (arcana-card.js) — the hero background stays clean. */
+.arcana-hero .text-stack { transition: opacity .44s cubic-bezier(.22,.61,.36,1) .28s; }
+.arcana-hero.is-transitioning .text-stack {
+  opacity: 0;
+  transition: opacity .15s ease-in 0s;
+}
 
 /* Main card */
 .arcana-hero .main-card-wrap {
@@ -713,6 +747,10 @@
   }
   .arcana-hero .hero-left  { padding: 32px; }
   .arcana-hero .hero-right { min-height: 70vh; padding: 32px 0 80px; }
+  /* The gauge now lives inside the text column (below the CTA), so it stacks
+     with it naturally — no separate grid ordering needed. */
+  .arcana-hero .hero-left  { order: 1; }
+  .arcana-hero .hero-right { order: 2; }
   .arcana-hero .nav-btn-prev { left: 6%; }
   .arcana-hero .nav-btn-next { right: 6%; }
   /* Single column now — the card can use most of the screen width, and the

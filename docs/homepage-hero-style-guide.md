@@ -248,8 +248,9 @@ This is the homepage's signature — the "how does gold-on-black feel expensive"
 Anatomy of the left spec-sheet and its controls. Match these when adding to the hero.
 
 - **Eyebrow row** — `30px` gold hairline `+` 12px Cinzel caps at `0.45em`. The page's "we're starting" mark.
-- **Card title block** — `CARD ##` number → `H1` title (Cinzel 500, clamp, 2-line reserved) → roman
-  numeral. The number/roman frame the title like a catalog entry.
+- **Card title block** — `CARD <roman>` numeral (Roman everywhere — `CARD I`, never `CARD 01`) →
+  `H1` title (Cinzel 500, clamp, 2-line reserved) → roman numeral. The numerals frame the title
+  like a catalog entry.
 - **Keyword row** — Cinzel caps `.kw` at `0.18em`, separated by a **diamond drawn inside each keyword**
   via `::before` (so it never strands on a wrap, `arcana-hero.css:185–193`). Color is the burnished
   `#C9A84C` (§2.3).
