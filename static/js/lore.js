@@ -61,6 +61,19 @@
     update();
   })();
 
+  /* ── Cover: click anywhere to enter the timeline ─────────── */
+  (function initHeroEnter() {
+    const hero = document.querySelector('.lore-hero');
+    const target = document.getElementById('history');
+    if (!hero || !target) return;
+    hero.addEventListener('click', (e) => {
+      // The CTA is a real anchor (keyboard path); don't double-handle it.
+      if (e.target.closest('.lore-hero-scroll')) return;
+      target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+      history.replaceState(null, '', '#history');
+    });
+  })();
+
   /* ── 3 · Chapter rail scroll-spy ─────────────────────────── */
   (function initRail() {
     const rail = document.getElementById('loreRail');
@@ -157,6 +170,79 @@
   wirePicker('[data-rung]', '[data-rung-panel]', document.getElementById('ladder-panel'));
   wirePicker('[data-motif]', '[data-motif-panel]', document.getElementById('motif-panel'));
 
+  /* ── History timeline: illuminated thread from the reference layout ── */
+  (function initHistoryTimeline() {
+    const timeline = document.getElementById('loreHistoryTimeline');
+    if (!timeline) return;
+
+    const fill = document.getElementById('loreHistoryThreadFill');
+    const entries = Array.from(timeline.querySelectorAll('[data-history-entry]'));
+    if (!fill || !entries.length) return;
+
+    function update() {
+      const readingLine = window.innerHeight * 0.46;
+      const timelineRect = timeline.getBoundingClientRect();
+      const fillHeight = Math.max(0, Math.min(timelineRect.height, readingLine - timelineRect.top));
+      fill.style.height = `${fillHeight}px`;
+
+      let currentIndex = 0;
+      let currentDistance = Infinity;
+
+      entries.forEach((entry, index) => {
+        const node = entry.querySelector('[data-history-node]');
+        if (!node) return;
+
+        const nodeRect = node.getBoundingClientRect();
+        const nodeCenter = nodeRect.top + nodeRect.height / 2;
+        const lit = nodeCenter <= readingLine + 4;
+        const distance = Math.abs(nodeCenter - readingLine);
+
+        entry.classList.toggle('is-lit', lit);
+        if (distance < currentDistance) {
+          currentDistance = distance;
+          currentIndex = index;
+        }
+      });
+
+      entries.forEach((entry, index) => {
+        entry.classList.toggle('is-current', index === currentIndex);
+      });
+    }
+
+    let ticking = false;
+    function requestUpdate() {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        ticking = false;
+        update();
+      });
+    }
+
+    window.addEventListener('scroll', requestUpdate, { passive: true });
+    window.addEventListener('resize', requestUpdate, { passive: true });
+    update();
+  })();
+
+  /* ── Contents rail: reading-progress thread ──────────────── */
+  (function initRailProgress() {
+    const bar = document.getElementById('loreRailProgress');
+    if (!bar) return;
+    function update() {
+      const docH = document.documentElement.scrollHeight - window.innerHeight;
+      const p = docH > 0 ? Math.max(0, Math.min(1, window.scrollY / docH)) : 0;
+      bar.style.height = (p * 100) + '%';
+    }
+    let ticking = false;
+    window.addEventListener('scroll', () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => { ticking = false; update(); });
+    }, { passive: true });
+    window.addEventListener('resize', update, { passive: true });
+    update();
+  })();
+
   /* ── 5 · Plate lightbox ──────────────────────────────────── */
   (function initLightbox() {
     const box = document.getElementById('loreLightbox');
@@ -191,7 +277,8 @@
     document.addEventListener('click', (e) => {
       const btn = e.target.closest('.lore-plate-btn');
       if (btn) { open(btn); return; }
-      if (!box.hidden && (e.target === box || e.target === close)) hide();
+      const closeButton = e.target.closest && e.target.closest('.lore-lb-close');
+      if (!box.hidden && (e.target === box || closeButton)) hide();
     });
 
     document.addEventListener('keydown', (e) => {

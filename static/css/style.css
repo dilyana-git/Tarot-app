@@ -58,7 +58,11 @@ html { scroll-behavior: smooth; }
 
 body {
   font-family: var(--font-body);
-  background: radial-gradient(120% 80% at 50% 12%, #11101c 0%, #08070f 45%, #050409 100%);
+  /* A calm, near-even dark field anchored to the viewport (fixed) so its
+     brightness stays consistent as the page scrolls, rather than a bright
+     hotspot near the document top that competes with the content. */
+  background: radial-gradient(130% 100% at 50% 0%, #0d0c15 0%, #09080f 55%, #07060c 100%);
+  background-attachment: fixed;
   color: var(--text);
   min-height: 100vh;
   overflow-x: hidden;
@@ -94,7 +98,7 @@ a:hover { color: var(--gold-pale); }
   inset: 0;
   pointer-events: none;
   z-index: 0;
-  opacity: .28;
+  opacity: .2;
 }
 
 /* ---- Decorative sparkle field ----------------------------- */
