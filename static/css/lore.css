@@ -672,12 +672,16 @@
    I · HISTORY — alternating leaves around a living reading thread
    Adapted from A Short History.dc.html.
    ============================================================ */
+/* Draw the chapter head's subtitle down toward the first era so the timeline
+   opens right under it, keeping the composition dense at the top. */
+#history .lore-section-head { margin-bottom: var(--space-2); }
 .lore-history-timeline {
   position: relative;
   /* Pulled in tight under the chapter head so the first era rises to meet the
-     subtitle instead of opening a void beneath it. */
-  margin-top: clamp(.5rem, 1.5vw, 1rem);
-  padding: 1.6rem 0 1rem;
+     subtitle instead of opening a void beneath it. The top padding is the room
+     the first era's spine date-pill needs to clear the subtitle — keep it. */
+  margin-top: 0;
+  padding: 1.5rem 0 1rem;
 }
 /* Spine crown — a small gilt star seats the centred chapter head directly atop
    the timeline's central thread. It shares the column's centre-line with the
@@ -740,7 +744,11 @@
      image and text read as one deliberate unit, not two floated blocks. (The
      node stays centred on the entry via its own align-self: stretch.) */
   align-items: start;
-  margin: 0 0 clamp(3.75rem, 7vw, 5.5rem);
+  /* Tightened so consecutive eras read as one continuous, composed column
+     rather than isolated blocks floating in dead space — the inter-entry gap
+     was large enough (relative to each entry's height) to make the timeline
+     feel thin for the canvas. */
+  margin: 0 0 clamp(2.25rem, 4.2vw, 3.4rem);
 }
 .lore-history-entry.is-reversed {
   grid-template-areas: "copy node media";
@@ -962,7 +970,7 @@
 
 @media (max-width: 780px) {
   .lore-history-timeline {
-    margin-top: var(--space-5);
+    margin-top: var(--space-3);
     padding-left: .15rem;
   }
   .lore-history-thread,
@@ -974,7 +982,7 @@
       "node media"
       "node copy";
     gap: 1rem .8rem;
-    margin-bottom: var(--space-6);
+    margin-bottom: var(--space-5);
   }
   .lore-history-node-wrap {
     align-items: flex-start;
