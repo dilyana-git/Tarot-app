@@ -67,7 +67,7 @@ upgrading `setuptools` in the deploy image or base environment.
 
 ### B2. No card artwork ships with the repository
 
-`.gitignore` excludes `static/images/` and `static/media/` wholesale, and `git ls-files static`
+`.gitignore` excluded `static/images/` wholesale, and `git ls-files static`
 confirms **nothing** under either path is tracked. Deploying this repo as-is produces a site
 where all 78 cards, the homepage hero mosaic, and every lore plate render with no art.
 

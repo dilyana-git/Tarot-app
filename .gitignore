@@ -6,7 +6,6 @@ __pycache__/
 # negation below only works against a `dir/*` pattern.
 static/images/*
 !static/images/card-placeholder.svg
-static/media/
 venv/
 integration/*
 flask-port/*

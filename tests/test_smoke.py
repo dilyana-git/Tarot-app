@@ -96,8 +96,10 @@ def test_health(client):
 def test_api_cards(client):
     data = client.get('/api/cards').get_json()
     assert len(data) == len(ALL_CARDS) == 78
+    # internal fields stay internal — the API exposes image_url, not the raw path
     assert 'focal_point' not in data[0]
-    assert 'video' not in data[0]
+    assert 'image' not in data[0]
+    assert 'image_url' in data[0]
 
 
 def test_security_headers(client):

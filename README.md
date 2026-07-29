@@ -23,9 +23,9 @@ For an auto-reloading dev server:
 FLASK_DEBUG=true python app.py
 ```
 
-> **On a fresh clone every card renders without artwork.** `static/images/` and
-> `static/media/` are gitignored, so no card art ships with the repository — the
-> app is fully functional, just unillustrated. See [Card artwork](#card-artwork).
+> **On a fresh clone every card renders without artwork.** `static/images/` is
+> gitignored, so no card art ships with the repository — the app is fully
+> functional, just unillustrated. See [Card artwork](#card-artwork).
 
 ## Tests
 
@@ -132,8 +132,7 @@ conventions:
   renders an engraved cartouche instead. Slugs and generation prompts are in
   `docs/lore-image-prompts.md`.
 
-Optional `.mp4` loops go in `static/media/`. Path resolution is cached per
-process — restart to pick up new files.
+Path resolution is cached per process — restart to pick up new files.
 
 ---
 

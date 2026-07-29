@@ -99,9 +99,9 @@ _IMG_EXTS = ('.webp', '.jpg', '.jpeg', '.png')
 @lru_cache(maxsize=None)
 def _static_exists(relpath):
     """Cached os.path.exists for a path under static/. Card data is static, so
-    image/video resolution probes the same handful of paths on every request;
-    without this, /cards alone fires ~300 disk stats per load. Cache is cleared
-    only by restart, which matches how the assets are deployed."""
+    image resolution probes the same handful of paths on every request; without
+    this, /cards alone fires ~300 disk stats per load. Cache is cleared only by
+    restart, which matches how the assets are deployed."""
     return os.path.exists(os.path.join(app.static_folder, relpath))
 
 
@@ -139,26 +139,6 @@ def get_card_image_filename(card):
 app.jinja_env.globals['get_card_image_filename'] = get_card_image_filename
 
 
-def get_card_video_url(card):
-    """Return a /static/… URL for the card's video, or empty string if none exists."""
-    raw_vid = card.get('video', '')
-    if raw_vid:
-        path = f'media/{raw_vid}'
-        if _static_exists(path):
-            return f'/static/{path}'
-
-    slug = card['name'].lower().replace("'", '').replace(' ', '_')
-    if slug.startswith('the_'):
-        slug = slug[4:]
-    path = f'media/{slug}.mp4'
-    if _static_exists(path):
-        return f'/static/{path}'
-
-    return ''
-
-app.jinja_env.globals['get_card_video_url'] = get_card_video_url
-
-
 def lore_image_url(slug):
     """Return a /static/… URL for a lore plate, or '' when that art has not been
     generated yet. Empty is a supported state: lore.html renders an engraved
@@ -183,7 +163,6 @@ def index():
         c = dict(card)
         img = get_card_image_filename(card)
         c['image_url'] = '' if img == 'images/card-placeholder.svg' else f'/static/{img}'
-        c['video_url'] = get_card_video_url(card)
         arcana.append(c)
 
     return render_template('index.html', major_arcana=arcana, cards=_arcana_widget_cards())

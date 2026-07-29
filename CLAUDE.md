@@ -26,7 +26,7 @@ image-path placeholder fallback. There is no linter configured.
 
 | Route | Template | Notes |
 |---|---|---|
-| `GET /` | `index.html` | Builds `major_arcana` list with resolved `image_url` and `video_url`. Under `debug` only, `?hero=cardfirst\|editorial` serves dev-only variant templates (production always serves `index.html`) |
+| `GET /` | `index.html` | Builds the `major_arcana` list with a resolved `image_url` per card |
 | `GET /cards` | `cards.html` | Accepts `?filter=major\|minor\|all` and `?suit=Wands\|Cups\|Swords\|Pentacles` |
 | `GET /card/<int:id>` | `card_detail.html` | Prev/next navigation links |
 | `GET /reading` | `reading.html` | Passes the `SPREADS` dict |
@@ -35,7 +35,7 @@ image-path placeholder fallback. There is no linter configured.
 | `GET /api/cards` | — | Returns all 78 cards as JSON (public fields only via `_card_json`) |
 | `GET /health` | — | Returns `{"status":"ok"}` for load-balancer probes |
 
-**Card data (`data/tarot_data.py`)** is a static Python file — the single source of truth for all 78 cards. Each card dict has: `id`, `name`, `number`, `arcana` (`'major'`/`'minor'`), `suit` (None for major), `symbol`, `element`, `keywords_upright`, `keywords_reversed`, `upright_meaning`, `reversed_meaning`, `description`, `card_color`, `accent_color`, `image` (path relative to `static/images/`), and optionally `video` (filename relative to `static/media/`). `ALL_CARDS = MAJOR_ARCANA + MINOR_ARCANA`. Card IDs for minor arcana start at 22.
+**Card data (`data/tarot_data.py`)** is a static Python file — the single source of truth for all 78 cards. Each card dict has: `id`, `name`, `number`, `arcana` (`'major'`/`'minor'`), `suit` (None for major), `symbol`, `element`, `keywords_upright`, `keywords_reversed`, `upright_meaning`, `reversed_meaning`, `description`, `card_color`, `accent_color`, and `image` (path relative to `static/images/`). `ALL_CARDS = MAJOR_ARCANA + MINOR_ARCANA`. Card IDs for minor arcana start at 22.
 
 **Spreads (`data/tarot_data.py:SPREADS`)** map each spread key to `{name, description, positions}`, where `positions` is an *ordered* list of `{name, meaning}` dicts. The order is load-bearing: `api_reading` pairs `positions[i]` with the i-th drawn card, and the reading CSS maps each card to a board cell by its nth-child index.
 
@@ -43,7 +43,7 @@ image-path placeholder fallback. There is no linter configured.
 - Major arcana: `static/images/major/<slug>.jpg` — slug is the lowercased name with `the_` prefix stripped and spaces replaced with `_` (e.g. `high_priestess.jpg`)
 - Minor arcana: `static/images/minor/<suit_lower>/<rank>.jpg` — rank is mapped via `MINOR_RANK_MAP` (e.g. `ace`, `two`, `page`, `king`)
 
-**Card art assets** (`static/images/`, `static/media/`) are gitignored because of their size. On a fresh clone every card renders with `images/card-placeholder.svg` instead. To add real artwork, place files matching the conventions above under `static/images/major/` and `static/images/minor/<suit>/`, then optionally add `.mp4` loops under `static/media/`. The LRU-cached resolver picks them up automatically on the next request (restart to clear the cache).
+**Card art assets** under `static/images/` are gitignored because of their size — only `card-placeholder.svg` is committed (via a negation in `.gitignore`). On a fresh clone the cards render without art: `cards.html` and `card_detail.html` both skip the `<img>` when the resolver returns the placeholder, so each card falls back to its typographic face. To add real artwork, place files matching the conventions above under `static/images/major/` and `static/images/minor/<suit>/`. The LRU-cached resolver picks them up automatically on the next request (restart to clear the cache).
 
 **Lore content (`data/lore_data.py`)** is the single source of truth for `/lore`: `LORE_INTRO`, `CHAPTERS` (drives the sticky rail and its scroll-spy — each `id` must match a `<section id>`), `HISTORY_TIMELINE`, `DECK_STRUCTURE`, `SUITS`, `NUMEROLOGY` (`pips` + `courts`, rendered as an interactive ladder), `SYMBOLS`, `READING_ETHOS`. Most entries carry an `image` slot built by `_img(slug, alt, caption)`; `app.py:lore_image_url` resolves `static/images/lore/<slug>.<ext>` (same extension order as the card art) and returns `''` when the art doesn't exist, in which case `lore.html`'s `plate()` macro renders an engraved cartouche. **Every lore plate is optional** — the page must stay complete with no lore art on disk. Generation prompts, one per slug, live in `docs/lore-image-prompts.md`; keep the slugs there in sync with `lore_data.py`.
 
