@@ -32,6 +32,13 @@ app.secret_key = _secret
 _ALLOWED_ORIGINS = os.environ.get('CORS_ORIGINS', '').split(',')
 _ALLOWED_ORIGINS = [o.strip() for o in _ALLOWED_ORIGINS if o.strip()]
 
+# Cap on request bodies. /api/reading is an unauthenticated public POST, and
+# without a ceiling Werkzeug buffers whatever a client sends. The only body the
+# app reads is that endpoint's small JSON object — whose `question` is truncated
+# to 500 chars anyway — so 64 KB is far above anything legitimate.
+MAX_CONTENT_LENGTH = 64 * 1024
+app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH
+
 
 @app.after_request
 def _security_headers(response):
@@ -369,6 +376,15 @@ def not_found(error):
     if request.path.startswith('/api/'):
         return jsonify({'error': 'Not found'}), 404
     return render_template('404.html'), 404
+
+
+@app.errorhandler(413)
+def payload_too_large(error):
+    # Only /api/reading reads a body, so in practice this is always the JSON
+    # branch; the page branch keeps the response on-brand if that ever changes.
+    if request.path.startswith('/api/'):
+        return jsonify({'error': 'Request too large'}), 413
+    return render_template('404.html'), 413
 
 
 @app.errorhandler(500)

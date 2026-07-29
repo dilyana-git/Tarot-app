@@ -8,7 +8,7 @@ expected shape, and the narrative composer stays deterministic. Run with:
 """
 import pytest
 
-from app import app as flask_app, get_card_image_path
+from app import app as flask_app, get_card_image_path, MAX_CONTENT_LENGTH
 from data.tarot_data import ALL_CARDS, SPREADS
 from data.reading_composer import compose
 
@@ -119,6 +119,13 @@ def test_api_reading_shape(client, spread_key):
 def test_api_reading_unknown_spread_400(client):
     resp = client.post('/api/reading', json={'spread': 'not_a_spread'})
     assert resp.status_code == 400
+
+
+def test_api_reading_oversized_body_413(client):
+    body = b'{"spread":"three_card","question":"' + b'a' * (MAX_CONTENT_LENGTH + 1) + b'"}'
+    resp = client.post('/api/reading', data=body, content_type='application/json')
+    assert resp.status_code == 413
+    assert resp.get_json() == {'error': 'Request too large'}
 
 
 # ── Composer ───────────────────────────────────────────────────────────────────

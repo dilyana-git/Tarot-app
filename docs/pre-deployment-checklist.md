@@ -103,15 +103,16 @@ misconfiguration instead of the site serving traffic in an insecure state.
 
 ## P1 — Should fix before serving public traffic
 
-### F1. No request body size limit
+### F1. No request body size limit — ✅ FIXED 2026-07-29
 
-`MAX_CONTENT_LENGTH` is unset, so Werkzeug buffers whatever a client sends.
-Verified: a 5 MB POST body to `/api/reading` returns `200`.
+`MAX_CONTENT_LENGTH` was unset, so Werkzeug buffered whatever a client sent.
+Verified before the fix: a 5 MB POST body to `/api/reading` returned `200`.
 
-`/api/reading` is an unauthenticated public POST endpoint. Setting
-`app.config['MAX_CONTENT_LENGTH']` to something like 64 KB costs one line — the endpoint
-truncates `question` to 500 chars anyway (`app.py:282`), so nothing legitimate is near
-that ceiling.
+Fixed in `app.py` — a 64 KB cap plus a 413 handler that returns JSON on `/api/*`, matching
+the existing 404/500 branching. The endpoint truncates `question` to 500 chars anyway, so
+nothing legitimate comes near the ceiling. Covered by
+`test_api_reading_oversized_body_413`; oversized bodies now get
+`413 {"error": "Request too large"}`.
 
 ### F2. `/api/reading` has no rate limiting
 
@@ -166,12 +167,12 @@ access log (F4) and attach an error tracker.
 
 ## P2 — Housekeeping
 
-### H1. 131 KB of unrelated tooling committed at repo root
+### H1. 131 KB of unrelated tooling committed at repo root — ✅ FIXED 2026-07-29
 
-`image-slot.js` (64 KB) and `support.js` (66 KB) are scaffolding from an unrelated toolchain —
-`support.js` self-identifies as `GENERATED from dc-runtime/src/*.ts`, `image-slot.js` as an
-"omelette starter scaffold". Neither is referenced by any template, script, or Python module
-(verified by grep across the tree). They are not served, but they are shipped. Delete both.
+`image-slot.js` (64 KB) and `support.js` (66 KB) were scaffolding from an unrelated toolchain —
+`support.js` self-identified as `GENERATED from dc-runtime/src/*.ts`, `image-slot.js` as an
+"omelette starter scaffold". Neither was referenced by any template, script, or Python module
+(verified by grep across the tree). Both deleted.
 
 ### H2. `CLAUDE.md` documents features that no longer exist
 
@@ -248,10 +249,12 @@ These were checked and are fine — recorded so they are not re-investigated:
 2. Decide the card-art strategy **(B2)** — everything about the deploy's size and shape follows from it
 3. Commit the placeholder SVG + guard `card_detail.html` **(B3)**
 4. Hard-fail on missing `SECRET_KEY` outside debug **(B4)**
-5. `MAX_CONTENT_LENGTH` + gunicorn worker/log flags **(F1, F4)** — two small config edits
+5. Gunicorn worker/log flags **(F4)**
 6. Pin the Python version **(F5)**
-7. Delete `image-slot.js` and `support.js`; write a README; fix `CLAUDE.md`'s route table **(H1, H2, H4)**
+7. Write a README; fix `CLAUDE.md`'s route table **(H2, H4)**
 8. Rate limiting, cache headers, CSP, logging **(F2, F3, F6, H8)** — as traffic justifies
 
 Items 1, 3, 4, 5, 6 and 7 are all small and independent. Item 2 is the one that needs a
 decision rather than a patch.
+
+**Done so far:** `MAX_CONTENT_LENGTH` **(F1)** and the root-level scaffolding deletion **(H1)**.
