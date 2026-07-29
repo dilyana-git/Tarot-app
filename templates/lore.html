@@ -15,7 +15,8 @@
 #}
 {% macro plate(img, cls='') -%}
   {%- set src = lore_image_url(img.slug) if img else '' -%}
-  <figure class="lore-plate {{ cls }}{{ ' is-empty' if not src }}">
+  <figure class="lore-plate {{ cls }}{{ ' is-empty' if not src }}"
+          {% if img and img.focus %}style="--plate-pos: {{ img.focus }}"{% endif %}>
     {%- if src %}
     <button type="button" class="lore-plate-frame lore-plate-btn"
             data-full="{{ src }}" data-caption="{{ img.caption }}" data-alt="{{ img.alt }}"
@@ -261,9 +262,12 @@
                    {{ 'hidden' if not loop.first }}>
             {{ plate(r.image, 'lore-plate--rung') }}
             <div class="lore-ladder-text">
-              <p class="lore-ladder-rank">{{ r.rank }}</p>
+              <p class="lore-ladder-rank">{{ r.rank }}<span class="lore-ladder-mark" aria-hidden="true">{{ r.numeral }}</span></p>
               <h3 class="lore-ladder-title">{{ r.title }}</h3>
               <p class="lore-ladder-body">{{ r.text }}</p>
+              {%- if r.detail %}
+              <p class="lore-ladder-detail">{{ r.detail }}</p>
+              {%- endif %}
             </div>
           </article>
           {% endfor %}

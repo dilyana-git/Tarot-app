@@ -49,7 +49,7 @@
   content: '';
   position: absolute;
   inset: 7px;
-  border: 1px solid color-mix(in srgb, var(--gold-300) 13%, transparent);
+  border: 0.4px solid color-mix(in srgb, var(--gold-300) 13%, transparent);
   border-radius: 2px;
   pointer-events: none;
   transition: border-color var(--transition);
@@ -298,11 +298,11 @@
    THE READ — a Contents rail beside the bound volume
    ============================================================ */
 .lore-read {
-  max-width: 88rem;
+  max-width: 72rem;
   margin: var(--space-5) auto;
   padding: 0 var(--space-4);
   display: grid;
-  grid-template-columns: 13rem minmax(0, 1fr);
+  grid-template-columns: 12rem minmax(0, 1fr);
   gap: var(--space-5);
   align-items: start;
 }
@@ -368,12 +368,14 @@
 }
 .lore-rail-num {
   font-family: var(--font-display);
-  font-size: .72rem;
+  font-size: .82rem;
   color: color-mix(in srgb, var(--gold-300) 82%, transparent);
 }
 .lore-rail-label {
   font-family: var(--font-display);
-  font-size: var(--caps-5-size);
+  /* Enlarged from the tiny --caps-5 scaffolding size so the Contents entries
+     read as navigable chapter names, not fine print. */
+  font-size: .72rem;
   font-weight: var(--caps-5-weight);
   letter-spacing: var(--caps-5-track);
   text-transform: uppercase;
@@ -394,18 +396,18 @@
 .lore-book {
   position: relative;
   margin: 0;
-  padding: 13px 15px 17px;                 /* the cover's "square" around the leaves */
-  border-radius: 9px 11px 10px 8px;
+  padding: 5px 6px 7px;                    /* the cover's slim "square" around the leaves */
+  border-radius: 8px 9px 9px 7px;
   background:
     linear-gradient(150deg,
-      color-mix(in srgb, var(--gold-600) 45%, #17120b) 0%,
-      #120e08 40%, #0b0806 100%);
+      color-mix(in srgb, var(--gold-600) 26%, #14100a) 0%,
+      #120e08 42%, #0b0806 100%);
   box-shadow:
-    inset 0 1px 0 color-mix(in srgb, var(--gold-200) 16%, transparent), /* light on the cover's top lip */
-    inset 0 0 0 1px rgba(0, 0, 0, .55),
-    inset 0 -2px 6px rgba(0, 0, 0, .6),
-    0 6px 18px rgba(0, 0, 0, .55),
-    0 42px 90px -28px rgba(0, 0, 0, .92);   /* the tome's shadow on the desk */
+    inset 0 1px 0 color-mix(in srgb, var(--gold-200) 11%, transparent), /* light on the cover's top lip */
+    inset 0 0 0 1px rgba(0, 0, 0, .5),
+    inset 0 -2px 5px rgba(0, 0, 0, .55),
+    0 5px 15px rgba(0, 0, 0, .5),
+    0 34px 74px -30px rgba(0, 0, 0, .9);    /* the tome's shadow on the desk */
 }
 /* A soft sheen down the cover. */
 .lore-book::before {
@@ -425,12 +427,12 @@
   position: relative;
   isolation: isolate;
   margin: 0;
-  /* Generous side margins hold the reading column narrow inside the now-wider
-     tome, so the book has more presence while the text keeps a comfortable
-     measure. Vertical padding unchanged. */
-  padding: var(--space-6) clamp(var(--space-5), 12vw, 12rem) var(--space-5);
+  /* Side margins hold the reading column to a comfortable measure while keeping
+     the tome trim and elegant rather than sprawling across the canvas. Vertical
+     padding unchanged. */
+  padding: var(--space-6) clamp(var(--space-4), 6vw, 5.5rem) var(--space-5);
   border-radius: 2px 3px 3px 2px;
-  border: 1px solid color-mix(in srgb, var(--gold-500) 40%, transparent);
+  border: 1px solid color-mix(in srgb, var(--gold-500) 26%, transparent);
   /* The leaf: an even warm-ink paper tone with lightly lit fore-edges. Only a
      whisper of warmth lifts the very top — kept close to the base tone so the
      leaf reads as one uniform surface rather than a lit-top-to-dark-bottom
@@ -758,11 +760,14 @@
 .lore-history-media {
   grid-area: media;
   min-width: 0;
-  padding-right: clamp(.85rem, 2vw, 1.6rem);
+  /* Gutter trimmed so the plate grows inward toward the centre thread. This
+     enlarges the art (width, and height with it via --plate-ar) without taking
+     any width from the copy column, so the text's line length is unchanged. */
+  padding-right: clamp(.35rem, .9vw, .7rem);
 }
 .lore-history-entry.is-reversed .lore-history-media {
   padding-right: 0;
-  padding-left: clamp(.85rem, 2vw, 1.6rem);
+  padding-left: clamp(.35rem, .9vw, .7rem);
 }
 .lore-history-media .lore-plate {
   width: 100%;
@@ -778,7 +783,10 @@
   margin-right: auto;
   margin-left: 0;
 }
-.lore-history-media .lore-plate--tl { --plate-ar: 16 / 10; }
+/* 4:3 rather than a letterbox. At 307px wide the plate stands 235px tall, which
+   brings the art up to the height of the copy beside it instead of leaving a
+   band of dead column under every entry. */
+.lore-history-media .lore-plate--tl { --plate-ar: 4 / 3; }
 .lore-history-media .lore-plate-cap {
   margin-top: .75rem;
   text-align: center;
@@ -790,7 +798,7 @@
 .lore-plate--history .lore-plate-frame {
   border: 1px solid color-mix(in srgb, var(--gold-400) 52%, transparent);
   border-radius: 1px;
-  padding: 10px;
+  padding: 8px;
   background:
     linear-gradient(160deg,
       color-mix(in srgb, var(--parchment) 5%, transparent),
@@ -805,8 +813,21 @@
   border-radius: 0;
   border-color: color-mix(in srgb, var(--gold-300) 32%, transparent);
 }
-/* Square the art to sit flush inside the ruled mat. */
-.lore-plate.lore-plate--history .lore-plate-frame img { border-radius: 0; }
+/* Square the art to sit flush inside the ruled mat, and fill it. The `--tl`
+   default is `contain`, which suited a run of uniformly 16:9 plates; the art on
+   disk is now mixed (some 16:9, some 4:3), so `contain` pillarboxes one group
+   and letterboxes the other — either way the art renders smaller than its slot.
+   `cover` fills the mat edge to edge at one consistent size, and restoring the
+   transform gives these plates back the resting/hover zoom every other plate
+   has (the `--tl` rule zeroes it, which `contain` needed and `cover` doesn't). */
+.lore-plate.lore-plate--history .lore-plate-frame img {
+  border-radius: 0;
+  object-fit: cover;
+  /* Cropping to the mat can cut a subject that sits off-centre; `focus` in
+     lore_data.py sets --plate-pos on the figure to steer it. */
+  object-position: var(--plate-pos, 50% 50%);
+  transform: scale(1.015);
+}
 
 .lore-history-node-wrap {
   grid-area: node;
@@ -1016,6 +1037,10 @@
     max-width: none;
     margin: 0;
   }
+  /* The 4:3 desktop plate answers a two-column balance problem — art too short
+     for the copy beside it. Stacked, there is nothing to balance against, and a
+     full-width 4:3 would eat most of the viewport before the text. Stay wide. */
+  .lore-history-media .lore-plate--tl { --plate-ar: 16 / 10; }
   .lore-history-copy,
   .lore-history-entry.is-reversed .lore-history-copy {
     justify-self: stretch;
@@ -1085,13 +1110,13 @@
    text to ~5rem. One suit per row lets the image sit beside a full-width copy. */
 .lore-suits {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(2, 1fr);   /* two per row: Wands + Cups, then Swords + Pentacles */
   gap: var(--space-4);
 }
 .lore-suit {
   position: relative;
   display: grid;
-  grid-template-columns: 12rem 1fr;
+  grid-template-columns: 1fr;              /* stacked: plate above, body below */
   gap: var(--space-4);
   background: var(--bg2);
   border: 1px solid var(--rule);
@@ -1171,15 +1196,28 @@
   color: var(--suit-accent);
 }
 .lore-suit-link:hover { color: var(--gold-pale); }
+/* Cap the portrait plate in the stacked 2-up card so the two rows keep an even
+   vertical rhythm (no effect in the horizontal single-column layout below). */
+.lore-suit .lore-plate { max-width: 11rem; margin-inline: auto; }
 
 /* ============================================================
    IV · NUMEROLOGY LADDER — pick a rank, read its stage
    ============================================================ */
+/* The page measure is only ~682px — too narrow to run the picker down one side
+   and still leave the plate and its prose room. Side by side, a 14rem rail left
+   the plate at 120px, half the size of every other illustration on the page, and
+   the prose beside it at a 30-character measure. So the ladder takes section V's
+   shape instead: the picker is a strip across the top and the panel spans the
+   full measure beneath it, which buys the plate the same 18rem the motif detail
+   gets — the two sections' panels line up as you scroll between them. */
 .lore-ladder {
   display: grid;
-  grid-template-columns: 15rem 1fr;
-  gap: var(--space-5);
-  align-items: start;
+  gap: var(--space-4);
+}
+/* Hint, then the pip band, then the court band. */
+.lore-ladder-picker {
+  display: grid;
+  gap: var(--space-2);
 }
 .lore-ladder-hint {
   font-family: var(--font-display);
@@ -1188,35 +1226,39 @@
   letter-spacing: var(--caps-5-track);
   text-transform: uppercase;
   color: var(--gold-warm);
-  margin: 0 0 .7rem;
+  margin: 0;   /* the picker's grid gap owns this spacing now */
 }
+/* Two bands of hairline-ruled cells: the ten pips, then the four courts. */
 .lore-rungs {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(10, 1fr);
   gap: 1px;
   background: var(--rule);
   border: 1px solid var(--rule);
   border-radius: var(--radius-md);
   overflow: hidden;
 }
-.lore-rungs--courts { margin-top: var(--space-3); }
+.lore-rungs--courts { grid-template-columns: repeat(4, 1fr); }
 .lore-rung {
   display: grid;
-  grid-template-columns: 2.1rem 1fr;
-  align-items: baseline;
-  gap: .5rem;
-  padding: .6rem .75rem;
+  /* Numeral over rank, centred: a ten-cell band gives each rung ~56px of
+     content, which the widest label ("Seven") clears but a side-by-side numeral
+     would not. */
+  justify-items: center;
+  gap: .2rem;
+  padding: .7rem .3rem;
   background: var(--bg2);
   border: 0;
-  border-left: 2px solid transparent;
-  text-align: left;
+  /* The selected marker rides the top edge now that the band runs across. */
+  border-top: 2px solid transparent;
+  text-align: center;
   cursor: pointer;
   transition: background var(--transition), border-color var(--transition);
 }
 .lore-rung:hover { background: var(--surface); }
 .lore-rung[aria-selected="true"] {
   background: var(--surface2);
-  border-left-color: var(--gold);
+  border-top-color: var(--gold);
 }
 .lore-rung-numeral {
   font-family: var(--font-mono);
@@ -1237,15 +1279,27 @@
   border: 1px solid var(--rule);
   border-radius: var(--radius-md);
   padding: var(--space-4);
-}
-.lore-ladder-card {
+  /* Grid, because the fourteen cards stack in one cell — see below. */
   display: grid;
-  grid-template-columns: 11rem 1fr;
-  gap: var(--space-4);
+}
+/* All fourteen cards share one grid cell, so the panel is always as tall as the
+   wordiest rank and never resizes when you pick another — the ranks differ by
+   up to ~90px of copy, which would otherwise shunt the page on every click.
+   Sizing from the content this way needs no magic number to keep in step with
+   the copy in lore_data.py. */
+.lore-ladder-card {
+  grid-area: 1 / 1;
+  display: grid;
+  /* Same split as .lore-motif-detail, so the plate and the prose hold the same
+     line in both chapters. */
+  grid-template-columns: 18rem 1fr;
+  gap: var(--space-5);
   align-items: center;
 }
-/* `display: grid` on these would otherwise beat the UA's [hidden] rule. */
-.lore-ladder-card[hidden],
+/* Inactive cards keep holding the cell open, so `visibility` rather than the
+   UA's `display: none` — still out of the a11y tree, still no tab stops. */
+.lore-ladder-card[hidden] { visibility: hidden; }
+/* `display: grid` on this would otherwise beat the UA's [hidden] rule. */
 .lore-motif-detail[hidden] { display: none; }
 
 /* Cross-fade between ranks (lore.js toggles .is-swapping around the swap). */
@@ -1257,27 +1311,59 @@
 .lore-ladder-panel.is-swapping .lore-ladder-card,
 .lore-motif-panel.is-swapping .lore-motif-detail { opacity: 0; }
 
+/* Folio line — the rank label, an engraved rule, and the rank's numeral set
+   out at the right margin, the way a printed page carries its running head.
+   `order` is what puts the ::after rule between the two: the numeral is a real
+   element (so it can hold text) and would otherwise sit before it. */
 .lore-ladder-rank {
+  display: flex;
+  align-items: center;
+  gap: .7rem;
   font-family: var(--font-mono);
   font-size: var(--step--1);
   letter-spacing: .18em;
   text-transform: uppercase;
   color: var(--gold-warm);
-  margin: 0 0 .3rem;
+  margin: 0 0 .5rem;
+}
+.lore-ladder-rank::after {
+  content: '';
+  order: 1;
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg,
+    color-mix(in srgb, var(--gold-300) 34%, transparent), transparent 92%);
+}
+.lore-ladder-mark {
+  order: 2;
+  font-family: var(--font-display);
+  font-size: var(--step-0);
+  letter-spacing: .1em;
+  color: color-mix(in srgb, var(--gold-300) 58%, transparent);
 }
 .lore-ladder-title {
   font-family: var(--font-display);
   font-size: var(--step-2);
   font-weight: 500;
   color: var(--gold-lt);
-  margin: 0 0 .6rem;
+  margin: 0 0 .7rem;
 }
+/* The lead — the one line that defines the stage, set a step above the body so
+   it reads first. */
 .lore-ladder-body {
+  font-family: var(--font-body);
+  font-size: var(--step-1);
+  line-height: 1.6;
+  color: var(--text-body);
+  margin: 0;
+}
+/* The expansion beneath it: smaller and dimmer, so the lead stays the way in. */
+.lore-ladder-detail {
   font-family: var(--font-body);
   font-size: var(--step-0);
   line-height: 1.75;
-  color: var(--text-body);
-  margin: 0;
+  color: var(--text-dim);
+  margin: .85rem 0 0;
 }
 
 /* ============================================================
@@ -1530,12 +1616,12 @@
    RESPONSIVE
    ============================================================ */
 @media (max-width: 1000px) {
-  .lore-ladder { grid-template-columns: 1fr; }
+  .lore-ladder-card,
   .lore-motif-detail { grid-template-columns: 14rem 1fr; gap: var(--space-4); }
 }
 @media (max-width: 780px) {
   .lore-hero { min-height: 62vh; padding: var(--space-6) var(--space-3) var(--space-5); }
-  .lore-book { margin: 0; padding: 8px 9px 10px; }
+  .lore-book { margin: 0; padding: 4px 4px 5px; }
   .lore-page { padding: var(--space-5) var(--space-3) var(--space-4); }
   .lore-runhead { font-size: .5rem; letter-spacing: .24em; }
   .lore-section { margin-bottom: var(--space-6); }
@@ -1545,13 +1631,20 @@
   .lore-motif-grid { grid-template-columns: repeat(2, 1fr); }
   .lore-motif-detail,
   .lore-ladder-card { grid-template-columns: 1fr; }
-  .lore-ladder-card .lore-plate { max-width: 14rem; }
+  .lore-ladder-card .lore-plate { max-width: 14rem; margin-inline: auto; }
+  /* The pip band folds to two rows of five; the courts keep their own four
+     (restated, or the rule above would leave a dead fifth cell). */
+  .lore-rungs { grid-template-columns: repeat(5, 1fr); }
+  .lore-rungs--courts { grid-template-columns: repeat(4, 1fr); }
   .lore-color { grid-template-columns: 1.25rem 5rem 1fr; column-gap: var(--space-2); }
   .lore-ethos { background-attachment: scroll; padding: var(--space-6) var(--space-3); }
 }
 @media (max-width: 460px) {
   .lore-suit { grid-template-columns: 1fr; }
-  .lore-rungs { grid-template-columns: 1fr; }
+  /* Five cells across a ~330px column leaves ~58px of content each — the
+     smaller label keeps the widest rank ("Seven", 29px here) well clear. */
+  .lore-rung { padding: .55rem .2rem; }
+  .lore-rung-rank { font-size: var(--step--1); }
 }
 
 /* ============================================================
