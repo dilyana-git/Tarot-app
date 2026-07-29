@@ -18,34 +18,50 @@ hardcoded hosts. What is *not* ready is the **supply chain and the deploy artifa
 all three production dependencies carry known CVEs, and the repository ships no card
 artwork or even the placeholder it falls back to.
 
-Three blockers must be cleared before this goes live. Two of them are one-line changes.
+The dependency blocker has since been cleared (B1). The remaining ones are below.
 
 ---
 
 ## P0 — Blockers
 
-### B1. All three production dependencies have known vulnerabilities
+### B1. All three production dependencies have known vulnerabilities — ✅ FIXED 2026-07-29
 
-`pip-audit -r requirements.txt` reports **8 known vulnerabilities across 3 of 3 packages**:
+`pip-audit -r requirements.txt` reported **8 known vulnerabilities across 3 of 3 packages**:
 
-| Package | Pinned | Advisories | First fixed in |
+| Package | Was | Advisories | Now |
 |---|---|---|---|
-| `flask` | 3.0.3 | PYSEC-2026-2151 | 3.1.3 |
-| `werkzeug` | 3.0.3 | PYSEC-2026-2044/2045/2046/2320, PYSEC-2026-3417 | 3.1.6 |
-| `gunicorn` | 21.2.0 | PYSEC-2026-1433, PYSEC-2026-1434 | 22.0.0 |
+| `flask` | 3.0.3 | PYSEC-2026-2151 | **3.1.3** |
+| `werkzeug` | 3.0.3 | PYSEC-2026-2044/2045/2046/2320, PYSEC-2026-3417 | **3.1.8** |
+| `gunicorn` | 21.2.0 | PYSEC-2026-1433, PYSEC-2026-1434 | **26.0.0** |
 
-The gunicorn advisories are request-smuggling class — they matter specifically because
+The gunicorn advisories are request-smuggling class — they mattered specifically because
 gunicorn is the public-facing process in `Procfile`.
 
-**Verified fix.** Upgrading to `Flask==3.1.3`, `Werkzeug==3.1.6`, `gunicorn==23.0.0`
-was tested in this environment:
+`requirements-dev.txt` was bumped in the same pass: `pytest` 8.2.0 → **9.0.3**
+(PYSEC-2026-1845). Dev-only, so it never reached production, but it is free to fix.
+
+**Verification.** No source changes were required — it is a pure pin bump. Checked in a
+throwaway venv built from `requirements.txt` alone, so the result does not depend on
+system packages:
 
 ```
-pytest            -> 32 passed
-pip-audit         -> No known vulnerabilities found
+pip install -r requirements.txt   -> clean resolve, no conflicts
+pytest                            -> 33 passed
+pip-audit (full resolved tree)    -> no vulns in any declared dependency
+gunicorn app:app --workers 2      -> all 8 routes 200/404 as expected, logs clean
 ```
 
-No source changes were required — it is a drop-in bump of `requirements.txt`.
+Because pytest never exercises the WSGI server, the gunicorn jump (21 → 26, five majors)
+was verified by actually serving the app: every route, a 10-card Celtic Cross draw with
+narratives intact, the 413 body cap still enforced, and the security headers still applied.
+Gunicorn's defaults are unchanged across those majors (still 1 sync worker / 30 s timeout),
+so **F4 below still stands**. The new floor is Python 3.10; this environment runs 3.11.15.
+
+**One residual, not fixable here.** `setuptools` 79.0.1 carries PYSEC-2026-3447 (fixed in
+83.0.0). It is not declared in either requirements file — it is bundled by `venv`/`pip` —
+and the app never imports it or `pkg_resources`, so it is a build-time artifact rather than
+a runtime dependency. Pinning it in `requirements.txt` would misrepresent it. Handle it by
+upgrading `setuptools` in the deploy image or base environment.
 
 ### B2. No card artwork ships with the repository
 
@@ -249,17 +265,16 @@ These were checked and are fine — recorded so they are not re-investigated:
 
 ## Suggested order of work
 
-1. Bump `requirements.txt` — Flask 3.1.3 / Werkzeug 3.1.6 / gunicorn 23.0.0 **(B1, verified)**
-2. Decide the card-art strategy **(B2)** — everything about the deploy's size and shape follows from it
-3. Commit the placeholder SVG + guard `card_detail.html` **(B3)**
-4. Hard-fail on missing `SECRET_KEY` outside debug **(B4)**
-5. Gunicorn worker/log flags **(F4)**
-6. Pin the Python version **(F5)**
-7. Fix `CLAUDE.md`'s route table **(H2)**
-8. Rate limiting, cache headers, CSP, logging **(F2, F3, F6, H8)** — as traffic justifies
+1. Decide the card-art strategy **(B2)** — everything about the deploy's size and shape follows from it
+2. Commit the placeholder SVG + guard `card_detail.html` **(B3)**
+3. Hard-fail on missing `SECRET_KEY` outside debug **(B4)**
+4. Gunicorn worker/log flags **(F4)**
+5. Pin the Python version **(F5)**
+6. Fix `CLAUDE.md`'s route table **(H2)**
+7. Rate limiting, cache headers, CSP, logging **(F2, F3, F6, H8)** — as traffic justifies
 
-Items 1, 3, 4, 5, 6 and 7 are all small and independent. Item 2 is the one that needs a
-decision rather than a patch.
+Items 2–6 are all small and independent. Item 1 is the one that needs a decision rather
+than a patch.
 
-**Done so far:** `MAX_CONTENT_LENGTH` **(F1)**, the root-level scaffolding deletion **(H1)**,
-and the README **(H4)**.
+**Done so far:** the dependency bump **(B1)**, `MAX_CONTENT_LENGTH` **(F1)**, the root-level
+scaffolding deletion **(H1)**, and the README **(H4)**.

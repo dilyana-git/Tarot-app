@@ -151,13 +151,14 @@ The app holds no mutable global state, so it is safe to run multi-worker.
 before deploying.** It is a verified audit of what is and isn't production-ready.
 The open blockers at the time of writing:
 
-- The pinned dependencies carry known CVEs — `pip-audit` reports 8 across all
-  three. A tested drop-in bump is documented in the checklist.
 - No card artwork ships, so a deploy from this repo is unillustrated. This needs
   an asset strategy, not a patch.
 - The placeholder SVG the resolver falls back to isn't in the repo either, so
   card detail pages request a 404.
 - A missing `SECRET_KEY` only warns rather than failing startup.
+
+Dependencies are pinned to an audited-clean floor; re-check with
+`pip-audit -r requirements.txt` before each release.
 
 ## Further reading
 
