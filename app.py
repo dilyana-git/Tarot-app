@@ -18,8 +18,25 @@ app = Flask(__name__)
 # served as application/octet-stream. Register it before the first send_file.
 mimetypes.add_type('image/webp', '.webp')
 
+# A missing SECRET_KEY must not boot quietly in production. The old behaviour was
+# a warnings.warn, which is invisible in most log pipelines — the app would come up
+# looking healthy (/health returns ok) while signing sessions with a key that is
+# published in this file.
+#
+# Running as a script (`python app.py`) is the local dev path and keeps the
+# warn-and-continue behaviour, so the documented quickstart still works with no
+# setup. Anything that *imports* the module is a real server — gunicorn imports
+# `app:app` — and is refused at import time, so the deploy fails loudly instead
+# of serving insecurely. FLASK_DEBUG=true opts out either way.
 _secret = os.environ.get('SECRET_KEY')
+_debug = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
 if not _secret:
+    if __name__ != '__main__' and not _debug:
+        raise RuntimeError(
+            'SECRET_KEY is not set. Refusing to start: sessions would be signed '
+            'with a publicly-known key. Set SECRET_KEY to a random secret, or set '
+            'FLASK_DEBUG=true for local development.'
+        )
     import warnings
     warnings.warn(
         "SECRET_KEY env var not set — sessions are not secure. "
@@ -395,5 +412,4 @@ def server_error(error):
 
 
 if __name__ == '__main__':
-    debug = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
-    app.run(debug=debug, port=5000)
+    app.run(debug=_debug, port=5000)

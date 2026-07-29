@@ -45,9 +45,16 @@
           <div class="card-large-suit">Major Arcana</div>
           {% endif %}
         </div>
+        {# Skip the <img> entirely when the card has no art, matching cards.html.
+           The placeholder must not render here: the script below sets .has-image
+           once the image loads, which hides the typographic card face — so a
+           placeholder would swap every card's own face for one generic plate. #}
+        {% set detail_img = get_card_image_filename(card) %}
+        {% if detail_img != 'images/card-placeholder.svg' %}
         <div class="card-detail-art">
-          <img class="card-detail-img" src="{{ url_for('static', filename=get_card_image_filename(card)) }}" alt="{{ card.name }}" onerror="this.parentElement.style.display='none'">
+          <img class="card-detail-img" src="/static/{{ detail_img }}" alt="{{ card.name }}" onerror="this.parentElement.style.display='none'">
         </div>
+        {% endif %}
         <div class="card-large-corner bottom-right">
           <span class="cl-symbol-small">{{ card.symbol }}</span>
           <span class="cl-number">{{ card.number }}</span>

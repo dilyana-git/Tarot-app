@@ -1,7 +1,11 @@
 *.pyc
 __pycache__/
 .vscode/
-static/images/
+# Card art is too large to track. Ignore the *contents* rather than the
+# directory itself — git won't descend into an ignored directory, so the
+# negation below only works against a `dir/*` pattern.
+static/images/*
+!static/images/card-placeholder.svg
 static/media/
 venv/
 integration/*

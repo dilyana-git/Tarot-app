@@ -18,7 +18,9 @@ hardcoded hosts. What is *not* ready is the **supply chain and the deploy artifa
 all three production dependencies carry known CVEs, and the repository ships no card
 artwork or even the placeholder it falls back to.
 
-The dependency blocker has since been cleared (B1). The remaining ones are below.
+Three of the four blockers have since been cleared (B1, B3, B4). **The one that remains is
+B2 — no card artwork ships.** It is the only item on this page that needs a decision rather
+than a patch.
 
 ---
 
@@ -84,36 +86,66 @@ A deployment needs an explicit asset strategy. Options, roughly in order of effo
 
 This decision is a prerequisite for B3 and for F3 (cache headers) below.
 
-### B3. The placeholder SVG the fallback points at does not exist
+### B3. The placeholder SVG the fallback points at does not exist — ✅ FIXED 2026-07-29
 
-`get_card_image_path` returns `'images/card-placeholder.svg'` when no art is found
-(`app.py:96`), and `CLAUDE.md` documents this as the fresh-clone behaviour. But that file is
-inside the gitignored `static/images/` tree and is not in the repo:
+`get_card_image_path` returns `'images/card-placeholder.svg'` when no art is found, and
+`CLAUDE.md` documents this as the fresh-clone behaviour. But that file was inside the
+gitignored `static/images/` tree and was not in the repo:
 
 ```
-git ls-files | grep -i placeholder   ->   (no output)
-GET /static/images/card-placeholder.svg   ->   404
+git ls-files | grep -i placeholder        ->  (no output)
+GET /static/images/card-placeholder.svg   ->  404
 ```
 
-`cards.html:93-94` guards against the placeholder path and skips the `<img>`, but
-`card_detail.html:49` emits it unconditionally. The result is a **404 request on every card
-detail page**, masked at runtime by an `onerror` handler that hides the element.
+`cards.html:93-94` guarded against the placeholder path and skipped the `<img>`, but
+`card_detail.html` emitted it unconditionally — a **404 on every card detail page**, masked
+at runtime by an `onerror` handler that hid the element.
 
-Two independent fixes, both cheap — do the first regardless:
+Both halves were fixed, and they had to land together:
 
-- Commit an actual `static/images/card-placeholder.svg` and add a `.gitignore` negation
-  (`!static/images/card-placeholder.svg`) so it survives the wholesale ignore.
-- Make `card_detail.html` guard on the placeholder the way `cards.html` already does.
+- **The asset.** `static/images/card-placeholder.svg` is now committed — a 2:3 plate in the
+  token palette. The ignore rule became `static/images/*` plus a negation, because git will
+  not descend into an ignored *directory*, so a negation under the old `static/images/`
+  pattern would have silently done nothing. Verified: only the placeholder stages, and
+  `major/`, `lore/` etc. stay ignored.
+- **The guard.** `card_detail.html` now skips the `<img>` on the placeholder, matching
+  `cards.html`.
 
-### B4. Missing `SECRET_KEY` degrades silently instead of failing
+The guard is not cosmetic. `card_detail.html`'s script adds `.has-image` once the image
+loads, and that CSS hides the card's typographic face (`style.css:613-615`). Committing the
+asset *without* the guard would therefore have replaced every card's own face with one
+generic plate — the fix would have caused a regression on its own.
 
-`app.py:21-30` warns and then boots with `'dev-only-insecure-key'`. A `warnings.warn` is
-invisible in most production log pipelines, so a misconfigured deploy comes up looking
-healthy — `/health` returns `ok` — while running on a publicly-known key.
+The SVG draws its sparkles as paths rather than `✦` glyphs: an SVG loaded through `<img>` is
+isolated from the page's fonts, so a literal U+2726 renders as tofu wherever the system font
+lacks it. (Caught by rasterising the file and looking at it.)
 
-The current behaviour is right for local dev. It should hard-fail when not in dev: raise on
-startup unless `FLASK_DEBUG` is set, so the platform's health check catches the
-misconfiguration instead of the site serving traffic in an insecure state.
+### B4. Missing `SECRET_KEY` degrades silently instead of failing — ✅ FIXED 2026-07-29
+
+The app warned and then booted with `'dev-only-insecure-key'`. A `warnings.warn` is invisible
+in most production log pipelines, so a misconfigured deploy came up looking healthy —
+`/health` returning `ok` — while signing sessions with a key published in `app.py`.
+
+Fixed by splitting the two cases on **how the module is loaded**, which is what actually
+distinguishes dev from deployment:
+
+- **Run as a script** (`python app.py`) — the local dev path. Unchanged: warn and continue,
+  so the documented quickstart still works with no setup.
+- **Imported** — what a real server does; gunicorn imports `app:app`. Raises `RuntimeError`
+  at import unless `FLASK_DEBUG=true`.
+
+`__name__` is the discriminator: it is `'__main__'` under `python app.py` and `'app'` under
+gunicorn. Verified against the real server rather than the test client:
+
+```
+gunicorn app:app                    -> RuntimeError, "Worker failed to boot", exit 3
+SECRET_KEY=… gunicorn app:app       -> serves normally
+python app.py  (no SECRET_KEY)      -> warns, /health 200 — quickstart preserved
+```
+
+Tests import the module, so `conftest.py` now sets a throwaway `SECRET_KEY` via
+`setdefault`. The three startup paths are covered by tests that import `app.py` in a fresh
+subprocess, since the failure happens at import and cannot be exercised in-process.
 
 ---
 
@@ -266,15 +298,14 @@ These were checked and are fine — recorded so they are not re-investigated:
 ## Suggested order of work
 
 1. Decide the card-art strategy **(B2)** — everything about the deploy's size and shape follows from it
-2. Commit the placeholder SVG + guard `card_detail.html` **(B3)**
-3. Hard-fail on missing `SECRET_KEY` outside debug **(B4)**
-4. Gunicorn worker/log flags **(F4)**
-5. Pin the Python version **(F5)**
-6. Fix `CLAUDE.md`'s route table **(H2)**
-7. Rate limiting, cache headers, CSP, logging **(F2, F3, F6, H8)** — as traffic justifies
+2. Gunicorn worker/log flags **(F4)**
+3. Pin the Python version **(F5)**
+4. Fix `CLAUDE.md`'s route table **(H2)**
+5. Rate limiting, cache headers, CSP, logging **(F2, F3, F6, H8)** — as traffic justifies
 
-Items 2–6 are all small and independent. Item 1 is the one that needs a decision rather
-than a patch.
+Items 2–4 are small and independent. Item 1 is the only one that needs a decision rather
+than a patch, and it is now the last thing standing between this and a deployable build.
 
-**Done so far:** the dependency bump **(B1)**, `MAX_CONTENT_LENGTH` **(F1)**, the root-level
+**Done so far:** the dependency bump **(B1)**, the placeholder asset and its guard **(B3)**,
+the `SECRET_KEY` startup refusal **(B4)**, `MAX_CONTENT_LENGTH` **(F1)**, the root-level
 scaffolding deletion **(H1)**, and the README **(H4)**.

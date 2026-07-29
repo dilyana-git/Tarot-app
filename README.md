@@ -47,8 +47,8 @@ All configuration is environment variables. None are required to run locally;
 
 | Variable | Default | Notes |
 |---|---|---|
-| `SECRET_KEY` | *(insecure dev key)* | Signs sessions. **Set this in production.** If unset the app emits a `UserWarning` and falls back to a hardcoded key — it will boot and look healthy while being insecure. |
-| `FLASK_DEBUG` | `false` | `true` enables the Flask debugger and reloader. Only read by `python app.py`; ignored under gunicorn. |
+| `SECRET_KEY` | *(insecure dev key)* | Signs sessions. **Required under any WSGI server.** `python app.py` falls back to a dev key with a warning; importing the app — which is what `gunicorn app:app` does — raises at startup instead, so a misconfigured deploy fails loudly rather than serving on a publicly-known key. `FLASK_DEBUG=true` opts out. |
+| `FLASK_DEBUG` | `false` | `true` enables the Flask debugger and reloader, and permits the `SECRET_KEY` fallback under a WSGI server. |
 | `CORS_ORIGINS` | *(empty)* | Comma-separated origin allowlist. When set, `/api/*` responses carry `Access-Control-Allow-Origin` for matching origins. Empty means no cross-origin access. |
 | `PORT` | — | Bound by the `Procfile`. Set by the host platform. |
 
@@ -149,13 +149,14 @@ The app holds no mutable global state, so it is safe to run multi-worker.
 
 **Read [`docs/pre-deployment-checklist.md`](docs/pre-deployment-checklist.md)
 before deploying.** It is a verified audit of what is and isn't production-ready.
-The open blockers at the time of writing:
 
-- No card artwork ships, so a deploy from this repo is unillustrated. This needs
-  an asset strategy, not a patch.
-- The placeholder SVG the resolver falls back to isn't in the repo either, so
-  card detail pages request a 404.
-- A missing `SECRET_KEY` only warns rather than failing startup.
+One blocker is still open: **no card artwork ships**, so a deploy from this repo
+is unillustrated. That needs an asset strategy rather than a patch — the options
+are laid out in the checklist. Everything else on the critical path is done.
+
+Worth doing before real traffic, none of them blocking: gunicorn is on bare
+defaults (one sync worker, no access log), the Python version isn't pinned, and
+there's no rate limiting on `/api/reading`.
 
 Dependencies are pinned to an audited-clean floor; re-check with
 `pip-audit -r requirements.txt` before each release.

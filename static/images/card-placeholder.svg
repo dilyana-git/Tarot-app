@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 600" width="400" height="600"
+     role="img" aria-label="Card artwork not available">
+  <!-- Fallback art for a card with no image on disk. Palette is taken from
+       tokens.css: ink-900 ground, the gold ramp for rules, gold-200 star
+       centre. Sized 2:3 to match .card-tile's aspect-ratio. -->
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="46%" r="52%">
+      <stop offset="0%"   stop-color="#161A26"/>
+      <stop offset="100%" stop-color="#0A0B11"/>
+    </radialGradient>
+    <!-- The sparkle is a path, not a text glyph. An SVG loaded through <img>
+         is isolated from the page's fonts, so a literal U+2726 renders as
+         tofu wherever the system lacks it. -->
+    <path id="spark" d="M0 -10 L2 -2 L10 0 L2 2 L0 10 L-2 2 L-10 0 L-2 -2 Z"/>
+  </defs>
+
+  <rect width="400" height="600" fill="url(#glow)"/>
+
+  <!-- Double rule, the app's standard card framing -->
+  <rect x="16" y="16" width="368" height="568" fill="none" stroke="#4A3A1C" stroke-width="1"/>
+  <rect x="24" y="24" width="352" height="552" fill="none" stroke="#6E5527" stroke-width="1.5"/>
+
+  <!-- Corner ticks -->
+  <g stroke="#6E5527" stroke-width="1.5" fill="none">
+    <path d="M24 60 L24 24 L60 24"/>
+    <path d="M340 24 L376 24 L376 60"/>
+    <path d="M376 540 L376 576 L340 576"/>
+    <path d="M60 576 L24 576 L24 540"/>
+  </g>
+
+  <!-- Central star — same four-point geometry as favicon.svg -->
+  <g transform="translate(200 276)">
+    <circle r="74" fill="none" stroke="#4A3A1C" stroke-width="1"/>
+    <path d="M0 -46 L9 -9 L46 0 L9 9 L0 46 L-9 9 L-46 0 L-9 -9 Z"
+          fill="none" stroke="#C8A24C" stroke-width="1.6" stroke-linejoin="round"/>
+    <circle r="3.4" fill="#E7C878"/>
+  </g>
+
+  <!-- Attendant sparkles -->
+  <g fill="#C8A24C">
+    <use href="#spark" transform="translate(200 128)" opacity=".34"/>
+    <use href="#spark" transform="translate(200 434)" opacity=".34"/>
+    <use href="#spark" transform="translate(104 282) scale(.62)" opacity=".22"/>
+    <use href="#spark" transform="translate(296 282) scale(.62)" opacity=".22"/>
+  </g>
+
+  <!-- Divider + label -->
+  <path d="M132 486 L268 486" stroke="#4A3A1C" stroke-width="1"/>
+  <text x="200" y="518" fill="#B9B299" font-family="Cinzel, Georgia, serif" font-size="16"
+        letter-spacing="4.5" text-anchor="middle" opacity=".72">ARCANA</text>
+  <text x="200" y="544" fill="#6E5527" font-family="Georgia, serif" font-size="11"
+        letter-spacing="2.2" text-anchor="middle">ARTWORK FORTHCOMING</text>
+</svg>
