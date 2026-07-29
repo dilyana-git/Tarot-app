@@ -186,11 +186,15 @@ Its file taxonomy lists `index_cardfirst.html`, `index_editorial.html`, `arcana_
 `templates/_arcana_hero.html`, `static/js/arcana-hero.js` and others — all since deleted. It
 also cites `style.css` at 2,707 lines (now 1,952). Mark it as a historical snapshot or retire it.
 
-### H4. No README
+### H4. No README — ✅ FIXED 2026-07-29
 
-There is a thorough `CLAUDE.md` and a `DESIGN.md`, but nothing that tells a human how to run,
-configure, or deploy the app. The deployment-relevant environment variables (`SECRET_KEY`,
-`CORS_ORIGINS`, `FLASK_DEBUG`, `PORT`) are documented nowhere.
+There was a thorough `CLAUDE.md` and a `DESIGN.md`, but nothing telling a human how to run,
+configure, or deploy the app, and the deployment-relevant environment variables were
+documented nowhere.
+
+Added `README.md`: quickstart, the full env-var table (`SECRET_KEY`, `FLASK_DEBUG`,
+`CORS_ORIGINS`, `PORT`), route and spread reference, project layout, the card-art
+conventions, and a deployment section pointing here for the open blockers.
 
 ### H5. No `robots.txt` or `sitemap.xml`
 
@@ -251,10 +255,11 @@ These were checked and are fine — recorded so they are not re-investigated:
 4. Hard-fail on missing `SECRET_KEY` outside debug **(B4)**
 5. Gunicorn worker/log flags **(F4)**
 6. Pin the Python version **(F5)**
-7. Write a README; fix `CLAUDE.md`'s route table **(H2, H4)**
+7. Fix `CLAUDE.md`'s route table **(H2)**
 8. Rate limiting, cache headers, CSP, logging **(F2, F3, F6, H8)** — as traffic justifies
 
 Items 1, 3, 4, 5, 6 and 7 are all small and independent. Item 2 is the one that needs a
 decision rather than a patch.
 
-**Done so far:** `MAX_CONTENT_LENGTH` **(F1)** and the root-level scaffolding deletion **(H1)**.
+**Done so far:** `MAX_CONTENT_LENGTH` **(F1)**, the root-level scaffolding deletion **(H1)**,
+and the README **(H4)**.
