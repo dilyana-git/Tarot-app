@@ -1,6 +1,10 @@
 import mimetypes
 import os
 import random
+import uuid
+from collections import deque
+from threading import Lock
+from time import monotonic
 from functools import lru_cache
 from flask import Flask, render_template, jsonify, request, abort, url_for
 from data.tarot_data import (
@@ -12,8 +16,14 @@ from data.lore_data import (
     LORE_INTRO, LORE_HERO_IMAGE, CHAPTERS, HISTORY_TIMELINE, DECK_STRUCTURE,
     SUITS, NUMEROLOGY, SYMBOLS, READING_ETHOS,
 )
+from reading_email import (
+    MailConfigurationError, build_message, send_with_brevo,
+    settings_from_env, valid_email,
+)
 
 app = Flask(__name__)
+_email_events = deque()
+_email_events_lock = Lock()
 # Windows' mimetypes registry has no .webp entry, so the card art would be
 # served as application/octet-stream. Register it before the first send_file.
 mimetypes.add_type('image/webp', '.webp')
@@ -328,6 +338,73 @@ def api_reading():
         'spread': spread,
         'cards': result_cards,
         'reading_notes': composed['reading_notes'],
+    })
+
+
+@app.route('/api/email-reading', methods=['POST'])
+def email_reading():
+    """Email an already-drawn reading to the owner for a personal reply."""
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return jsonify({'error': 'Please submit a valid reading.'}), 400
+    visitor_email = (data.get('email') or '').strip()
+    question = (data.get('question') or '').strip()
+    spread_key = data.get('spread')
+    submitted_cards = data.get('cards')
+    if not valid_email(visitor_email):
+        return jsonify({'error': 'Please enter a valid email address.'}), 400
+    if len(question) > 500 or spread_key not in SPREADS or not isinstance(submitted_cards, list):
+        return jsonify({'error': 'This reading could not be verified.'}), 400
+    spread = SPREADS[spread_key]
+    if len(submitted_cards) != len(spread['positions']):
+        return jsonify({'error': 'This reading could not be verified.'}), 400
+
+    # Keep the free email allowance from becoming an open relay. This process-local
+    # limit fits Render's single free worker and resets harmlessly when it sleeps.
+    now = monotonic()
+    client_key = (request.remote_addr or 'unknown', visitor_email.casefold())
+    with _email_events_lock:
+        while _email_events and _email_events[0][0] <= now - 3600:
+            _email_events.popleft()
+        if sum(key == client_key for _, key in _email_events) >= 3:
+            return jsonify({'error': 'Too many email requests. Please try again later.'}), 429
+        if len(_email_events) >= 100:
+            return jsonify({'error': 'Email delivery is busy. Please try again later.'}), 429
+        _email_events.append((now, client_key))
+
+    cards = []
+    for index, submitted in enumerate(submitted_cards):
+        if not isinstance(submitted, dict) or type(submitted.get('id')) is not int or type(submitted.get('reversed')) is not bool:
+            return jsonify({'error': 'This reading could not be verified.'}), 400
+        source = get_card_by_id(submitted['id'])
+        if source is None:
+            return jsonify({'error': 'This reading could not be verified.'}), 400
+        cards.append({
+            **source,
+            'reversed': submitted['reversed'],
+            'position': spread['positions'][index]['name'],
+            'position_meaning': spread['positions'][index]['meaning'],
+            'narrative': str(submitted.get('narrative') or '')[:3000],
+        })
+
+    try:
+        settings = settings_from_env()
+    except MailConfigurationError:
+        app.logger.error('Reading email configuration is incomplete')
+        return jsonify({'error': 'Email delivery is temporarily unavailable.'}), 503
+    request_id = uuid.uuid4().hex[:12]
+    message = build_message(
+        settings, visitor_email=visitor_email, question=question,
+        spread=spread, cards=cards, request_id=request_id,
+    )
+    try:
+        send_with_brevo(settings, message)
+    except OSError:
+        app.logger.exception('Reading email delivery failed for %s', request_id)
+        return jsonify({'error': 'We could not send the reading. Please try again later.'}), 502
+    return jsonify({
+        'message': 'Your reading was sent to the reader. They can reply directly to your email.',
+        'request_id': request_id,
     })
 
 

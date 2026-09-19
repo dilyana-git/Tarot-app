@@ -252,3 +252,50 @@ def test_deployed_card_artwork(client, card):
     assert response.status_code == 200
     assert response.mimetype.startswith('image/')
     assert response.data
+
+
+def _email_payload(client):
+    reading = client.post('/api/reading', json={
+        'spread': 'three_card', 'question': 'What should I know?',
+    }).get_json()
+    return {
+        'email': 'visitor@example.com',
+        'question': 'What should I know?',
+        'spread': 'three_card',
+        'cards': [
+            {'id': card['id'], 'reversed': card['reversed'], 'narrative': card['narrative']}
+            for card in reading['cards']
+        ],
+    }
+
+
+def test_email_reading_sends_server_verified_cards(client, monkeypatch):
+    import app as app_module
+    sent = {}
+    monkeypatch.setattr(app_module, 'settings_from_env', lambda: {
+        'api_key': 'test', 'sender': 'reader@example.com', 'recipient': 'owner@example.com',
+    })
+    monkeypatch.setattr(app_module, 'send_with_brevo', lambda settings, message: sent.setdefault('message', message))
+    payload = _email_payload(client)
+    response = client.post('/api/email-reading', json=payload)
+    assert response.status_code == 200
+    assert response.get_json()['request_id']
+    body = sent['message'].get_content()
+    assert 'visitor@example.com' in body
+    assert sent['message']['To'] == 'owner@example.com'
+    assert sent['message']['Reply-To'] == 'visitor@example.com'
+
+
+def test_email_reading_rejects_tampered_or_invalid_payload(client):
+    payload = _email_payload(client)
+    payload['cards'][0]['id'] = 9999
+    assert client.post('/api/email-reading', json=payload).status_code == 400
+    payload['cards'][0]['id'] = 0
+    payload['email'] = 'not-an-email'
+    assert client.post('/api/email-reading', json=payload).status_code == 400
+
+
+def test_reading_page_has_email_button_and_consent(client):
+    body = client.get('/reading').data
+    assert b'Send This Reading to the Reader' in body
+    assert b'readingEmailConsent' in body
