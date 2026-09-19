@@ -209,7 +209,6 @@ MAJOR_ARCANA = [
         'card_color': '#2a0040',
         'accent_color': '#9933cc',
         'image': 'major/wheel_of_fortune.jpg',
-        'video': 'wheel_of_fortune.mp4',
         'focal_point': '50% 45%',   # wheel fills the card center
     },
     {
@@ -305,7 +304,6 @@ MAJOR_ARCANA = [
         'card_color': '#1f0a00',
         'accent_color': '#cc5500',
         'image': 'major/devil.jpg',
-        'video': 'devil.mp4',
         'focal_point': '50% 38%',   # devil figure upper half, chained figures below mid-card
     },
     {
@@ -325,7 +323,6 @@ MAJOR_ARCANA = [
         'card_color': '#2a0a00',
         'accent_color': '#ff6600',
         'image': 'major/tower.jpg',
-        'video': 'tower.mp4',
         'focal_point': '50% 40%',   # crown struck off top, figures falling mid-card
     },
     {

@@ -6,9 +6,18 @@ expected shape, and the narrative composer stays deterministic. Run with:
     pip install -r requirements-dev.txt
     pytest
 """
+import os
+import subprocess
+import sys
+from pathlib import Path
+
 import pytest
 
-from app import app as flask_app, get_card_image_path
+from app import (
+    app as flask_app, get_card_image_path, get_card_image_filename, MAX_CONTENT_LENGTH,
+)
+
+ROOT = Path(__file__).resolve().parent.parent
 from data.tarot_data import ALL_CARDS, SPREADS
 from data.reading_composer import compose
 
@@ -87,8 +96,10 @@ def test_health(client):
 def test_api_cards(client):
     data = client.get('/api/cards').get_json()
     assert len(data) == len(ALL_CARDS) == 78
+    # internal fields stay internal — the API exposes image_url, not the raw path
     assert 'focal_point' not in data[0]
-    assert 'video' not in data[0]
+    assert 'image' not in data[0]
+    assert 'image_url' in data[0]
 
 
 def test_security_headers(client):
@@ -119,6 +130,13 @@ def test_api_reading_shape(client, spread_key):
 def test_api_reading_unknown_spread_400(client):
     resp = client.post('/api/reading', json={'spread': 'not_a_spread'})
     assert resp.status_code == 400
+
+
+def test_api_reading_oversized_body_413(client):
+    body = b'{"spread":"three_card","question":"' + b'a' * (MAX_CONTENT_LENGTH + 1) + b'"}'
+    resp = client.post('/api/reading', data=body, content_type='application/json')
+    assert resp.status_code == 413
+    assert resp.get_json() == {'error': 'Request too large'}
 
 
 # ── Composer ───────────────────────────────────────────────────────────────────
@@ -167,3 +185,70 @@ def test_canvas_has_aria_hidden(client):
 def test_image_path_falls_back_to_placeholder():
     # No such asset on disk → placeholder, never a broken path.
     assert get_card_image_path('images/major/does_not_exist.jpg') == 'images/card-placeholder.svg'
+
+
+def test_placeholder_asset_exists():
+    # The fallback above must resolve to a real file — it is committed despite
+    # static/images/ being gitignored, via a negation in .gitignore.
+    assert (ROOT / 'static' / 'images' / 'card-placeholder.svg').is_file()
+
+
+def test_card_detail_omits_placeholder_img(client):
+    """/card/<id> must never emit the placeholder as an <img>: that would 404 on a
+    fresh clone, and once the file exists it trips the .has-image script, hiding
+    the card's own typographic face behind one generic plate.
+
+    Asserted against whichever branch this checkout is actually in, so the test
+    holds both in CI (no art) and on a machine with real art on disk.
+    """
+    resp = client.get('/card/0')
+    assert b'card-placeholder.svg' not in resp.data
+
+    has_art = get_card_image_filename(ALL_CARDS[0]) != 'images/card-placeholder.svg'
+    # the <img> element, not the class name in the script's querySelector
+    emitted = b'<img class="card-detail-img"' in resp.data
+    assert emitted is has_art
+
+
+# ── Startup safety ─────────────────────────────────────────────────────────────
+def _import_app(env):
+    """Import app.py in a fresh interpreter, with SECRET_KEY/FLASK_DEBUG cleared
+    first so only what `env` sets is present."""
+    child = dict(os.environ)
+    child.pop('SECRET_KEY', None)
+    child.pop('FLASK_DEBUG', None)
+    child.update(env)
+    return subprocess.run(
+        [sys.executable, '-c', 'import app'],
+        cwd=ROOT, env=child, capture_output=True, text=True,
+    )
+
+
+def test_missing_secret_key_refuses_to_start():
+    # gunicorn imports app:app — that path must fail loudly rather than serve
+    # traffic signed with the key published in app.py.
+    result = _import_app({})
+    assert result.returncode != 0
+    assert 'SECRET_KEY is not set' in result.stderr
+
+
+def test_missing_secret_key_allowed_in_debug():
+    result = _import_app({'FLASK_DEBUG': 'true'})
+    assert result.returncode == 0, result.stderr
+
+
+def test_secret_key_set_imports_cleanly():
+    result = _import_app({'SECRET_KEY': 'a-real-key'})
+    assert result.returncode == 0, result.stderr
+
+
+@pytest.mark.parametrize('card', ALL_CARDS, ids=lambda card: card['name'])
+def test_deployed_card_artwork(client, card):
+    """Every card must ship real artwork, not silently fall back after deploy."""
+    from app import get_card_image_filename
+    path = get_card_image_filename(card)
+    assert path != 'images/card-placeholder.svg'
+    response = client.get('/static/' + path)
+    assert response.status_code == 200
+    assert response.mimetype.startswith('image/')
+    assert response.data

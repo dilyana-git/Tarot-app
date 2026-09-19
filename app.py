@@ -18,8 +18,25 @@ app = Flask(__name__)
 # served as application/octet-stream. Register it before the first send_file.
 mimetypes.add_type('image/webp', '.webp')
 
+# A missing SECRET_KEY must not boot quietly in production. The old behaviour was
+# a warnings.warn, which is invisible in most log pipelines — the app would come up
+# looking healthy (/health returns ok) while signing sessions with a key that is
+# published in this file.
+#
+# Running as a script (`python app.py`) is the local dev path and keeps the
+# warn-and-continue behaviour, so the documented quickstart still works with no
+# setup. Anything that *imports* the module is a real server — gunicorn imports
+# `app:app` — and is refused at import time, so the deploy fails loudly instead
+# of serving insecurely. FLASK_DEBUG=true opts out either way.
 _secret = os.environ.get('SECRET_KEY')
+_debug = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
 if not _secret:
+    if __name__ != '__main__' and not _debug:
+        raise RuntimeError(
+            'SECRET_KEY is not set. Refusing to start: sessions would be signed '
+            'with a publicly-known key. Set SECRET_KEY to a random secret, or set '
+            'FLASK_DEBUG=true for local development.'
+        )
     import warnings
     warnings.warn(
         "SECRET_KEY env var not set — sessions are not secure. "
@@ -31,6 +48,13 @@ app.secret_key = _secret
 
 _ALLOWED_ORIGINS = os.environ.get('CORS_ORIGINS', '').split(',')
 _ALLOWED_ORIGINS = [o.strip() for o in _ALLOWED_ORIGINS if o.strip()]
+
+# Cap on request bodies. /api/reading is an unauthenticated public POST, and
+# without a ceiling Werkzeug buffers whatever a client sends. The only body the
+# app reads is that endpoint's small JSON object — whose `question` is truncated
+# to 500 chars anyway — so 64 KB is far above anything legitimate.
+MAX_CONTENT_LENGTH = 64 * 1024
+app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH
 
 
 @app.after_request
@@ -75,9 +99,9 @@ _IMG_EXTS = ('.webp', '.jpg', '.jpeg', '.png')
 @lru_cache(maxsize=None)
 def _static_exists(relpath):
     """Cached os.path.exists for a path under static/. Card data is static, so
-    image/video resolution probes the same handful of paths on every request;
-    without this, /cards alone fires ~300 disk stats per load. Cache is cleared
-    only by restart, which matches how the assets are deployed."""
+    image resolution probes the same handful of paths on every request; without
+    this, /cards alone fires ~300 disk stats per load. Cache is cleared only by
+    restart, which matches how the assets are deployed."""
     return os.path.exists(os.path.join(app.static_folder, relpath))
 
 
@@ -115,26 +139,6 @@ def get_card_image_filename(card):
 app.jinja_env.globals['get_card_image_filename'] = get_card_image_filename
 
 
-def get_card_video_url(card):
-    """Return a /static/… URL for the card's video, or empty string if none exists."""
-    raw_vid = card.get('video', '')
-    if raw_vid:
-        path = f'media/{raw_vid}'
-        if _static_exists(path):
-            return f'/static/{path}'
-
-    slug = card['name'].lower().replace("'", '').replace(' ', '_')
-    if slug.startswith('the_'):
-        slug = slug[4:]
-    path = f'media/{slug}.mp4'
-    if _static_exists(path):
-        return f'/static/{path}'
-
-    return ''
-
-app.jinja_env.globals['get_card_video_url'] = get_card_video_url
-
-
 def lore_image_url(slug):
     """Return a /static/… URL for a lore plate, or '' when that art has not been
     generated yet. Empty is a supported state: lore.html renders an engraved
@@ -159,7 +163,6 @@ def index():
         c = dict(card)
         img = get_card_image_filename(card)
         c['image_url'] = '' if img == 'images/card-placeholder.svg' else f'/static/{img}'
-        c['video_url'] = get_card_video_url(card)
         arcana.append(c)
 
     return render_template('index.html', major_arcana=arcana, cards=_arcana_widget_cards())
@@ -371,6 +374,15 @@ def not_found(error):
     return render_template('404.html'), 404
 
 
+@app.errorhandler(413)
+def payload_too_large(error):
+    # Only /api/reading reads a body, so in practice this is always the JSON
+    # branch; the page branch keeps the response on-brand if that ever changes.
+    if request.path.startswith('/api/'):
+        return jsonify({'error': 'Request too large'}), 413
+    return render_template('404.html'), 413
+
+
 @app.errorhandler(500)
 def server_error(error):
     if request.path.startswith('/api/'):
@@ -379,5 +391,4 @@ def server_error(error):
 
 
 if __name__ == '__main__':
-    debug = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
-    app.run(debug=debug, port=5000)
+    app.run(debug=_debug, port=5000)
