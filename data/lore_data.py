@@ -14,10 +14,14 @@
 # and the headings there in sync.
 
 
-def _img(slug, alt, caption=''):
+def _img(slug, alt, caption='', focus=''):
     """One illustration slot. `alt` is the accessible description, `caption` the
-    visible engraved line under the plate (and the label shown while empty)."""
-    return {'slug': slug, 'alt': alt, 'caption': caption}
+    visible engraved line under the plate (and the label shown while empty).
+
+    `focus` is an optional CSS `object-position` value ('25% 50%'). Slots that
+    crop their art to fit a fixed frame otherwise keep the centre; set this when
+    the subject sits off-centre and centring would cut it out."""
+    return {'slug': slug, 'alt': alt, 'caption': caption, 'focus': focus}
 
 
 # ── Framing ───────────────────────────────────────────────────────────────────
@@ -66,6 +70,9 @@ HISTORY_TIMELINE = [
             'history-triumphs',
             'Gold-leafed hand-painted trump cards fanned across a Renaissance table.',
             'Milan, c. 1440 — the Visconti-Sforza trumps',
+            # The candle — the scene's only light source — sits hard against the
+            # left edge, so a centred crop loses it. Bias left to keep it.
+            focus='25% 50%',
         ),
     },
     {
@@ -207,7 +214,7 @@ DECK_STRUCTURE = {
             ),
             'image': _img(
                 'deck-major',
-                'Twenty-two trump cards fanned in a wide arc, gold-edged.',
+                'Twenty-two trump cards fanned in a wide arc, gold-edged, the Fool at centre.',
                 'The trumps, nought to twenty-one',
             ),
         },
@@ -225,7 +232,7 @@ DECK_STRUCTURE = {
             ),
             'image': _img(
                 'deck-minor',
-                'Four columns of pip cards laid out by suit on dark cloth.',
+                'The fourteen Wands cards fanned in an arc, ace through king, the Ace at centre.',
                 'Four suits, fourteen ranks',
             ),
         },
@@ -314,6 +321,9 @@ SUITS = [
 # ── Numerology of the pips and courts ─────────────────────────────────────────
 # Pips and courts are rendered as an interactive ladder: pick a rank, read its
 # stage. Each carries its own plate so the detail panel has something to show.
+# `text` is the lead — one line defining the stage, set large in the panel.
+# `detail` expands it and closes on the stage's shadow, mirroring how SUITS
+# entries end; the template sets it smaller and dimmer beneath the lead.
 NUMEROLOGY = {
     'intro': (
         "Within each suit, the number or rank marks a stage — a moment in the arc "
@@ -322,34 +332,102 @@ NUMEROLOGY = {
     ),
     'pips': [
         {'rank': 'Ace', 'numeral': 'I', 'title': 'The seed', 'text': 'Pure potential — the suit’s gift, offered whole and unspent.',
+         'detail': (
+             "Nothing has been spent yet and nothing proven; an Ace is an offer, "
+             "not an outcome. Its shadow is potential admired so long it is never "
+             "planted."
+         ),
          'image': _img('num-ace', 'A single seed held in an open hand, faintly lit from within.', 'Ace — the seed')},
         {'rank': 'Two', 'numeral': 'II', 'title': 'Balance', 'text': 'Duality and choice; partnership, tension, the meeting of two.',
+         'detail': (
+             "Where the Ace stood alone, the Two must reckon with something outside "
+             "itself — a partner, an alternative, a counterweight. Its shadow is the "
+             "choice deferred until it is made for you."
+         ),
          'image': _img('num-two', 'Two balanced scales pans held level in dim gold light.', 'Two — balance')},
         {'rank': 'Three', 'numeral': 'III', 'title': 'Growth', 'text': 'The first fruits — creation, collaboration, early increase.',
+         'detail': (
+             "What two began, three brings into the world; this is the first proof "
+             "the thing can live. Its shadow is early increase mistaken for arrival."
+         ),
          'image': _img('num-three', 'Three young shoots breaking soil together.', 'Three — growth')},
         {'rank': 'Four', 'numeral': 'IV', 'title': 'Structure', 'text': 'Stability and rest; a foundation set, for better or for stasis.',
+         'detail': (
+             "Four is the square and the four walls — what growth needs in order to "
+             "hold its shape. Its shadow is the wall that keeps out as much as it "
+             "keeps safe."
+         ),
          'image': _img('num-four', 'Four stone pillars holding a plain lintel.', 'Four — structure')},
         {'rank': 'Five', 'numeral': 'V', 'title': 'Disruption', 'text': 'Conflict, loss, or challenge — the change that breaks the four.',
+         'detail': (
+             "Every suit meets its trouble at five: the structure is tested, and "
+             "something gives. Its shadow is the wound nursed long after the lesson "
+             "has been taken."
+         ),
          'image': _img('num-five', 'A cracked stone slab split by a single fissure.', 'Five — disruption')},
         {'rank': 'Six', 'numeral': 'VI', 'title': 'Harmony', 'text': 'Balance restored, reciprocity, movement gently forward.',
+         'detail': (
+             "After the break, six is the mending — what is given and returned, and "
+             "the road opening again. Its shadow is a peace kept by leaving the hard "
+             "thing unsaid."
+         ),
          'image': _img('num-six', 'Two hands passing a small lit lamp between them.', 'Six — harmony')},
         {'rank': 'Seven', 'numeral': 'VII', 'title': 'Reflection', 'text': 'Assessment and perseverance; faith and effort put to the test.',
+         'detail': (
+             "Seven steps back from the work to ask whether it is worth continuing, "
+             "and rarely finds a clean answer waiting. Its shadow is doubt that "
+             "dresses itself as patience."
+         ),
          'image': _img('num-seven', 'A figure’s reflection in still black water, considering.', 'Seven — reflection')},
         {'rank': 'Eight', 'numeral': 'VIII', 'title': 'Momentum', 'text': 'Mastery in motion — swift progress, focus, power applied.',
+         'detail': (
+             "Doubt resolves into practice, and the suit moves faster than it has "
+             "all cycle. Its shadow is speed that outruns the reason for going."
+         ),
          'image': _img('num-eight', 'Eight streaks of light crossing a night sky in one direction.', 'Eight — momentum')},
         {'rank': 'Nine', 'numeral': 'IX', 'title': 'Intensity', 'text': 'Near-fulfilment; the suit at its fullest pitch, for good or ill.',
+         'detail': (
+             "Nine is everything the suit can be, held at once and almost too much "
+             "to carry. Its shadow is the strain of nearly-there — joy or dread "
+             "stretched to its limit."
+         ),
          'image': _img('num-nine', 'A lantern burning at its brightest, glass hot and near its limit.', 'Nine — intensity')},
         {'rank': 'Ten', 'numeral': 'X', 'title': 'Completion', 'text': 'The cycle’s end and overflow — and the seed of the next.',
+         'detail': (
+             "The suit arrives, and in arriving spills past what a single cycle can "
+             "hold. Its shadow is the ending refused, or a beginning missed because "
+             "the ending looked final."
+         ),
          'image': _img('num-ten', 'A ripe vessel brimming over, one seed falling from the spill.', 'Ten — completion')},
     ],
     'courts': [
         {'rank': 'Page', 'numeral': 'P', 'title': 'The student', 'text': 'A beginner and messenger — the suit’s energy newly awakened, curious and unformed.',
+         'detail': (
+             "The Page has no mastery to defend and so can still be surprised; news, "
+             "study, and first attempts belong here. Its shadow is enthusiasm that "
+             "never settles into practice."
+         ),
          'image': _img('court-page', 'A young messenger pausing on a road, letter in hand.', 'Page — the student')},
         {'rank': 'Knight', 'numeral': 'N', 'title': 'The seeker', 'text': 'The suit in motion and pursuit, driven and single-minded, sometimes to excess.',
+         'detail': (
+             "Where the Page wonders, the Knight rides — commitment to the suit at "
+             "the cost of all that sits beside it. Its shadow is the pursuit "
+             "continued long past the point of sense."
+         ),
          'image': _img('court-knight', 'A rider at full gallop, cloak streaming, eyes fixed ahead.', 'Knight — the seeker')},
         {'rank': 'Queen', 'numeral': 'Q', 'title': 'The keeper', 'text': 'Inner mastery — one who embodies and nurtures the suit’s power from within.',
+         'detail': (
+             "The Queen holds the suit rather than chasing it, and can give it away "
+             "without spending herself. Her shadow is care turned inward until it "
+             "hardens into control."
+         ),
          'image': _img('court-queen', 'A seated queen holding her suit’s emblem close, gaze inward.', 'Queen — the keeper')},
         {'rank': 'King', 'numeral': 'K', 'title': 'The sovereign', 'text': 'Outer mastery — authority, command, and the suit wielded in the world.',
+         'detail': (
+             "The King’s mastery faces outward: he sets the terms, and others live "
+             "inside them. His shadow is authority that has forgotten it was ever "
+             "learned."
+         ),
          'image': _img('court-king', 'An enthroned king holding his suit’s emblem out before him.', 'King — the sovereign')},
     ],
 }

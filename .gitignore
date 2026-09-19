@@ -1,8 +1,6 @@
 *.pyc
 __pycache__/
 .vscode/
-static/images/
-static/media/
 venv/
 integration/*
 flask-port/*
