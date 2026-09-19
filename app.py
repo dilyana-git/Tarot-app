@@ -17,7 +17,7 @@ from data.lore_data import (
     SUITS, NUMEROLOGY, SYMBOLS, READING_ETHOS,
 )
 from reading_email import (
-    MailConfigurationError, build_message, send_with_brevo,
+    MailConfigurationError, MailProviderError, build_message, send_with_brevo,
     settings_from_env, valid_email,
 )
 
@@ -399,6 +399,9 @@ def email_reading():
     )
     try:
         send_with_brevo(settings, message)
+    except MailProviderError as error:
+        app.logger.error('Reading email delivery failed for %s: %s', request_id, error)
+        return jsonify({'error': 'We could not send the reading. Please try again later.'}), 502
     except OSError:
         app.logger.exception('Reading email delivery failed for %s', request_id)
         return jsonify({'error': 'We could not send the reading. Please try again later.'}), 502

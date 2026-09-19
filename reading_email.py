@@ -12,6 +12,15 @@ class MailConfigurationError(ValueError):
     pass
 
 
+class MailProviderError(OSError):
+    """Safe provider failure details for server logs; never includes credentials."""
+
+    def __init__(self, status, code='unknown'):
+        self.status = status
+        self.code = code
+        super().__init__(f'Brevo rejected email (HTTP {status}, code {code})')
+
+
 def valid_email(value):
     if not isinstance(value, str) or len(value) > 254 or not value.isascii():
         return False
@@ -87,7 +96,14 @@ def send_with_brevo(settings, message):
             if response.status != 201 or not result.get('messageId'):
                 raise OSError('Email provider did not confirm delivery')
     except HTTPError as error:
-        error.close()
-        raise OSError('Email provider rejected the request') from None
+        status = error.code
+        try:
+            detail = json.loads(error.read(65536))
+            code = str(detail.get('code', 'unknown')) if isinstance(detail, dict) else 'unknown'
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            code = 'unknown'
+        finally:
+            error.close()
+        raise MailProviderError(status, code) from None
     except (URLError, json.JSONDecodeError):
         raise OSError('Email provider could not be reached') from None

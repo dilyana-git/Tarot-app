@@ -299,3 +299,20 @@ def test_reading_page_has_email_button_and_consent(client):
     body = client.get('/reading').data
     assert b'Send This Reading to the Reader' in body
     assert b'readingEmailConsent' in body
+
+
+def test_brevo_rejection_logs_only_safe_status(client, monkeypatch, caplog):
+    import app as app_module
+    from reading_email import MailProviderError
+    monkeypatch.setattr(app_module, 'settings_from_env', lambda: {
+        'api_key': 'secret-that-must-not-appear',
+        'sender': 'reader@example.com', 'recipient': 'owner@example.com',
+    })
+    monkeypatch.setattr(
+        app_module, 'send_with_brevo',
+        lambda settings, message: (_ for _ in ()).throw(MailProviderError(401, 'unauthorized')),
+    )
+    response = client.post('/api/email-reading', json=_email_payload(client))
+    assert response.status_code == 502
+    assert 'HTTP 401, code unauthorized' in caplog.text
+    assert 'secret-that-must-not-appear' not in caplog.text
