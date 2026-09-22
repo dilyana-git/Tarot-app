@@ -367,9 +367,9 @@
   animation: ahSatellitePop .55s cubic-bezier(.22,.7,.3,1);
 }
 @keyframes ahSatellitePop {
-  0%   { transform: scale(1)    rotate(0); filter: brightness(.6) blur(2px); }
+  0%   { transform: scale(1)    rotate(0); opacity: .6; }
   40%  { transform: scale(1.08) rotate(2deg); }
-  100% { transform: scale(1)    rotate(0); filter: brightness(1)   blur(0); }
+  100% { transform: scale(1)    rotate(0); opacity: 1; }
 }
 
 /* =================================================================
@@ -478,10 +478,10 @@
 
    The card's own edge-dissolve particles live inside the widget canvas
    (arcana-card.js) — the hero background stays clean. */
-.arcana-hero .text-stack { transition: opacity .44s cubic-bezier(.22,.61,.36,1) .28s; }
+.arcana-hero .text-stack { transition: opacity .3s cubic-bezier(.22,.61,.36,1) .12s; }
 .arcana-hero.is-transitioning .text-stack {
   opacity: 0;
-  transition: opacity .15s ease-in 0s;
+  transition: opacity .1s ease-in 0s;
 }
 
 /* Main card */
@@ -540,7 +540,7 @@
   overflow: hidden;
   transform-origin: 50% 50%;
   backface-visibility: hidden;
-  will-change: transform, opacity, filter;
+  will-change: transform, opacity;
 }
 .arcana-hero .main-card-layer img {
   width: 100%; height: 100%;
@@ -560,22 +560,22 @@
 .arcana-hero .main-card-layer.is-in.dir-prev  { animation-name: ahLayerInPrev; }
 
 @keyframes ahLayerOut {
-  0%   { opacity: 1; transform: rotateY(0)     scale(1);    filter: brightness(1); }
-  100% { opacity: 0; transform: rotateY(38deg) scale(1.05); filter: brightness(1.5) blur(3px); }
+  0%   { opacity: 1; transform: rotateY(0)     scale(1); }
+  100% { opacity: 0; transform: rotateY(38deg) scale(1.05); }
 }
 @keyframes ahLayerIn {
-  0%   { opacity: 0; transform: rotateY(-38deg) scale(.94); filter: brightness(.85) blur(3px); }
+  0%   { opacity: 0; transform: rotateY(-38deg) scale(.94); }
   55%  { opacity: 1; }
-  100% { opacity: 1; transform: rotateY(0)      scale(1);   filter: brightness(1) blur(0); }
+  100% { opacity: 1; transform: rotateY(0)      scale(1); }
 }
 @keyframes ahLayerOutPrev {
-  0%   { opacity: 1; transform: rotateY(0)      scale(1);    filter: brightness(1); }
-  100% { opacity: 0; transform: rotateY(-38deg) scale(1.05); filter: brightness(1.5) blur(3px); }
+  0%   { opacity: 1; transform: rotateY(0)      scale(1); }
+  100% { opacity: 0; transform: rotateY(-38deg) scale(1.05); }
 }
 @keyframes ahLayerInPrev {
-  0%   { opacity: 0; transform: rotateY(38deg) scale(.94); filter: brightness(.85) blur(3px); }
+  0%   { opacity: 0; transform: rotateY(38deg) scale(.94); }
   55%  { opacity: 1; }
-  100% { opacity: 1; transform: rotateY(0)     scale(1);   filter: brightness(1) blur(0); }
+  100% { opacity: 1; transform: rotateY(0)     scale(1); }
 }
 
 /* Glow and mask sit above the layers via source order. Ensure they

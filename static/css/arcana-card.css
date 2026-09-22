@@ -137,7 +137,25 @@
    the two coplanar faces can't z-fight inside the preserve-3d flip container.
    The card's own text plates ride along inside the snapshot — they need no
    separate fade of their own. */
-.arcana .ac-ghost{transform:translateZ(.5px); pointer-events:none; will-change:opacity;}
+.arcana .ac-ghost{
+  transform:translate3d(0,0,.5px) scale(1);
+  pointer-events:none;
+  will-change:transform,opacity;
+}
+.arcana .ac-ghost.is-leaving.dir-next{
+  transform:translate3d(-10px,-2px,.5px) scale(.985) rotate(-.35deg);
+}
+.arcana .ac-ghost.is-leaving.dir-prev{
+  transform:translate3d(10px,-2px,.5px) scale(.985) rotate(.35deg);
+}
+
+/* The incoming face settles very slightly while the outgoing snapshot clears.
+   Transform and opacity stay on the compositor; the mosaic itself is untouched. */
+.arcana .ac-front.is-arriving{animation:acCardArrive .42s cubic-bezier(.2,.72,.2,1) both;}
+@keyframes acCardArrive{
+  from{opacity:.72; transform:translate3d(0,5px,0) scale(.992);}
+  to{opacity:1; transform:translate3d(0,0,0) scale(1);}
+}
 
 
 .arcana .back-glow{position:absolute; inset:0; pointer-events:none; background:radial-gradient(80% 60% at 50% 28%, rgba(215,180,90,.10), transparent 70%);}
@@ -322,6 +340,8 @@
   .arcana .tile.tw::after{animation:none; opacity:0;}
 
   .arcana.arcana-bare .ac-neb{animation:none;}
+
+  .arcana .ac-front.is-arriving{animation:none;}
 
 }
 

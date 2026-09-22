@@ -200,7 +200,11 @@ const dataUrl = (svg) => `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
 // scales the render quadratically. The grid is deliberately FINE so the edge
 // crumbles into small, numerous fragments; MARGIN/EDGE ring counts are scaled
 // with it to keep the same physical margin and band depth.
+// Keep the mosaic fine enough to read as tesserae without generating more than
+// thirty thousand tile records on every meaningful resize. The previous
+// 145x213 grid made uncached card changes noticeably stall on mid-range GPUs.
 const COLS = 145, ROWS = 213, GAP = 0.25, MARGIN_RINGS = 12, EDGE_RINGS = 32;
+const MAX_CANVAS_DPR = 2;
 // Background tone the eroding edge fragments bleed toward (matches the page's
 // deep ink radial), so the rim dissolves into the scene's colour.
 const BLEED_BG = "#08070f";
@@ -613,7 +617,7 @@ function buildMosaic(cw, ch) {
 
     function sizeCanvas() {
       if (!mosaicCanvas) return 1;
-      var dpr = Math.min(global.devicePixelRatio || 1, 2);
+      var dpr = Math.min(global.devicePixelRatio || 1, MAX_CANVAS_DPR);
       mosaicCanvas.width = Math.round(size.cw * dpr);
       mosaicCanvas.height = Math.round(size.ch * dpr);
       mosaicCanvas.style.width = size.cw + "px";
@@ -746,10 +750,10 @@ function buildMosaic(cw, ch) {
     // ready bitmaps.
     function primeBand(i) {
       var url = cardImgUrl(cards[i]);
-      if (!url) return;
+      if (!url) return Promise.resolve();
       var hit = bandCache[url];
-      if (hit && hit.w === mosaicCanvas.width && hit.h === mosaicCanvas.height) return;
-      getDecodedImg(url).then(function (img) {
+      if (hit && hit.w === mosaicCanvas.width && hit.h === mosaicCanvas.height) return Promise.resolve();
+      return getDecodedImg(url).then(function (img) {
         if (!img || !img.width) return;
         cachedBand(url, img, mosaicCanvas.width / Math.max(1, size.cw));
       });
@@ -833,7 +837,7 @@ function buildMosaic(cw, ch) {
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.clearRect(0, 0, mosaicCanvas.width, mosaicCanvas.height);
       ctx.drawImage(staticBitmap, 0, 0);
-      var dpr = Math.min(global.devicePixelRatio || 1, 2);
+      var dpr = Math.min(global.devicePixelRatio || 1, MAX_CANVAS_DPR);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       // ── IDLE DISSOLVE: the shed rim chips. Each slot is dormant for most of
       // its cycle, then its tessera detaches from the artwork's perimeter and
@@ -932,7 +936,7 @@ function buildMosaic(cw, ch) {
       if (twRaf) { cancelAnimationFrame(twRaf); twRaf = null; }
     }
 
-    function setCard(i) {
+    function setCard(i, deferMosaic) {
       index = i;
       var c = cards[index];
       if (numEl) numEl.textContent = c.roman;
@@ -958,7 +962,7 @@ function buildMosaic(cw, ch) {
       if (nextEm) nextEm.textContent = nx.roman;
       if (nextLbl) nextLbl.textContent = nx.name.replace("THE ", "") + " \u2192";
       if (onCard) onCard(c, index, { prev: p, next: nx });
-      drawMosaic();                    // re-render the canvas mosaic for the new card
+      if (!deferMosaic) drawMosaic();  // re-render the canvas mosaic for the new card
     }
 
     function applyTilt() {
@@ -1040,7 +1044,7 @@ function buildMosaic(cw, ch) {
     // copy out on `arcana:transition-start` has finished doing so before we
     // relabel it. The card is under the opaque ghost throughout, so this reads
     // as the card holding still, not as a blank frame.
-    var DISSOLVE_MS = 560, HOLD_MS = 200;
+    var DISSOLVE_MS = 420, HOLD_MS = 120;
 
     // Clone the front face as it stands. cloneNode carries the inline custom
     // properties that drive the art (--img/--cw/--ch/--mx/--my all live on
@@ -1062,12 +1066,16 @@ function buildMosaic(cw, ch) {
     }
 
     // Assumes `busy` is already set by dissolve().
-    function fadeSwap(target) {
+    function fadeSwap(target, dir) {
       var ghost = snapshotFront();
+      var directionClass = dir < 0 ? "dir-prev" : "dir-next";
+      ghost.classList.add(directionClass);
       var finished = false;
       function finish() {
         if (finished) return;
         finished = true;
+        frontEl.classList.remove("is-arriving", "dir-prev", "dir-next");
+        frontEl.classList.add("is-arriving", directionClass);
         setCard(target);                              // swap art + mosaic behind the ghost
         // The new card is now committed (still hidden). Hosts bring their copy
         // back on this, so their text returns WITH the dissolve rather than
@@ -1082,14 +1090,21 @@ function buildMosaic(cw, ch) {
         // dissolve any earlier shows the new art still streaming in beneath.
         requestAnimationFrame(function () {
           requestAnimationFrame(function () {
-            ghost.style.transition = "opacity " + DISSOLVE_MS + "ms cubic-bezier(.37,0,.28,1)";
+            ghost.style.transition =
+              "opacity " + DISSOLVE_MS + "ms cubic-bezier(.32,0,.22,1)," +
+              "transform " + DISSOLVE_MS + "ms cubic-bezier(.2,.72,.2,1)";
+            ghost.classList.add("is-leaving");
             ghost.style.opacity = "0";
             timers.push(setTimeout(function () {
               if (ghost.parentNode) ghost.parentNode.removeChild(ghost);
+              frontEl.classList.remove("is-arriving", "dir-prev", "dir-next");
               busy = false; setDisabled(); applyTilt();
               setAnimPaused(false);                   // resume idle twinkle once settled
-              // pre-render the new neighbours' band bitmaps off the critical path
-              timers.push(setTimeout(function () { primeBand(nextI()); primeBand(prevI()); }, 300));
+              // Pre-render neighbours only when the browser reports idle time.
+              // Running both raster jobs from a timer caused a visible main-thread
+              // hitch shortly after each card transition.
+              schedulePrime(nextI());
+              schedulePrime(prevI());
             }, DISSOLVE_MS + 20));
           });
         });
@@ -1109,7 +1124,7 @@ function buildMosaic(cw, ch) {
       busy = true; flipped = false; updateFlip(); setDisabled();
       clearTimers();
       setAnimPaused(true);                    // freeze idle twinkle for the swap
-      fadeSwap(target);
+      fadeSwap(target, dir);
     }
 
     function initStars() {
@@ -1117,7 +1132,7 @@ function buildMosaic(cw, ch) {
       var ctx = canvas.getContext("2d");
       var w, h, dpr, stars = [], raf, running = true;
       function resize() {
-        dpr = Math.min(global.devicePixelRatio || 1, 2);
+        dpr = Math.min(global.devicePixelRatio || 1, MAX_CANVAS_DPR);
         w = canvas.clientWidth; h = canvas.clientHeight;
         canvas.width = w * dpr; canvas.height = h * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         var r = rng(99), count = Math.min(150, Math.round((w * h) / 9000));
@@ -1179,30 +1194,42 @@ function buildMosaic(cw, ch) {
     if (prevBtn) prevBtn.addEventListener("click", function () { dissolve(prevI(), -1); });
     if (nextBtn) nextBtn.addEventListener("click", function () { dissolve(nextI(), 1); });
 
-    // first paint
-    setCard(index); applySize(); buildRest(); applyTilt(); updateHint();
+    // first paint — build the mosaic once, after the measured size and tile lists
+    // are ready. Calling drawMosaic from setCard here previously cached an empty
+    // band and immediately followed it with a second expensive render.
+    setCard(index, true); applySize(); buildRest(); applyTilt(); updateHint();
     initStars(); observeSize();
 
-    // Warm the DECODED-image cache for the immediate neighbours (separate from the
-    // nav preload cache) so the very first stardust dissolve has its chips ready,
-    // then pre-render their band bitmaps once the first paint has settled.
+    var primeQueue = [], primeScheduled = false;
+    function schedulePrime(i) {
+      if (primeQueue.indexOf(i) === -1) primeQueue.push(i);
+      if (primeScheduled) return;
+      primeScheduled = true;
+      var run = function () {
+        var nextPrime = primeQueue.shift();
+        Promise.resolve(nextPrime == null ? null : primeBand(nextPrime)).then(function () {
+          primeScheduled = false;
+          if (primeQueue.length) schedulePrime(primeQueue.shift());
+        });
+      };
+      if (global.requestIdleCallback) global.requestIdleCallback(run, { timeout: 1800 });
+      else timers.push(setTimeout(run, 900));
+    }
+
+    // Warm the immediate neighbours without scheduling two large raster jobs in
+    // the same timer callback.
     (function () {
       var nc = cards[nextI()], pc = cards[prevI()];
       if (nc && nc.image) getDecodedImg(nc.image);
       if (pc && pc.image) getDecodedImg(pc.image);
-      timers.push(setTimeout(function () { primeBand(nextI()); primeBand(prevI()); }, 700));
+      schedulePrime(nextI());
+      schedulePrime(prevI());
     })();
 
-    // Warm the cache: decode the immediate neighbours now (so the first nav is
-    // instant), then lazily decode the rest of the deck in the background.
+    // Decode only the current card and its immediate neighbours. Starting all 22
+    // image decodes together competed with the first interactions for CPU and
+    // memory; moving through the deck keeps warming the next neighbours naturally.
     preloadCard(index); preloadCard(nextI()); preloadCard(prevI());
-    if (global.requestIdleCallback) {
-      global.requestIdleCallback(function () {
-        for (var k = 0; k < cards.length; k++) preloadCard(k);
-      });
-    } else {
-      setTimeout(function () { for (var k = 0; k < cards.length; k++) preloadCard(k); }, 800);
-    }
 
     return {
       next: function () { dissolve(nextI(), 1); },
