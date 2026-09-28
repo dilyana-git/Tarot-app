@@ -477,5 +477,10 @@ def server_error(error):
     return render_template('500.html'), 500
 
 
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
+
 if __name__ == '__main__':
     app.run(debug=_debug, port=5000)
