@@ -1,12 +1,21 @@
 name: Keep Render Awake
 
+# Render's free tier spins the service down after ~15 minutes without traffic,
+# and the next visitor waits on a cold start. Pinging /health every 10 minutes
+# keeps it warm. Scheduled workflows only run from the default branch (main).
 on:
   schedule:
     - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+permissions: {}
 
 jobs:
   ping:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: Ping app
-        run: curl -fsS https://YOUR-APP.onrender.com/health
+        # The canonical domain, not *.onrender.com — app.py 301-redirects that
+        # host here. Retries cover a cold start that outlasts a single request.
+        run: curl -fsS --retry 3 --retry-delay 20 --retry-all-errors --max-time 90 https://tarot.samodiva.space/health
