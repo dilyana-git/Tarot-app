@@ -35,6 +35,8 @@ image-path placeholder fallback. There is no linter configured.
 | `GET /api/cards` | — | Returns all 78 cards as JSON (public fields only via `_card_json`) |
 | `GET /health` | — | Returns `{"status":"ok"}` for load-balancer probes |
 
+**Keep-awake workflow (`.github/workflows/keep-awake.yml`)** pings `https://tarot.samodiva.space/health` every 10 minutes so Render's free tier doesn't spin the service down. It targets the custom domain rather than `*.onrender.com`, which redirects there. GitHub only runs scheduled workflows from the default branch; it can also be triggered by hand from the Actions tab.
+
 **Card data (`data/tarot_data.py`)** is a static Python file — the single source of truth for all 78 cards. Each card dict has: `id`, `name`, `number`, `arcana` (`'major'`/`'minor'`), `suit` (None for major), `symbol`, `element`, `keywords_upright`, `keywords_reversed`, `upright_meaning`, `reversed_meaning`, `description`, `card_color`, `accent_color`, `image` (path relative to `static/images/`), and optionally `video` (filename relative to `static/media/`). `ALL_CARDS = MAJOR_ARCANA + MINOR_ARCANA`. Card IDs for minor arcana start at 22.
 
 **Spreads (`data/tarot_data.py:SPREADS`)** map each spread key to `{name, description, positions}`, where `positions` is an *ordered* list of `{name, meaning}` dicts. The order is load-bearing: `api_reading` pairs `positions[i]` with the i-th drawn card, and the reading CSS maps each card to a board cell by its nth-child index.
