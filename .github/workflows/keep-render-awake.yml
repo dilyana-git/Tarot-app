@@ -1,11 +1,19 @@
 name: Keep Render Awake
 
-# GitHub schedules are best-effort. Run every five minutes, offset from the
-# start of each hour, to reduce the chance of a gap over Render's 15-minute
-# idle limit. Keep this file on the repository's default branch.
+# GitHub schedules are best-effort. Three staggered schedules collectively run
+# every five minutes and avoid the busy start of each hour. The push trigger
+# validates changes to this workflow immediately. Keep this file on the
+# repository's default branch.
 on:
+  push:
+    branches:
+      - claude/tarot-app-project-dSzbt
+    paths:
+      - .github/workflows/keep-render-awake.yml
   schedule:
-    - cron: "3,8,13,18,23,28,33,38,43,48,53,58 * * * *"
+    - cron: "3,18,33,48 * * * *"
+    - cron: "8,23,38,53 * * * *"
+    - cron: "13,28,43,58 * * * *"
   workflow_dispatch:
 
 permissions: {}
