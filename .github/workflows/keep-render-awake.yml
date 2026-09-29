@@ -11,9 +11,7 @@ on:
     paths:
       - .github/workflows/keep-render-awake.yml
   schedule:
-    - cron: "3,18,33,48 * * * *"
-    - cron: "8,23,38,53 * * * *"
-    - cron: "13,28,43,58 * * * *"
+    - cron: "3/5 * * * *" # Every 5 minutes starting at 3 minutes past the hour
   workflow_dispatch:
 
 permissions: {}
