@@ -27,6 +27,18 @@
       <p class="reading-asked" id="readingAsked" hidden></p>
       <p class="reading-result-desc" id="resultSpreadDesc"></p>
       <p class="reading-notes" id="readingNotes" hidden></p>
+      <button class="btn btn-primary reading-email-btn" id="emailReadingBtn" type="button">Send This Reading to the Reader</button>
+      <form class="reading-email-form" id="emailReadingForm" hidden>
+        <label for="readingEmail">Your email address</label>
+        <input id="readingEmail" name="email" type="email" autocomplete="email" maxlength="254" required placeholder="you@example.com">
+        <label class="reading-email-consent">
+          <input id="readingEmailConsent" type="checkbox" required>
+          <span>Send my email address, question, and cards to the reader so they can reply.</span>
+        </label>
+        <button class="btn btn-primary" id="confirmEmailReadingBtn" type="submit">Send Reading</button>
+        <button class="btn btn-ghost" id="cancelEmailReadingBtn" type="button">Cancel</button>
+        <p class="reading-email-status" id="readingEmailStatus" role="status"></p>
+      </form>
       <button class="btn btn-outline reading-new-btn" id="newReadingBtn">✦ New Reading</button>
       <div class="reading-legend" id="readingLegend"></div>
     </div>

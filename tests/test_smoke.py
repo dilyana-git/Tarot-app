@@ -6,9 +6,18 @@ expected shape, and the narrative composer stays deterministic. Run with:
     pip install -r requirements-dev.txt
     pytest
 """
+import os
+import subprocess
+import sys
+from pathlib import Path
+
 import pytest
 
-from app import app as flask_app, get_card_image_path
+from app import (
+    app as flask_app, get_card_image_path, get_card_image_filename, MAX_CONTENT_LENGTH,
+)
+
+ROOT = Path(__file__).resolve().parent.parent
 from data.tarot_data import ALL_CARDS, SPREADS
 from data.reading_composer import compose
 
@@ -87,8 +96,10 @@ def test_health(client):
 def test_api_cards(client):
     data = client.get('/api/cards').get_json()
     assert len(data) == len(ALL_CARDS) == 78
+    # internal fields stay internal — the API exposes image_url, not the raw path
     assert 'focal_point' not in data[0]
-    assert 'video' not in data[0]
+    assert 'image' not in data[0]
+    assert 'image_url' in data[0]
 
 
 def test_security_headers(client):
@@ -119,6 +130,13 @@ def test_api_reading_shape(client, spread_key):
 def test_api_reading_unknown_spread_400(client):
     resp = client.post('/api/reading', json={'spread': 'not_a_spread'})
     assert resp.status_code == 400
+
+
+def test_api_reading_oversized_body_413(client):
+    body = b'{"spread":"three_card","question":"' + b'a' * (MAX_CONTENT_LENGTH + 1) + b'"}'
+    resp = client.post('/api/reading', data=body, content_type='application/json')
+    assert resp.status_code == 413
+    assert resp.get_json() == {'error': 'Request too large'}
 
 
 # ── Composer ───────────────────────────────────────────────────────────────────
@@ -167,3 +185,134 @@ def test_canvas_has_aria_hidden(client):
 def test_image_path_falls_back_to_placeholder():
     # No such asset on disk → placeholder, never a broken path.
     assert get_card_image_path('images/major/does_not_exist.jpg') == 'images/card-placeholder.svg'
+
+
+def test_placeholder_asset_exists():
+    # The fallback above must resolve to a real file — it is committed despite
+    # static/images/ being gitignored, via a negation in .gitignore.
+    assert (ROOT / 'static' / 'images' / 'card-placeholder.svg').is_file()
+
+
+def test_card_detail_omits_placeholder_img(client):
+    """/card/<id> must never emit the placeholder as an <img>: that would 404 on a
+    fresh clone, and once the file exists it trips the .has-image script, hiding
+    the card's own typographic face behind one generic plate.
+
+    Asserted against whichever branch this checkout is actually in, so the test
+    holds both in CI (no art) and on a machine with real art on disk.
+    """
+    resp = client.get('/card/0')
+    assert b'card-placeholder.svg' not in resp.data
+
+    has_art = get_card_image_filename(ALL_CARDS[0]) != 'images/card-placeholder.svg'
+    # the <img> element, not the class name in the script's querySelector
+    emitted = b'<img class="card-detail-img"' in resp.data
+    assert emitted is has_art
+
+
+# ── Startup safety ─────────────────────────────────────────────────────────────
+def _import_app(env):
+    """Import app.py in a fresh interpreter, with SECRET_KEY/FLASK_DEBUG cleared
+    first so only what `env` sets is present."""
+    child = dict(os.environ)
+    child.pop('SECRET_KEY', None)
+    child.pop('FLASK_DEBUG', None)
+    child.update(env)
+    return subprocess.run(
+        [sys.executable, '-c', 'import app'],
+        cwd=ROOT, env=child, capture_output=True, text=True,
+    )
+
+
+def test_missing_secret_key_refuses_to_start():
+    # gunicorn imports app:app — that path must fail loudly rather than serve
+    # traffic signed with the key published in app.py.
+    result = _import_app({})
+    assert result.returncode != 0
+    assert 'SECRET_KEY is not set' in result.stderr
+
+
+def test_missing_secret_key_allowed_in_debug():
+    result = _import_app({'FLASK_DEBUG': 'true'})
+    assert result.returncode == 0, result.stderr
+
+
+def test_secret_key_set_imports_cleanly():
+    result = _import_app({'SECRET_KEY': 'a-real-key'})
+    assert result.returncode == 0, result.stderr
+
+
+@pytest.mark.parametrize('card', ALL_CARDS, ids=lambda card: card['name'])
+def test_deployed_card_artwork(client, card):
+    """Every card must ship real artwork, not silently fall back after deploy."""
+    from app import get_card_image_filename
+    path = get_card_image_filename(card)
+    assert path != 'images/card-placeholder.svg'
+    response = client.get('/static/' + path)
+    assert response.status_code == 200
+    assert response.mimetype.startswith('image/')
+    assert response.data
+
+
+def _email_payload(client):
+    reading = client.post('/api/reading', json={
+        'spread': 'three_card', 'question': 'What should I know?',
+    }).get_json()
+    return {
+        'email': 'visitor@example.com',
+        'question': 'What should I know?',
+        'spread': 'three_card',
+        'cards': [
+            {'id': card['id'], 'reversed': card['reversed'], 'narrative': card['narrative']}
+            for card in reading['cards']
+        ],
+    }
+
+
+def test_email_reading_sends_server_verified_cards(client, monkeypatch):
+    import app as app_module
+    sent = {}
+    monkeypatch.setattr(app_module, 'settings_from_env', lambda: {
+        'api_key': 'test', 'sender': 'reader@example.com', 'recipient': 'owner@example.com',
+    })
+    monkeypatch.setattr(app_module, 'send_with_brevo', lambda settings, message: sent.setdefault('message', message))
+    payload = _email_payload(client)
+    response = client.post('/api/email-reading', json=payload)
+    assert response.status_code == 200
+    assert response.get_json()['request_id']
+    body = sent['message'].get_content()
+    assert 'visitor@example.com' in body
+    assert sent['message']['To'] == 'owner@example.com'
+    assert sent['message']['Reply-To'] == 'visitor@example.com'
+
+
+def test_email_reading_rejects_tampered_or_invalid_payload(client):
+    payload = _email_payload(client)
+    payload['cards'][0]['id'] = 9999
+    assert client.post('/api/email-reading', json=payload).status_code == 400
+    payload['cards'][0]['id'] = 0
+    payload['email'] = 'not-an-email'
+    assert client.post('/api/email-reading', json=payload).status_code == 400
+
+
+def test_reading_page_has_email_button_and_consent(client):
+    body = client.get('/reading').data
+    assert b'Send This Reading to the Reader' in body
+    assert b'readingEmailConsent' in body
+
+
+def test_brevo_rejection_logs_only_safe_status(client, monkeypatch, caplog):
+    import app as app_module
+    from reading_email import MailProviderError
+    monkeypatch.setattr(app_module, 'settings_from_env', lambda: {
+        'api_key': 'secret-that-must-not-appear',
+        'sender': 'reader@example.com', 'recipient': 'owner@example.com',
+    })
+    monkeypatch.setattr(
+        app_module, 'send_with_brevo',
+        lambda settings, message: (_ for _ in ()).throw(MailProviderError(401, 'unauthorized')),
+    )
+    response = client.post('/api/email-reading', json=_email_payload(client))
+    assert response.status_code == 502
+    assert 'HTTP 401, code unauthorized' in caplog.text
+    assert 'secret-that-must-not-appear' not in caplog.text

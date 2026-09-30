@@ -27,6 +27,13 @@
     resultDesc:      $('resultSpreadDesc'),
     notes:           $('readingNotes'),
     legend:          $('readingLegend'),
+    emailButton:     $('emailReadingBtn'),
+    emailForm:       $('emailReadingForm'),
+    emailInput:      $('readingEmail'),
+    emailConsent:    $('readingEmailConsent'),
+    emailSubmit:     $('confirmEmailReadingBtn'),
+    emailCancel:     $('cancelEmailReadingBtn'),
+    emailStatus:     $('readingEmailStatus'),
 
     stageSelect:    $('stageSelect'),
     stageIntention: $('stageIntention'),
@@ -154,6 +161,12 @@
   function renderReading(data, restoreRevealed) {
     drawnCards = data.cards;
     lastReadingData = data;
+    if (els.emailForm) hide(els.emailForm);
+    if (els.emailButton) { show(els.emailButton); els.emailButton.disabled = false; }
+    if (els.emailSubmit) { els.emailSubmit.hidden = false; els.emailSubmit.disabled = false; }
+    if (els.emailCancel) els.emailCancel.hidden = false;
+    if (els.emailConsent) els.emailConsent.checked = false;
+    if (els.emailStatus) els.emailStatus.textContent = '';
 
     els.leftTitle.textContent = data.spread.name;
     els.resultDesc.textContent = data.spread.description;
@@ -416,9 +429,54 @@
     els.layout.innerHTML = '';
     els.legend.innerHTML = '';
     if (els.notes) { els.notes.textContent = ''; hide(els.notes); }
+    if (els.emailForm) hide(els.emailForm);
+    if (els.emailButton) { show(els.emailButton); els.emailButton.disabled = false; }
+    if (els.emailStatus) els.emailStatus.textContent = '';
+    if (els.emailSubmit) { els.emailSubmit.hidden = false; els.emailSubmit.disabled = false; }
+    if (els.emailCancel) els.emailCancel.hidden = false;
     els.panel.style.display = 'none';
     els.leftTitle.textContent = 'Your Reading';
     setStage('select');
+  }
+
+  function openEmailForm() {
+    hide(els.emailButton);
+    show(els.emailForm);
+    els.emailStatus.textContent = '';
+    els.emailInput.focus();
+  }
+
+  function closeEmailForm() {
+    hide(els.emailForm);
+    show(els.emailButton);
+    els.emailStatus.textContent = '';
+  }
+
+  async function emailReading(event) {
+    event.preventDefault();
+    if (!lastReadingData || !els.emailForm.reportValidity() || !els.emailConsent.checked) return;
+    els.emailSubmit.disabled = true;
+    els.emailStatus.textContent = 'Sending…';
+    try {
+      const response = await fetch('/api/email-reading', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          email: els.emailInput.value.trim(),
+          question,
+          spread: currentSpread,
+          cards: drawnCards.map(card => ({id: card.id, reversed: !!card.reversed, narrative: card.narrative || ''})),
+        }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'The reading could not be sent.');
+      els.emailStatus.textContent = result.message;
+      els.emailSubmit.hidden = true;
+      els.emailCancel.hidden = true;
+    } catch (error) {
+      els.emailStatus.textContent = error.message;
+      els.emailSubmit.disabled = false;
+    }
   }
 
   /* ── wiring ──────────────────────────────────────────────── */
@@ -435,6 +493,9 @@
 
   const newBtn = $('newReadingBtn');
   if (newBtn) newBtn.addEventListener('click', newReading);
+  if (els.emailButton) els.emailButton.addEventListener('click', openEmailForm);
+  if (els.emailCancel) els.emailCancel.addEventListener('click', closeEmailForm);
+  if (els.emailForm) els.emailForm.addEventListener('submit', emailReading);
 
   els.panelClose.addEventListener('click', closePanel);
   els.panel.addEventListener('click', e => { if (e.target === els.panel) closePanel(); });
