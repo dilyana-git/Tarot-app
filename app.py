@@ -6,7 +6,8 @@ from collections import deque
 from threading import Lock
 from time import monotonic
 from functools import lru_cache
-from flask import Flask, render_template, jsonify, request, abort, url_for
+from flask import Flask, render_template, jsonify, request, abort, redirect, url_for
+from werkzeug.middleware.proxy_fix import ProxyFix
 from data.tarot_data import (
     ALL_CARDS, MAJOR_ARCANA, SPREADS,
     get_card_by_id, get_cards_by_suit, get_major_arcana, get_minor_arcana,
@@ -65,6 +66,12 @@ _ALLOWED_ORIGINS = [o.strip() for o in _ALLOWED_ORIGINS if o.strip()]
 # to 500 chars anyway — so 64 KB is far above anything legitimate.
 MAX_CONTENT_LENGTH = 64 * 1024
 app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
+
+@app.before_request
+def canonical_host():
+    if request.host.endswith("onrender.com"):
+        return redirect(f"https://tarot.samodiva.space{request.full_path.rstrip('?')}", 301)
 
 
 @app.after_request

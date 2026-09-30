@@ -35,7 +35,7 @@ image-path placeholder fallback. There is no linter configured.
 | `GET /api/cards` | — | Returns all 78 cards as JSON (public fields only via `_card_json`) |
 | `GET /health` | — | Returns `{"status":"ok"}` for load-balancer probes |
 
-**Keep-awake workflow (`.github/workflows/keep-render-awake.yml`)** pings `https://tarot.samodiva.space/health` on three staggered schedules, collectively every five minutes. GitHub runs scheduled workflows from the default branch; it can also be triggered by hand from the Actions tab.
+**Keep-awake workflow (`.github/workflows/keep-render-awake.yml`)** pings `https://tarot.samodiva.space/health` every ten minutes. It targets the custom domain because `canonical_host` redirects `*.onrender.com` requests there. GitHub runs scheduled workflows from the default branch; it can also be triggered by hand from the Actions tab.
 
 **Card data (`data/tarot_data.py`)** is a static Python file — the single source of truth for all 78 cards. Each card dict has: `id`, `name`, `number`, `arcana` (`'major'`/`'minor'`), `suit` (None for major), `symbol`, `element`, `keywords_upright`, `keywords_reversed`, `upright_meaning`, `reversed_meaning`, `description`, `card_color`, `accent_color`, and `image` (path relative to `static/images/`). `ALL_CARDS = MAJOR_ARCANA + MINOR_ARCANA`. Card IDs for minor arcana start at 22.
 
