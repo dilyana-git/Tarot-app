@@ -1,9 +1,8 @@
 name: Keep Render Awake
 
-# GitHub schedules are best-effort. Three staggered schedules collectively run
-# every five minutes and avoid the busy start of each hour. The push trigger
-# validates changes to this workflow immediately. Keep this file on the
-# repository's default branch.
+# GitHub schedules are best-effort. Run every ten minutes, offset from the
+# busy start of each hour. The push trigger validates changes immediately.
+# Keep this file on the repository's default branch.
 on:
   push:
     branches:
@@ -11,9 +10,7 @@ on:
     paths:
       - .github/workflows/keep-render-awake.yml
   schedule:
-    - cron: "3,18,33,48 * * * *"
-    - cron: "8,23,38,53 * * * *"
-    - cron: "13,28,43,58 * * * *"
+    - cron: "5,15,25,35,45,55 * * * *" # Every 10 minutes starting at 5 minutes past the hour
   workflow_dispatch:
 
 permissions: {}
